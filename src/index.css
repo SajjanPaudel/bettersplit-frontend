@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&display=swap');
+
+@layer base {
+  * {
+    font-family: 'Nunito', sans-serif !important;
+  }
+
+  html {
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+  }
+  
+  body {
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+  }
+
+  h1 {
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.875rem;
+  }
+
+  h2 {
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.5rem;
+  }
+
+  .text-sm {
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px;
+  }
+
+  /* Calendar Input Styling */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    background-color: #ffffff1a;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    filter: invert(1);
+    opacity: 0.6;
+    transition: all 0.2s;
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 0.8;
+    background-color: #ffffff33;
+  }
+
+  input[type="date"]::-webkit-datetime-edit {
+    color: #fff;
+  }
+
+  input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+    padding: 0;
+  }
+
+  input[type="date"]::-webkit-datetime-edit-text {
+    padding: 0 4px;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  input[type="date"]::-webkit-datetime-edit-month-field,
+  input[type="date"]::-webkit-datetime-edit-day-field,
+  input[type="date"]::-webkit-datetime-edit-year-field {
+    color: white;
+  }
+
+  input[type="date"]::-webkit-inner-spin-button {
+    display: none;
+  }
+  /* Dropdown Styling */
+  select option {
+    margin: 8px 0;
+    background-color: #1A1A1F;
+    color: white;
+    font-size: 1rem;
+  }
+
+  select option:hover {
+    background-color: #ffffff14 !important;
+  }
+
+  select:focus option:checked {
+    background-color: #ffffff14 !important;
+  }
+}

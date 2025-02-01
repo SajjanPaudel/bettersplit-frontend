@@ -1,0 +1,205 @@
+import { useState, useEffect, useMemo } from 'react';
+import axios from 'axios';
+import { FaPlus } from 'react-icons/fa';
+import AddExpenseModal from './AddExpenseModal';
+import {
+  useReactTable,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  flexRender,
+} from '@tanstack/react-table';
+
+function Activity() {
+  const [showModal, setShowModal] = useState(false);
+  const [activities, setActivities] = useState([]);
+  const [error, setError] = useState('');
+  const [globalFilter, setGlobalFilter] = useState('');
+  const currentUser = JSON.parse(localStorage.getItem('user'))?.username;
+
+  const fetchActivities = async () => {
+    try {
+      const accessToken = localStorage.getItem('access_token');
+      const response = await axios.get('http://127.0.0.1:8000/api/split/expenses/activity/', {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
+      setActivities(response.data.data);
+    } catch (err) {
+      setError('Failed to fetch activities');
+    }
+  };
+
+  useEffect(() => {
+    fetchActivities();
+  }, []);
+
+  const calculateOwed = (activity) => {
+    if (activity.paid_by === currentUser) {
+      return Object.entries(activity.splits)
+        .reduce((total, [user, amount]) => {
+          if (user !== currentUser) {
+            return total + parseFloat(amount);
+          }
+          return total;
+        }, 0);
+    }
+    return -parseFloat(activity.splits[currentUser] || 0);
+  };
+
+  const columns = useMemo(
+    () => [
+      {
+        header: 'Date',
+        accessorFn: row => new Date(row.date).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        }),
+      },
+      {
+        header: 'Description',
+        accessorKey: 'name',
+      },
+      {
+        header: 'Amount',
+        accessorFn: row => `Rs ${parseFloat(row.amount).toFixed(2)}`,
+      },
+      {
+        header: 'Paid By',
+        accessorKey: 'paid_by',
+      },
+      {
+        header: 'Split Details',
+        cell: ({ row }) => (
+          <div className="space-y-2 min-w-[200px]">
+            {Object.entries(row.original.splits).map(([person, amount], index) => {
+              // Array of pleasing background colors
+              const bgColors = [
+                'bg-blue-500/10 border-blue-500/20',
+                'bg-purple-500/10 border-purple-500/20',
+                'bg-green-500/10 border-green-500/20',
+                'bg-orange-500/10 border-orange-500/20',
+                'bg-pink-500/10 border-pink-500/20'
+              ];
+              const colorIndex = index % bgColors.length;
+              
+              return (
+                <div 
+                  key={person} 
+                  className="flex items-center gap-3"
+                >
+                  <span className={`px-3 py-1 rounded-full ${bgColors[colorIndex]} border text-gray-200`}>
+                    {person}
+                  </span>
+                  <span className="text-gray-500">|</span>
+                  <span className="px-3 py-1  text-gray-400">
+                    Rs {parseFloat(amount).toFixed(2)}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        ),
+      },
+      {
+        header: 'You are owed',
+        cell: ({ row }) => {
+          const amount = calculateOwed(row.original);
+          return (
+            <span className={amount >= 0 ? 'text-green-600' : 'text-red-600'}>
+              Rs {Math.abs(amount).toFixed(2)}
+              {amount >= 0 ? ' (to receive)' : ' (to pay)'}
+            </span>
+          );
+        },
+      },
+    ],
+    [currentUser]
+  );
+
+  // Remove the slice from table initialization
+  const table = useReactTable({
+    data: activities, // Show all activities instead of just 5
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    state: {
+      globalFilter,
+    },
+    onGlobalFilterChange: setGlobalFilter,
+  });
+
+  return (
+    <div className="mb-2 pt-1">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
+        <h1 className="text-2xl text-white pl-12 lg:pl-0">Activity</h1>
+        <div className="flex lg:flex-row sm:flex-row gap-4 w-max lg:w-auto">
+          <input
+            type="text"
+            value={globalFilter}
+            onChange={e => setGlobalFilter(e.target.value)}
+            placeholder="Search activities..."
+            className="w-full lg:w-auto px-4 py-2 bg-[#ffffff0a] text-white rounded-xl border border-[#ffffff1a] focus:border-[#ffffff33] focus:outline-none"
+          />
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors w-full lg:w-auto"
+          >
+            <FaPlus className="w-4 h-4" />
+            Add Expense
+          </button>
+        </div>
+      </div>
+
+      <div className="bg-[#ffffff0a] backdrop-blur-xl rounded-2xl border border-[#ffffff1a] overflow-hidden h-[calc(100vh-180px)]">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="sticky top-0 bg-[#1A1A1F] z-10 whitespace-nowrap">
+              {table.getHeaderGroups().map(headerGroup => (
+                <tr key={headerGroup.id}>
+                  {headerGroup.headers.map(header => (
+                    <th
+                      key={header.id}
+                      className="px-4 py-5 text-left text-sm font-semibold text-gray-200 tracking-wider first:pl-8 last:pr-8"
+                    >
+                      {flexRender(header.column.columnDef.header, header.getContext())}
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <tbody className="divide-y divide-[#ffffff1a] whitespace-nowrap">
+              {table.getRowModel().rows.map(row => (
+                <tr key={row.id} className="hover:bg-[#ffffff08] transition-colors">
+                  {row.getVisibleCells().map(cell => (
+                    <td 
+                      key={cell.id} 
+                      className={`px-4 py-5 text-sm first:pl-8 last:pr-8 ${
+                        cell.column.id === 'name' ? 'font-medium text-white' : 'text-gray-300'
+                      }`}
+                    >
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {showModal && (
+        <AddExpenseModal
+          onClose={() =>setShowModal(false)}
+          onSuccess={() => {
+            setShowModal(false);
+            fetchActivities();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+export default Activity;

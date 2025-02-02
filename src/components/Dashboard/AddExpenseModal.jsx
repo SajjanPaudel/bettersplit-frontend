@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FaTimes } from 'react-icons/fa';
+import { useTheme } from '../../context/ThemeContext';
 
 function AddExpenseModal({ onClose, onSuccess }) {
+  const { theme } = useTheme();
   const [users, setUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [expense, setExpense] = useState({
@@ -101,19 +103,19 @@ function AddExpenseModal({ onClose, onSuccess }) {
       className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start lg:items-center justify-center z-50 p-4 overflow-y-auto"
       onClick={handleBackdropClick}
     >
-      <div className="bg-[#1A1A1F] rounded-2xl w-full max-w-2xl my-4 lg:my-0">
-        <div className="p-4 lg:p-8">
+      <div className={`${theme.card} backdrop-blur-xl rounded-2xl border ${theme.border} w-full max-w-2xl my-4 lg:my-0 shadow-2xl relative before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent before:rounded-2xl before:pointer-events-none`}>
+        <div className="p-6 lg:p-8 relative">
           <div className="flex justify-between items-center mb-8">
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-white transition-colors text-lg"
+              className={`${theme.textSecondary} hover:${theme.text} transition-colors text-lg`}
             >
-              ← Back
+              <FaTimes className="text-xl" />
             </button>
             <button
               type="submit"
               form="expense-form"
-              className="px-4 lg:px-6 py-2.5 bg-[#ffffff14] text-white rounded-xl hover:bg-[#ffffff1f] transition-all"
+              className={`px-4 lg:px-6 py-2.5 ${theme.activeLink} ${theme.text} rounded-xl hover:bg-[#ffffff1f] transition-all`}
             >
               Save
             </button>
@@ -127,28 +129,27 @@ function AddExpenseModal({ onClose, onSuccess }) {
 
           <form id="expense-form" onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <div className="bg-[#ffffff0a] backdrop-blur-xl rounded-2xl border border-[#ffffff1a] p-4 space-y-6">
+              <div className={`${theme.input} backdrop-blur-xl rounded-2xl border ${theme.inputBorder} p-4 space-y-6`}>
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr,auto] gap-4 items-start">
                   <div>
-                    <div className="text-gray-400 text-sm mb-1">Description</div>
+                    <div className={theme.textSecondary}>Description</div>
                     <input
                       type="text"
                       placeholder="What was this expense for?"
                       value={expense.name}
                       onChange={(e) => setExpense(prev => ({ ...prev, name: e.target.value }))}
-                      className="flex-1 bg-[#ffffff0a] text-white px-6 py-3 rounded-xl border border-[#ffffff1a] focus:border-[#ffffff33] focus:outline-none text-lg placeholder-gray-500 w-full"
+                      className={`flex-1 ${theme.input} ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-lg placeholder-gray-500 w-full`}
                       required
                     />
                   </div>
 
                   <div>
-                    <div className="text-gray-400 text-sm mb-1">Date</div>
+                    <div className={theme.textSecondary}>Date</div>
                     <input
                       type="date"
                       value={expense.date}
                       onChange={(e) => setExpense(prev => ({ ...prev, date: e.target.value }))}
-                      className="w-48 bg-[#ffffff0a] text-white px-4 py-3 rounded-xl border border-[#ffffff1a] focus:border-[#ffffff33] focus:outline-none cursor-pointer appearance-none"
-                      style={{ colorScheme: 'dark' }}
+                      className={`w-48 ${theme.input} ${theme.text} px-4 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none cursor-pointer appearance-none`}
                       required
                     />
                   </div>
@@ -157,11 +158,11 @@ function AddExpenseModal({ onClose, onSuccess }) {
                 <div className="space-y-6">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <div className="text-gray-400 text-sm mb-1">Paid by</div>
+                      <div className={theme.textSecondary}>Paid by</div>
                       <select
                         value={expense.paid_by}
                         onChange={(e) => setExpense(prev => ({ ...prev, paid_by: e.target.value }))}
-                        className="w-full bg-[#ffffff0a] text-white px-6 py-3 rounded-xl border border-[#ffffff1a] focus:border-[#ffffff33] focus:outline-none text-lg appearance-none cursor-pointer bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNCA2TDggMTBMMTIgNiIgc3Ryb2tlPSIjOTA5MDkwIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+')] bg-no-repeat bg-[center_right_1rem]"
+                        className={`w-full ${theme.input} ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-lg appearance-none cursor-pointer`}
                         required
                       >
                         {users.map(user => (
@@ -170,20 +171,20 @@ function AddExpenseModal({ onClose, onSuccess }) {
                       </select>
                     </div>
                     <div>
-                      <div className="text-gray-400 text-sm mb-1">Total Amount</div>
+                      <div className={theme.textSecondary}>Total Amount</div>
                       <input
                         type="number"
                         placeholder="Amount"
                         value={expense.amount}
                         onChange={(e) => handleAmountChange(e.target.value)}
-                        className="w-full bg-[#ffffff0a] text-white px-6 py-3 rounded-xl border border-[#ffffff1a] focus:border-[#ffffff33] focus:outline-none text-lg placeholder-gray-500"
+                        className={`w-full ${theme.input} ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-lg placeholder-gray-500`}
                         required
                       />
                     </div>
                   </div>
 
                   <div>
-                    <div className="text-gray-400 text-sm mb-2">Split with</div>
+                    <div className={theme.textSecondary}>Split with</div>
                     <div className="flex flex-wrap gap-2 mb-2">
                       {users.map(user => (
                         <button
@@ -192,8 +193,8 @@ function AddExpenseModal({ onClose, onSuccess }) {
                           onClick={() => handleUserSelection(user.id)}
                           className={`px-4 py-2 rounded-xl text-sm transition-all ${
                             selectedUsers.includes(user.id)
-                              ? 'bg-[#ffffff14] text-white'
-                              : 'bg-[#ffffff0a] text-gray-400 hover:bg-[#ffffff14]'
+                              ? `${theme.activeLink} ${theme.text}`
+                              : `${theme.input} ${theme.textSecondary} ${theme.hoverBg}`
                           }`}
                         >
                           {user.first_name} {user.last_name}
@@ -205,18 +206,18 @@ function AddExpenseModal({ onClose, onSuccess }) {
               </div>
             </div>
 
-            <div className="bg-[#ffffff0a] backdrop-blur-xl rounded-2xl border border-[#ffffff1a] p-2 space-y-6">
+            <div className={`${theme.card} backdrop-blur-xl rounded-2xl border ${theme.border} p-6 lg:p-8 shadow-2xl relative before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent before:rounded-2xl before:pointer-events-none`}>
               <div className="space-y-1">
                 {expense.splits.map((split, index) => (
                   <div key={index} className="flex items-center space-x-3">
-                    <div className="flex-1 text-white px-6 py-2 rounded-xl bg-[#ffffff0a] border border-[#ffffff1a]">
+                    <div className={`flex-1 ${theme.text} px-6 py-2 rounded-xl ${theme.input} border ${theme.inputBorder}`}>
                       {users.find(u => u.id === split.user)?.first_name} {users.find(u => u.id === split.user)?.last_name}
                     </div>
                     <input
                       type="number"
                       value={split.amount}
                       onChange={(e) => updateSplit(index, 'amount', e.target.value)}
-                      className="w-40 bg-[#ffffff0a] text-white px-6 py-2 rounded-xl border border-[#ffffff1a] focus:border-[#ffffff33] focus:outline-none"
+                      className={`w-40 ${theme.input} ${theme.text} px-6 py-2 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none`}
                       required
                     />
                   </div>

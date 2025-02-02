@@ -9,6 +9,7 @@ import {
   getPaginationRowModel,
   flexRender,
 } from '@tanstack/react-table';
+import { useTheme } from '../../context/ThemeContext';
 
 function Activity() {
   const [showModal, setShowModal] = useState(false);
@@ -16,6 +17,7 @@ function Activity() {
   const [error, setError] = useState('');
   const [globalFilter, setGlobalFilter] = useState('');
   const currentUser = JSON.parse(localStorage.getItem('user'))?.username;
+  const { theme, isDark } = useTheme();
 
   const fetchActivities = async () => {
     try {
@@ -90,11 +92,11 @@ function Activity() {
                   key={person} 
                   className="flex items-center gap-3"
                 >
-                  <span className={`px-3 py-1 rounded-full ${bgColors[colorIndex]} border text-gray-200`}>
+                  <span className={`px-3 py-1 rounded-full ${bgColors[colorIndex]} border ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
                     {person}
                   </span>
-                  <span className="text-gray-500">|</span>
-                  <span className="px-3 py-1  text-gray-400">
+                  <span className={theme.textSecondary}>|</span>
+                  <span className={`px-3 py-1 ${theme.textSecondary}`}>
                     Rs {parseFloat(amount).toFixed(2)}
                   </span>
                 </div>
@@ -132,72 +134,80 @@ function Activity() {
   });
 
   return (
-    <div className="mb-2 pt-1">
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
-        <h1 className="text-2xl text-white pl-12 lg:pl-0">Activity</h1>
-        <div className="flex lg:flex-row sm:flex-row gap-4 w-max lg:w-auto">
-          <input
-            type="text"
-            value={globalFilter}
-            onChange={e => setGlobalFilter(e.target.value)}
-            placeholder="Search activities..."
-            className="w-full lg:w-auto px-4 py-2 bg-[#ffffff0a] text-white rounded-xl border border-[#ffffff1a] focus:border-[#ffffff33] focus:outline-none"
+    <div className={`mb-2 pt-1`}>
+      <div className={`h-screen flex flex-col ${
+        isDark 
+          ? 'from-black via-blue-900 to-gray-900' 
+          : 'from-white via-blue-100 to-blue-50'
+      } -z-10 `}>
+        <div className={`flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4 p-4 lg:p-8 ${isDark ? theme.background : 'bg-gray-50/80'} sticky top-0 z-20 `}>
+          {/* <h1 className={`text-2xl pl-12 lg:pl-0 ${theme.text}`}>Activity</h1> */}
+          <div className="flex lg:flex-row sm:flex-row gap-4 w-max lg:w-auto">
+            <input
+              type="text"
+              value={globalFilter}
+              onChange={e => setGlobalFilter(e.target.value)}
+              placeholder="Search activities..."
+              className={`w-full lg:w-auto px-4 py-2 ${theme.input} ${theme.text} rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none`}
+            />
+            <button
+              onClick={() => setShowModal(true)}
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors w-full lg:w-auto"
+            >
+              <FaPlus className="w-4 h-4" />
+              Add Expense
+            </button>
+          </div>
+        </div>
+  
+        <div className="flex-1 overflow-hidden px-4 lg:px-8">
+          <div className={`${theme.card} backdrop-blur-xl rounded-2xl border ${theme.border} h-full shadow-2xl relative before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent before:rounded-2xl before:pointer-events-none`}>
+            <div className="overflow-y-auto h-full rounded-2xl">
+              <table className="w-full">
+                <thead className={`sticky top-0 ${theme.card} z-10 whitespace-nowrap rounded-2xl`}>
+                  {table.getHeaderGroups().map(headerGroup => (
+                    <tr key={headerGroup.id}>
+                      {headerGroup.headers.map(header => (
+                        <th
+                          key={header.id}
+                          className={`px-4 py-5 text-left text-sm font-semibold ${theme.textSecondary} tracking-wider first:pl-8 last:pr-8`}
+                        >
+                          {flexRender(header.column.columnDef.header, header.getContext())}
+                        </th>
+                      ))}
+                    </tr>
+                  ))}
+                </thead>
+                <tbody className={`divide-y ${theme.border} whitespace-nowrap`}>
+                  {table.getRowModel().rows.map(row => (
+                    <tr key={row.id} className={`${theme.cardHover} transition-colors`}>
+                      {row.getVisibleCells().map(cell => (
+                        <td 
+                          key={cell.id} 
+                          className={`px-4 py-5 text-sm first:pl-8 last:pr-8 ${
+                            cell.column.id === 'name' ? `font-medium ${theme.text}` : theme.textSecondary
+                          }`}
+                        >
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        {showModal && (
+          <AddExpenseModal
+            onClose={() => setShowModal(false)}
+            onSuccess={() => {
+              setShowModal(false);
+              fetchActivities();
+            }}
           />
-          <button
-            onClick={() => setShowModal(true)}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors w-full lg:w-auto"
-          >
-            <FaPlus className="w-4 h-4" />
-            Add Expense
-          </button>
-        </div>
+        )}
       </div>
-
-      <div className="bg-[#ffffff0a] backdrop-blur-xl rounded-2xl border border-[#ffffff1a] overflow-hidden h-[calc(100vh-180px)]">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="sticky top-0 bg-[#1A1A1F] z-10 whitespace-nowrap">
-              {table.getHeaderGroups().map(headerGroup => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map(header => (
-                    <th
-                      key={header.id}
-                      className="px-4 py-5 text-left text-sm font-semibold text-gray-200 tracking-wider first:pl-8 last:pr-8"
-                    >
-                      {flexRender(header.column.columnDef.header, header.getContext())}
-                    </th>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody className="divide-y divide-[#ffffff1a] whitespace-nowrap">
-              {table.getRowModel().rows.map(row => (
-                <tr key={row.id} className="hover:bg-[#ffffff08] transition-colors">
-                  {row.getVisibleCells().map(cell => (
-                    <td 
-                      key={cell.id} 
-                      className={`px-4 py-5 text-sm first:pl-8 last:pr-8 ${
-                        cell.column.id === 'name' ? 'font-medium text-white' : 'text-gray-300'
-                      }`}
-                    >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      {showModal && (
-        <AddExpenseModal
-          onClose={() =>setShowModal(false)}
-          onSuccess={() => {
-            setShowModal(false);
-            fetchActivities();
-          }}
-        />
-      )}
     </div>
   );
 }

@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../../context/ThemeContext';
 
 function AddExpense() {
+  const { theme, isDark } = useTheme();
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [expense, setExpense] = useState({
@@ -153,20 +155,19 @@ function AddExpense() {
   };
 
   return (
-    <div className="p-8 bg-[#1A1A1F] min-h-screen">
+    <div className={`p-8 ${theme.background} min-h-screen`}>
       <div className="max-w-2xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <button
             onClick={() => navigate('/dashboard/activity')}
-            className="text-gray-400 hover:text-white transition-colors text-lg"
+            className={`${theme.textSecondary} hover:${theme.text} transition-colors text-lg`}
           >
             ← Back
           </button>
-          {/* <h1 className="text-3xl text-white">Add Expense</h1> */}
           <button
             type="submit"
             form="expense-form"
-            className="px-6 py-2.5 bg-[#ffffff14] text-white rounded-xl hover:bg-[#ffffff1f] transition-all"
+            className={`px-6 py-2.5 ${theme.activeLink} ${theme.text} rounded-xl hover:bg-[#ffffff1f] transition-all`}
           >
             Save
           </button>
@@ -180,28 +181,33 @@ function AddExpense() {
 
         <form id="expense-form" onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <div className="bg-[#ffffff0a] backdrop-blur-xl rounded-2xl border border-[#ffffff1a] p-4 space-y-6">
+            <div className={`${theme.input} backdrop-blur-xl rounded-2xl border ${theme.inputBorder} p-4 space-y-6`}>
               <div className="grid grid-cols-[1fr,auto] gap-4 items-start">
                 <div>
-                  <div className="text-gray-400 text-sm mb-1">Description</div>
+                  <div className={theme.textSecondary}>Description</div>
                   <input
                     type="text"
                     placeholder="What was this expense for?"
                     value={expense.name}
                     onChange={(e) => setExpense(prev => ({ ...prev, name: e.target.value }))}
-                    className="flex-1 bg-[#ffffff0a] text-white px-6 py-3 rounded-xl border border-[#ffffff1a] focus:border-[#ffffff33] focus:outline-none text-lg placeholder-gray-500 w-full"
+                    className={`flex-1 ${theme.input} ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-lg placeholder-gray-500 w-full`}
                     required
                   />
                 </div>
 
                 <div>
-                  <div className="text-gray-400 text-sm mb-1">Date</div>
+                  <div className={theme.textSecondary}>Date</div>
                   <input
                     type="date"
                     value={expense.date}
                     onChange={(e) => setExpense(prev => ({ ...prev, date: e.target.value }))}
-                    className="w-48 bg-[#ffffff0a] text-white px-4 py-3 rounded-xl border border-[#ffffff1a] focus:border-[#ffffff33] focus:outline-none cursor-pointer appearance-none"
-                    style={{ colorScheme: 'dark' }}
+                    className={`w-48 px-4 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none cursor-pointer`}
+                    style={{ 
+                      backgroundColor: isDark ? '#1A1A1F' : '#ffffff',
+                      colorScheme: isDark ? 'dark' : 'light',
+                      color: isDark ? '#ffffff' : '#1A1A1F',
+                      '--tw-text-opacity': '1'
+                    }}
                     required
                   />
                 </div>
@@ -210,11 +216,11 @@ function AddExpense() {
               <div className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <div className="text-gray-400 text-sm mb-1">Paid by</div>
+                    <div className={theme.textSecondary}>Paid by</div>
                     <select
                       value={expense.paid_by}
                       onChange={(e) => setExpense(prev => ({ ...prev, paid_by: e.target.value }))}
-                      className="w-full bg-[#ffffff0a] text-white px-6 py-3 rounded-xl border border-[#ffffff1a] focus:border-[#ffffff33] focus:outline-none text-lg appearance-none cursor-pointer bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNCA2TDggMTBMMTIgNiIgc3Ryb2tlPSIjOTA5MDkwIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+')] bg-no-repeat bg-[center_right_1rem]"
+                      className={`w-full ${theme.input} ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-lg appearance-none cursor-pointer`}
                       required
                     >
                       {users.map(user => (
@@ -223,31 +229,31 @@ function AddExpense() {
                     </select>
                   </div>
                   <div>
-                    <div className="text-gray-400 text-sm mb-1">Total Amount</div>
+                    <div className={theme.textSecondary}>Total Amount</div>
                     <input
                       type="number"
                       placeholder="Amount"
                       value={expense.amount}
                       onChange={(e) => handleAmountChange(e.target.value)}
-                      className="w-full bg-[#ffffff0a] text-white px-6 py-3 rounded-xl border border-[#ffffff1a] focus:border-[#ffffff33] focus:outline-none text-lg placeholder-gray-500"
+                      className={`w-full ${theme.input} ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-lg placeholder-gray-500`}
                       required
                     />
                   </div>
-
                 </div>
 
                 <div>
-                  <div className="text-gray-400 text-sm mb-2">Split with</div>
+                  <div className={theme.textSecondary}>Split with</div>
                   <div className="flex flex-wrap gap-2 mb-2">
                     {users.map(user => (
                       <button
                         key={user.id}
                         type="button"
                         onClick={() => handleUserSelection(user.id)}
-                        className={`px-4 py-2 rounded-xl text-sm transition-all ${selectedUsers.includes(user.id)
-                            ? 'bg-[#ffffff14] text-white'
-                            : 'bg-[#ffffff0a] text-gray-400 hover:bg-[#ffffff14]'
-                          }`}
+                        className={`px-4 py-2 rounded-xl text-sm transition-all ${
+                          selectedUsers.includes(user.id)
+                            ? `${theme.activeLink} ${theme.text}`
+                            : `${theme.input} ${theme.textSecondary} ${theme.hoverBg}`
+                        }`}
                       >
                         {user.first_name} {user.last_name}
                       </button>
@@ -258,19 +264,18 @@ function AddExpense() {
             </div>
           </div>
 
-          <div className="bg-[#ffffff0a] backdrop-blur-xl rounded-2xl border border-[#ffffff1a] p-2 space-y-6">
-            {/* <h2 className="text-xl text-white">Split Details</h2> */}
+          <div className={`${theme.card} backdrop-blur-xl rounded-2xl border ${theme.border} p-2 space-y-6`}>
             <div className="space-y-1">
               {expense.splits.map((split, index) => (
                 <div key={index} className="flex items-center space-x-3">
-                  <div className="flex-1 text-white px-6 py-2 rounded-xl bg-[#ffffff0a] border border-[#ffffff1a]">
+                  <div className={`flex-1 ${theme.text} px-6 py-2 rounded-xl ${theme.input} border ${theme.inputBorder}`}>
                     {users.find(u => u.id === split.user)?.first_name} {users.find(u => u.id === split.user)?.last_name}
                   </div>
                   <input
                     type="number"
                     value={split.amount}
                     onChange={(e) => updateSplit(index, 'amount', e.target.value)}
-                    className="w-40 bg-[#ffffff0a] text-white px-6 py-2 rounded-xl border border-[#ffffff1a] focus:border-[#ffffff33] focus:outline-none"
+                    className={`w-40 ${theme.input} ${theme.text} px-6 py-2 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none`}
                     required
                   />
                 </div>

@@ -66,11 +66,7 @@ function Balance() {
   return (
     <div className="max-w-[1400px] mx-auto relative">
       {/* Background Gradient */}
-      <div className={`fixed inset-0 bg-gradient-to-br ${
-        isDark 
-          ? 'from-black via-blue-900 to-gray-900' 
-          : 'from-white via-blue-100 to-blue-50'
-      } -z-10`} />
+      <div className={`fixed inset-0 bg-gradient-to-br -z-10`} />
       
       <div className="flex justify-between mb-2 pt-1">
         <h1 className={`text-2xl font-light ${theme.text} pl-12 lg:pl-0`}>Overview</h1>
@@ -124,12 +120,12 @@ function Balance() {
       </div>
 
       {/* Settlements Section */}
-      <div className="mb-4 flex-1 flex flex-col h-[50vh] md:h-auto">
-        <h2 className={`text-xl font-light ${theme.text} mb-4`}>
+      <div className={`mb-4 flex-1 flex flex-col h-[50vh] md:h-auto p-4 rounded-2xl before:inset-0 before:bg-gradient-to-b before:from-white/[0.08] before:to-transparent`}>
+        <h2 className={`text-xl font-light ${theme.text} mb-4 `}>
           {calculationType === 'net' ? 'Net Settlements' : 'Individual Settlements'}
         </h2>
         {settlements.length > 0 ? (
-          <div className={`${theme.card} backdrop-blur-xl rounded-2xl border ${theme.border} h-full shadow-2xl relative before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent before:rounded-2xl before:pointer-events-none overflow-hidden`}>
+          <div className={` backdrop-blur-xl rounded-2xl border ${theme.border} h-full  relative  before:rounded-2xl before:pointer-events-none overflow-hidden`}>
             <div className={`divide-y ${theme.border} h-full overflow-y-auto`}>
               {settlements.map((settlement, index) => (
                 <div key={index} className={`p-4 flex items-center justify-between ${theme.cardHover} transition-all`}>

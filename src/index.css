@@ -74,18 +74,77 @@
     display: none;
   }
   /* Dropdown Styling */
-  select option {
-    margin: 8px 0;
-    background-color: #1A1A1F;
-    color: white;
-    font-size: 1rem;
-  }
+}
+/* DatePicker Custom Styles */
+.react-datepicker {
+  font-family: 'Inter', sans-serif;
+  background: transparent !important;
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 0.75rem !important;
+}
 
-  select option:hover {
-    background-color: #ffffff14 !important;
-  }
+.react-datepicker__header {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding-top: 1rem;
+}
 
-  select:focus option:checked {
-    background-color: #ffffff14 !important;
-  }
+.react-datepicker__month-container {
+  background: rgba(33, 41, 55, 0.8);
+  border-radius: 0.75rem;
+}
+
+.react-datepicker__day {
+  color: #fff !important;
+  border-radius: 0.5rem !important;
+}
+
+.react-datepicker__day:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.react-datepicker__day--selected {
+  background: rgba(74, 222, 128, 0.5) !important;
+}
+
+.react-datepicker__day--disabled {
+  color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.react-datepicker__current-month,
+.react-datepicker__day-name {
+  color: #fff !important;
+}
+
+/* Light mode styles */
+:root[data-theme='light'] .react-datepicker__month-container {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+:root[data-theme='light'] .react-datepicker {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+:root[data-theme='light'] .react-datepicker__header {
+  border-bottom-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+:root[data-theme='light'] .react-datepicker__day,
+:root[data-theme='light'] .react-datepicker__current-month,
+:root[data-theme='light'] .react-datepicker__day-name {
+  color: #374151 !important;
+}
+
+:root[data-theme='light'] .react-datepicker__day:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+:root[data-theme='light'] .react-datepicker__day--selected {
+  background: rgba(74, 222, 128, 0.3) !important;
+  color: #065f46 !important;
+}
+
+:root[data-theme='light'] .react-datepicker__day--disabled {
+  color: rgba(0, 0, 0, 0.3) !important;
 }

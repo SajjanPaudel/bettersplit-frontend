@@ -17,7 +17,11 @@ function DashboardLayout({ onLogout }) {
   };
 
   return (
-    <div className={`flex h-screen ${isDark ? theme.background : 'bg-gray-50/80'} p-4`}>
+    <div className={`flex h-screen bg-gradient-to-br ${
+      isDark 
+        ? 'from-black via-gray-900 to-gray-800' 
+        : 'from-white via-purple-100 to-purple-50'
+    } p-4`}>
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -142,7 +146,7 @@ function DashboardLayout({ onLogout }) {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-hidden min-w-0">
+      <div className={`flex-1 overflow-hidden min-w-0 bg-gradient-to-br  p-4`}>
         <Outlet />
       </div>
 

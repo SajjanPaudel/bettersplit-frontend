@@ -13,9 +13,9 @@ export function ThemeProvider({ children }) {
 
   const theme = {
     background: isDark ? 'bg-[#141417]' : 'bg-gray-50',
-    card: isDark ? 'bg-[#1A1A1F]' : 'bg-white',
+    card: isDark ? 'bg-[#0c111c]' : 'bg-white',
     cardHover: isDark ? 'hover:bg-[#ffffff08]' : 'hover:bg-gray-50',
-    text: isDark ? 'text-white' : 'text-gray-900',
+    text: isDark ? 'text-gray-400' : 'text-gray-500',
     textSecondary: isDark ? 'text-gray-400' : 'text-gray-500',
     border: isDark ? 'border-[#ffffff0a]' : 'border-gray-200',
     input: isDark ? 'bg-[#ffffff0a]' : 'bg-white',

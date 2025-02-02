@@ -1,10 +1,14 @@
+import { FaTimes } from 'react-icons/fa';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FaTimes } from 'react-icons/fa';
 import { useTheme } from '../../context/ThemeContext';
+import '../../index.css'
+import Select from 'react-select';
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
 
 function AddExpenseModal({ onClose, onSuccess }) {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const [users, setUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [expense, setExpense] = useState({
@@ -24,12 +28,6 @@ function AddExpenseModal({ onClose, onSuccess }) {
           headers: { 'Authorization': `Bearer ${accessToken}` }
         });
         setUsers(response.data.data);
-        if (response.data.data.length > 0) {
-          setExpense(prev => ({
-            ...prev,
-            paid_by: response.data.data[0].id
-          }));
-        }
       } catch (err) {
         setError('Failed to fetch users');
       }
@@ -100,12 +98,12 @@ function AddExpenseModal({ onClose, onSuccess }) {
 
   return (
     <div 
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start lg:items-center justify-center z-50 p-4 overflow-y-auto"
+      className="fixed inset-0 rounded-2xl  backdrop-blur-sm  flex items-start lg:items-center justify-center z-50 p-4 overflow-y-auto"
       onClick={handleBackdropClick}
     >
-      <div className={`${theme.card} backdrop-blur-xl rounded-2xl border ${theme.border} w-full max-w-2xl my-4 lg:my-0 shadow-2xl relative before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent before:rounded-2xl before:pointer-events-none`}>
+      <div className={`${theme.card} rounded-2xl border ${theme.border} w-full max-w-2xl my-4 lg:my-0 shadow-2xl relative before:absolute before:inset-0 before:bg-gradient-to-b  before:rounded-2xl before:pointer-events-none`}>
         <div className="p-6 lg:p-8 relative">
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex justify-between items-center mb-3">
             <button
               onClick={onClose}
               className={`${theme.textSecondary} hover:${theme.text} transition-colors text-lg`}
@@ -115,7 +113,7 @@ function AddExpenseModal({ onClose, onSuccess }) {
             <button
               type="submit"
               form="expense-form"
-              className={`px-4 lg:px-6 py-2.5 ${theme.activeLink} ${theme.text} rounded-xl hover:bg-[#ffffff1f] transition-all`}
+              className={`px-4 lg:px-6 py-2.5 text-white rounded-xl bg-green-500/50 hover:bg-green-500/60  transition-all`}
             >
               Save
             </button>
@@ -127,12 +125,12 @@ function AddExpenseModal({ onClose, onSuccess }) {
             </div>
           )}
 
-          <form id="expense-form" onSubmit={handleSubmit} className="space-y-4">
+          <form id="expense-form" onSubmit={handleSubmit} className="space-y-2">
             <div>
               <div className={`${theme.input} backdrop-blur-xl rounded-2xl border ${theme.inputBorder} p-4 space-y-6`}>
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr,auto] gap-4 items-start">
                   <div>
-                    <div className={theme.textSecondary}>Description</div>
+                    {/* <div className={theme.textSecondary}>Description</div> */}
                     <input
                       type="text"
                       placeholder="What was this expense for?"
@@ -144,12 +142,16 @@ function AddExpenseModal({ onClose, onSuccess }) {
                   </div>
 
                   <div>
-                    <div className={theme.textSecondary}>Date</div>
-                    <input
-                      type="date"
-                      value={expense.date}
-                      onChange={(e) => setExpense(prev => ({ ...prev, date: e.target.value }))}
-                      className={`w-48 ${theme.input} ${theme.text} px-4 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none cursor-pointer appearance-none`}
+                    <DatePicker
+                      selected={new Date(expense.date)}
+                      onChange={(date) => setExpense(prev => ({ 
+                        ...prev, 
+                        date: date.toISOString().split('T')[0] 
+                      }))}
+                      maxDate={new Date()}
+                      dateFormat="MMM d, yyyy"
+                      className={`w-48 ${theme.input} ${theme.text} px-4 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none cursor-pointer`}
+                      placeholderText="Select date"
                       required
                     />
                   </div>
@@ -158,20 +160,80 @@ function AddExpenseModal({ onClose, onSuccess }) {
                 <div className="space-y-6">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <div className={theme.textSecondary}>Paid by</div>
-                      <select
-                        value={expense.paid_by}
-                        onChange={(e) => setExpense(prev => ({ ...prev, paid_by: e.target.value }))}
-                        className={`w-full ${theme.input} ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-lg appearance-none cursor-pointer`}
-                        required
-                      >
-                        {users.map(user => (
-                          <option key={user.id} value={user.id}>{user.first_name} {user.last_name}</option>
-                        ))}
-                      </select>
+                      {/* <div className={theme.textSecondary}>Paid by</div> */}
+                      <Select
+                      value={users.find(user => user.id === expense.paid_by)}
+                      onChange={(selected) => setExpense(prev => ({ ...prev, paid_by: selected.id }))}
+                      options={users}
+                      getOptionLabel={(option) => `${option.first_name} ${option.last_name}`}
+                      getOptionValue={(option) => option.id}
+                      placeholder="Who paid?"
+                      className="react-select-container"
+                      classNamePrefix="react-select"
+                      styles={{
+                        control: (base) => ({
+                          ...base,
+                          background: 'transparent',
+                          backdropFilter: 'blur(100px)',
+                          borderRadius: '0.75rem',
+                          padding: '0.375rem 1rem',
+                          cursor: 'pointer',
+                          fontSize: '1.125rem',
+                          border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.1)',
+                          boxShadow: 'none',
+                          '&:hover': {
+                            borderWidth: '1.5px',
+                            borderColor: isDark ? 'from-black via-gray-900 to-gray-800' : 'from-white via-purple-100 to-purple-50'
+                          }
+                        }),
+                        menu: (base) => ({
+                          ...base,
+                          background: isDark ? '#212937' : '#ffffff 50%',
+                          borderRadius: '0.75rem',
+                          backdropFilter: 'blur(100px)',
+                          marginTop: '0.5rem',
+                          border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid #e5e7eb',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                        }),
+                        option: (base, { isFocused, isSelected }) => ({
+                          ...base,
+                          background: isFocused 
+                            ? isDark ? 'rgba(255, 255, 255, 0.1)' : '#f3f4f6'
+                            : isSelected 
+                              ? isDark ? 'rgba(255, 255, 255, 0.05)' : '#e5e7eb'
+                              : 'transparent',
+                          color: isDark ? '#fff' : '#374151',
+                          cursor: 'pointer',
+                          '&:active': {
+                            background: isDark ? 'rgba(255, 255, 255, 0.15)' : '#e5e7eb'
+                          }
+                        }),
+                        singleValue: (base) => ({
+                          ...base,
+                          color: isDark ? '#fff' : '#374151'
+                        }),
+                        placeholder: (base) => ({
+                          ...base,
+                          color: '#6B7280',
+                          fontSize: '1.125rem'
+                        }),
+                        input: (base) => ({
+                          ...base,
+                          color: isDark ? '#fff' : '#374151'
+                        }),
+                        dropdownIndicator: (base) => ({
+                          ...base,
+                          color: '#6B7280',
+                          '&:hover': {
+                            color: isDark ? '#fff' : '#374151'
+                          }
+                        })
+                      }}
+                      required
+                    />
                     </div>
                     <div>
-                      <div className={theme.textSecondary}>Total Amount</div>
+                      {/* <div className={theme.textSecondary}>Total Amount</div> */}
                       <input
                         type="number"
                         placeholder="Amount"
@@ -184,7 +246,7 @@ function AddExpenseModal({ onClose, onSuccess }) {
                   </div>
 
                   <div>
-                    <div className={theme.textSecondary}>Split with</div>
+                    {/* <div className={theme.textSecondary}>Split with</div> */}
                     <div className="flex flex-wrap gap-2 mb-2">
                       {users.map(user => (
                         <button
@@ -193,7 +255,7 @@ function AddExpenseModal({ onClose, onSuccess }) {
                           onClick={() => handleUserSelection(user.id)}
                           className={`px-4 py-2 rounded-xl text-sm transition-all ${
                             selectedUsers.includes(user.id)
-                              ? `${theme.activeLink} ${theme.text}`
+                              ? `bg-green-800/50 text-white`
                               : `${theme.input} ${theme.textSecondary} ${theme.hoverBg}`
                           }`}
                         >
@@ -205,8 +267,8 @@ function AddExpenseModal({ onClose, onSuccess }) {
                 </div>
               </div>
             </div>
-
-            <div className={`${theme.card} backdrop-blur-xl rounded-2xl border ${theme.border} p-6 lg:p-8 shadow-2xl relative before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent before:rounded-2xl before:pointer-events-none`}>
+            {selectedUsers.length > 0 && (
+            <div className={`rounded-2xl border ${theme.border} p-6 lg:p-8 shadow-2xl relative before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent before:rounded-2xl before:pointer-events-none`}>
               <div className="space-y-1">
                 {expense.splits.map((split, index) => (
                   <div key={index} className="flex items-center space-x-3">
@@ -224,6 +286,7 @@ function AddExpenseModal({ onClose, onSuccess }) {
                 ))}
               </div>
             </div>
+            )}
           </form>
         </div>
       </div>

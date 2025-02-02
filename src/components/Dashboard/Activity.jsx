@@ -92,7 +92,7 @@ function Activity() {
                   key={person} 
                   className="flex items-center gap-3"
                 >
-                  <span className={`px-3 py-1 rounded-full ${bgColors[colorIndex]} border ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
+                  <span className={`px-3 py-1 rounded-full ${bgColors[colorIndex]} border `}>
                     {person}
                   </span>
                   <span className={theme.textSecondary}>|</span>
@@ -134,14 +134,9 @@ function Activity() {
   });
 
   return (
-    <div className={`mb-2 pt-1`}>
-      <div className={`h-screen flex flex-col ${
-        isDark 
-          ? 'from-black via-blue-900 to-gray-900' 
-          : 'from-white via-blue-100 to-blue-50'
-      } -z-10 `}>
-        <div className={`flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4 p-4 lg:p-8 ${isDark ? theme.background : 'bg-gray-50/80'} sticky top-0 z-20 `}>
-          {/* <h1 className={`text-2xl pl-12 lg:pl-0 ${theme.text}`}>Activity</h1> */}
+    <div className={`mb-8 bg-gradient-to-br rounded-2xl`}>
+      <div className={`h-screen flex flex-col mb-10 rounded-2xl`}>
+        <div className={`flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4 p-4 lg:p-8  backdrop-blur-md  sticky top-0 z-20`}>
           <div className="flex lg:flex-row sm:flex-row gap-4 w-max lg:w-auto">
             <input
               type="text"
@@ -160,8 +155,8 @@ function Activity() {
           </div>
         </div>
   
-        <div className="flex-1 overflow-hidden px-4 lg:px-8">
-          <div className={`${theme.card} backdrop-blur-xl rounded-2xl border ${theme.border} h-full shadow-2xl relative before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent before:rounded-2xl before:pointer-events-none`}>
+        <div className="flex-1 overflow-hidden">
+          <div className={` backdrop-blur-xl rounded-2xl border ${theme.border} h-full shadow-2xl relative before:absolute before:inset-0  before:rounded-2xl before:pointer-events-none`}>
             <div className="overflow-y-auto h-full rounded-2xl">
               <table className="w-full">
                 <thead className={`sticky top-0 ${theme.card} z-10 whitespace-nowrap rounded-2xl`}>

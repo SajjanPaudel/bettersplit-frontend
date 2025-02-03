@@ -6,6 +6,7 @@ import '../../index.css'
 import Select from 'react-select';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
+import { endpoints } from '../../config/api';
 
 function AddExpenseModal({ onClose, onSuccess }) {
   const { theme, isDark } = useTheme();
@@ -24,7 +25,7 @@ function AddExpenseModal({ onClose, onSuccess }) {
     const fetchUsers = async () => {
       try {
         const accessToken = localStorage.getItem('access_token');
-        const response = await axios.get('http://127.0.0.1:8000/api/users/', {
+        const response = await axios.get(endpoints.users, {
           headers: { 'Authorization': `Bearer ${accessToken}` }
         });
         setUsers(response.data.data);
@@ -39,7 +40,7 @@ function AddExpenseModal({ onClose, onSuccess }) {
     e.preventDefault();
     try {
       const accessToken = localStorage.getItem('access_token');
-      await axios.post('http://127.0.0.1:8000/api/split/expenses/', expense, {
+      await axios.post(endpoints.expenses, expense, {
         headers: { 'Authorization': `Bearer ${accessToken}` }
       });
       onSuccess();

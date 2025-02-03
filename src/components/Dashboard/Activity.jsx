@@ -10,6 +10,7 @@ import {
   flexRender,
 } from '@tanstack/react-table';
 import { useTheme } from '../../context/ThemeContext';
+import { endpoints } from '../../config/api';
 
 function Activity() {
   const [showModal, setShowModal] = useState(false);
@@ -22,7 +23,7 @@ function Activity() {
   const fetchActivities = async () => {
     try {
       const accessToken = localStorage.getItem('access_token');
-      const response = await axios.get('http://127.0.0.1:8000/api/split/expenses/activity/', {
+      const response = await axios.get(endpoints.activity, {
         headers: {
           'Authorization': `Bearer ${accessToken}`
         }

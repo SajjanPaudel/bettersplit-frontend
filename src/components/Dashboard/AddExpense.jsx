@@ -5,6 +5,7 @@ import { useTheme } from '../../context/ThemeContext';
 import Select from 'react-select';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
+import { endpoints } from '../../config/api';
 
 function AddExpense() {
   const { theme, isDark } = useTheme();
@@ -24,7 +25,7 @@ function AddExpense() {
     const fetchUsers = async () => {
       try {
         const accessToken = localStorage.getItem('access_token');
-        const response = await axios.get('http://127.0.0.1:8000/api/users/', {
+        const response = await axios.get(endpoints.users, {
           headers: { 'Authorization': `Bearer ${accessToken}` }
         });
         setUsers(response.data.data);
@@ -51,7 +52,7 @@ function AddExpense() {
       }
 
       const accessToken = localStorage.getItem('access_token');
-      const response = await axios.post('http://127.0.0.1:8000/api/split/expenses/', expense, {
+      const response = await axios.post(endpoints.expenses, expense, {
         headers: { 
           'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json'

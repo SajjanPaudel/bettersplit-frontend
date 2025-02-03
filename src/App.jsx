@@ -7,6 +7,7 @@ import Activity from './components/Dashboard/Activity';
 import AddExpense from './components/Dashboard/AddExpense';
 import SettlementHistory from './components/Dashboard/SettlementHistory';
 import { ThemeProvider } from './context/ThemeContext';
+import Signup from './components/Signup';
 
 function App() {
   const [isAuth, setIsAuth] = useState(!!localStorage.getItem('access_token'));
@@ -29,7 +30,17 @@ function App() {
           />
           <Route
             path="/login"
-            element={isAuth ? <Navigate to="/dashboard/activity" replace /> : <Login onAuth={handleAuthUpdate} />}
+            element={
+              isAuth ? (
+                <Navigate to="/dashboard/activity" replace />
+              ) : (
+                <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 p-8 md:p-8">
+                  <div className="rounded-2xl bg-gradient-to-br overflow-hidden shadow-2xl">
+                    <Login onAuth={handleAuthUpdate} />
+                  </div>
+                </div>
+              )
+            }
           />
           <Route
             path="/dashboard"
@@ -41,6 +52,21 @@ function App() {
             <Route path="add-expense" element={<AddExpense />} />
             <Route path="settlements" element={<SettlementHistory />} />
           </Route>
+          <Route
+            path="/signup"
+            element={
+              isAuth ? (
+                <Navigate to="/dashboard/activity" replace />
+              ) : (
+                <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 p-8 md:p-8">
+                  <div className="bg-gradient-to-br rounded-2xl overflow-hidden shadow-2xl">
+                  {/* <div className="bg-gradient-to-br from-purple-900/20 via-purple-950/20 to-gray-950/20 backdrop-blur-xl rounded-2xl overflow-hidden shadow-2xl"> */}
+                    <Signup />
+                  </div>
+                </div>
+              )
+            }
+          />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useTheme } from '../../context/ThemeContext';
+import { endpoints } from '../../config/api';
 
 function Balance() {
   const { theme ,isDark} = useTheme();
@@ -14,7 +15,7 @@ function Balance() {
   const fetchBalances = async () => {
     try {
       const accessToken = localStorage.getItem('access_token');
-      const response = await axios.get(`http://127.0.0.1:8000/api/split/expenses/balances?type=${calculationType}`, {
+      const response = await axios.get(`${endpoints.balances}?type=${calculationType}`, {
         headers: {
           'Authorization': `Bearer ${accessToken}`
         }
@@ -34,7 +35,7 @@ function Balance() {
   const handleSettle = async () => {
     try {
       const accessToken = localStorage.getItem('access_token');
-      const response = await axios.post('http://127.0.0.1:8000/api/split/expenses/settle/', {
+      const response = await axios.post(endpoints.settlements, {
         from_user: selectedSettlement.from,
         to_user: selectedSettlement.to,
         amount: selectedSettlement.amount

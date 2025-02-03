@@ -8,6 +8,7 @@ import {
   getPaginationRowModel,
   flexRender,
 } from '@tanstack/react-table';
+import { endpoints } from '../../config/api';
 
 function SettlementHistory() {
   const { theme } = useTheme();
@@ -19,7 +20,7 @@ function SettlementHistory() {
     const fetchSettlements = async () => {
       try {
         const accessToken = localStorage.getItem('access_token');
-        const response = await axios.get('http://127.0.0.1:8000/api/split/expenses/settlements_history', {
+        const response = await axios.get(endpoints.settlementHistory, {
           headers: { 'Authorization': `Bearer ${accessToken}` }
         });
         setSettlements(response.data.data);

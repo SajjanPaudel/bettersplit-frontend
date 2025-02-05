@@ -8,6 +8,9 @@ import AddExpense from './components/Dashboard/AddExpense';
 import SettlementHistory from './components/Dashboard/SettlementHistory';
 import { ThemeProvider } from './context/ThemeContext';
 import Signup from './components/Signup';
+import Groups from './components/Dashboard/Groups';
+import GroupDetail from './components/Dashboard/GroupDetail';
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   const [isAuth, setIsAuth] = useState(!!localStorage.getItem('access_token'));
@@ -21,6 +24,27 @@ function App() {
   };
 
   return (
+    <>
+    <Toaster 
+        position="bottom-right"
+        toastOptions={{
+          style: {
+            background: '#333',
+            color: '#fff',
+            borderRadius: '12px',
+          },
+          success: {
+            style: {
+              background: 'rgba(34, 197, 94, 0.9)',
+            },
+          },
+          error: {
+            style: {
+              background: 'rgba(239, 68, 68, 0.9)',
+            },
+          },
+        }}
+      />
     <ThemeProvider>
       <BrowserRouter>
         <Routes>
@@ -51,6 +75,9 @@ function App() {
             <Route path="activity" element={<Activity />} />
             <Route path="add-expense" element={<AddExpense />} />
             <Route path="settlements" element={<SettlementHistory />} />
+            // In your routes configuration
+              <Route path="groups" element={<Groups />} />
+              <Route path="groups/:id" element={<GroupDetail />} />
           </Route>
           <Route
             path="/signup"
@@ -67,10 +94,11 @@ function App() {
               )
             }
           />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/dashboard/groups" element={<Groups />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>
+    </>
   );
 }
 

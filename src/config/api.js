@@ -9,4 +9,6 @@ export const endpoints = {
   settlementHistory: `${API_URL}/split/expenses/settlements_history`,
   login: `${API_URL}/users/login/`,
   register: `${API_URL}/users/register/`,
+  userSearch: `${API_URL}/users/search/`,
+  groups: `${API_URL}/split/groups/`
 };

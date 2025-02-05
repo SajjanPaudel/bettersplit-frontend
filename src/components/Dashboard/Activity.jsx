@@ -11,6 +11,7 @@ import {
 } from '@tanstack/react-table';
 import { useTheme } from '../../context/ThemeContext';
 import { endpoints } from '../../config/api';
+import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 
 function Activity() {
   const [showModal, setShowModal] = useState(false);
@@ -19,6 +20,7 @@ function Activity() {
   const [globalFilter, setGlobalFilter] = useState('');
   const currentUser = JSON.parse(localStorage.getItem('user'))?.username;
   const { theme, isDark } = useTheme();
+  const [expandedRows, setExpandedRows] = useState(new Set());
 
   const fetchActivities = async () => {
     try {
@@ -32,6 +34,16 @@ function Activity() {
     } catch (err) {
       setError('Failed to fetch activities');
     }
+  };
+
+  const toggleRow = (rowId) => {
+    setExpandedRows(prev => {
+      const newExpandedRows = new Set();
+      if (!prev.has(rowId)) {
+        newExpandedRows.add(rowId);
+      }
+      return newExpandedRows;
+    });
   };
 
   useEffect(() => {
@@ -62,7 +74,7 @@ function Activity() {
         }),
       },
       {
-        header: 'Description',
+        header: 'Place',
         accessorKey: 'name',
       },
       {
@@ -72,39 +84,6 @@ function Activity() {
       {
         header: 'Paid By',
         accessorKey: 'paid_by',
-      },
-      {
-        header: 'Split Details',
-        cell: ({ row }) => (
-          <div className="space-y-2 min-w-[200px]">
-            {Object.entries(row.original.splits).map(([person, amount], index) => {
-              // Array of pleasing background colors
-              const bgColors = [
-                'bg-blue-500/10 border-blue-500/20',
-                'bg-purple-500/10 border-purple-500/20',
-                'bg-green-500/10 border-green-500/20',
-                'bg-orange-500/10 border-orange-500/20',
-                'bg-pink-500/10 border-pink-500/20'
-              ];
-              const colorIndex = index % bgColors.length;
-              
-              return (
-                <div 
-                  key={person} 
-                  className="flex items-center gap-3"
-                >
-                  <span className={`px-3 py-1 rounded-full ${bgColors[colorIndex]} border `}>
-                    {person}
-                  </span>
-                  <span className={theme.textSecondary}>|</span>
-                  <span className={`px-3 py-1 ${theme.textSecondary}`}>
-                    Rs {parseFloat(amount).toFixed(2)}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        ),
       },
       {
         header: 'You are owed',
@@ -155,10 +134,10 @@ function Activity() {
             </button>
           </div>
         </div>
-  
+
         <div className="flex-1 overflow-hidden">
-          <div className={` backdrop-blur-xl rounded-2xl border ${theme.border} h-full shadow-2xl relative before:absolute before:inset-0  before:rounded-2xl before:pointer-events-none`}>
-            <div className="overflow-y-auto h-full rounded-2xl">
+          <div className={`backdrop-blur-xl rounded-2xl border ${theme.border} shadow-2xl relative before:absolute before:inset-0 before:rounded-2xl before:pointer-events-none`}>
+            <div className="max-h-[80vh] overflow-y-auto rounded-2xl">
               <table className="w-full">
                 <thead className={`sticky top-0 ${theme.card} z-10 whitespace-nowrap rounded-2xl`}>
                   {table.getHeaderGroups().map(headerGroup => (
@@ -174,20 +153,63 @@ function Activity() {
                     </tr>
                   ))}
                 </thead>
-                <tbody className={`divide-y ${theme.border} whitespace-nowrap`}>
+                <tbody className={`divide-y ${theme.border}`}>
                   {table.getRowModel().rows.map(row => (
-                    <tr key={row.id} className={`${theme.cardHover} transition-colors`}>
-                      {row.getVisibleCells().map(cell => (
-                        <td 
-                          key={cell.id} 
-                          className={`px-4 py-5 text-sm first:pl-8 last:pr-8 ${
-                            cell.column.id === 'name' ? `font-medium ${theme.text}` : theme.textSecondary
-                          }`}
-                        >
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </td>
-                      ))}
-                    </tr>
+                    <>
+                      <tr
+                        key={row.id}
+                        className={`${theme.cardHover} transition-colors cursor-pointer`}
+                        onClick={() => toggleRow(row.id)}
+                      >
+                        {row.getVisibleCells().map((cell, index) => (
+                          <td
+                            key={cell.id}
+                            className={`px-4 py-5 text-sm first:pl-8 last:pr-8 ${cell.column.id === 'name' ? `font-medium ${theme.text}` : theme.textSecondary
+                              }`}
+                          >
+                            {index === 0 && (
+                              <span className="inline-block mr-5">
+                                {expandedRows.has(row.id) ? (
+                                  <FaChevronUp className={`${theme.textSecondary}`} />
+                                ) : (
+                                  <FaChevronDown className={`${theme.textSecondary}`} />
+                                )}
+                              </span>
+                            )}
+                            {cell.column.id !== 'Split Details' && flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </td>
+                        ))}
+                      </tr>
+                      {expandedRows.has(row.id) && (
+                        <tr>
+                          <td colSpan={columns.length} className="py-4 px-2 transition-all duration-500 ease-in-out transform origin-top">
+                            <div className=" grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                              {Object.entries(row.original.splits).map(([person, amount], index) => {
+                                const bgColors = [
+                                  'bg-blue-500/10 border-blue-500/20',
+                                  'bg-purple-500/10 border-purple-500/20',
+                                  'bg-green-500/10 border-green-500/20',
+                                  'bg-orange-500/10 border-orange-500/20',
+                                  'bg-pink-500/10 border-pink-500/20'
+                                ];
+                                const colorIndex = index % bgColors.length;
+                                return (
+                                  <div
+                                    key={person}
+                                    className={`px-4 py-3 rounded-xl ${bgColors[colorIndex]} border flex justify-between items-center`}
+                                  >
+                                    <span className={`${theme.text}`}>{person} - {parseFloat(amount)}</span>
+                                    {/* <span className={`${theme.textSecondary}`}>
+                                      {parseFloat(amount).toFixed(2)}
+                                    </span> */}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </>
                   ))}
                 </tbody>
               </table>

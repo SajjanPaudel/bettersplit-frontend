@@ -17,11 +17,10 @@ function DashboardLayout({ onLogout }) {
   };
 
   return (
-    <div className={`flex h-screen bg-gradient-to-br ${
-      isDark 
-        ? 'from-black via-gray-900 to-gray-800' 
+    <div className={`flex h-screen bg-gradient-to-br ${isDark
+        ? 'from-black via-gray-900 to-gray-800'
         : 'from-white via-purple-100 to-purple-50'
-    } p-4`}>
+      } p-4`}>
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -50,11 +49,10 @@ function DashboardLayout({ onLogout }) {
         <nav className="px-6 flex-1">
           <Link
             to="balance"
-            className={`flex items-center space-x-4 px-6 py-5 rounded-2xl mb-2 transition-all ${
-              currentPath === 'balance'
+            className={`flex items-center space-x-4 px-6 py-5 rounded-2xl mb-2 transition-all ${currentPath === 'balance'
                 ? `bg-[#ffffff14] backdrop-blur-xl ${theme.text}`
                 : `${theme.textSecondary} hover:bg-[#ffffff0a] hover:${theme.text}`
-            }`}
+              }`}
           >
             <FaChartPie className="w-5 h-5" />
             <span className="font-['Inter'] font-light">Dashboard</span>
@@ -62,11 +60,10 @@ function DashboardLayout({ onLogout }) {
 
           <Link
             to="activity"
-            className={`flex items-center space-x-4 px-6 py-5 rounded-2xl mb-2 transition-all ${
-              currentPath === 'activity'
+            className={`flex items-center space-x-4 px-6 py-5 rounded-2xl mb-2 transition-all ${currentPath === 'activity'
                 ? `bg-[#ffffff14] backdrop-blur-xl ${theme.text}`
                 : `${theme.textSecondary} hover:bg-[#ffffff0a] hover:${theme.text}`
-            }`}
+              }`}
           >
             <FaHistory className="w-5 h-5" />
             <span className="font-['Inter'] font-light">Activity</span>
@@ -75,11 +72,10 @@ function DashboardLayout({ onLogout }) {
           {/* Apply same pattern to other links */}
           <Link
             to="add-expense"
-            className={`flex items-center space-x-4 px-6 py-5 rounded-2xl mb-2 transition-all ${
-              currentPath === 'add-expense'
+            className={`flex items-center space-x-4 px-6 py-5 rounded-2xl mb-2 transition-all ${currentPath === 'add-expense'
                 ? `bg-[#ffffff14] backdrop-blur-xl ${theme.text}`
                 : `${theme.textSecondary} hover:bg-[#ffffff0a] hover:${theme.text}`
-            }`}
+              }`}
           >
             <FaPlus className="w-5 h-5" />
             <span className="font-['Inter'] font-light">Add Expense</span>
@@ -87,21 +83,33 @@ function DashboardLayout({ onLogout }) {
 
           <Link
             to="settlements"
-            className={`flex items-center space-x-4 px-6 py-5 rounded-2xl mb-2 transition-all ${
-              currentPath === 'settlements'
+            className={`flex items-center space-x-4 px-6 py-5 rounded-2xl mb-2 transition-all ${currentPath === 'settlements'
                 ? `bg-[#ffffff14] backdrop-blur-xl ${theme.text}`
                 : `${theme.textSecondary} hover:bg-[#ffffff0a] hover:${theme.text}`
-            }`}
+              }`}
           >
             <FaExchangeAlt className="w-5 h-5" />
             <span className="font-['Inter'] font-light">Settlements</span>
+          </Link>
+
+          <Link
+            to="groups"
+            className={`flex items-center space-x-4 px-6 py-5 rounded-2xl mb-2 transition-all ${currentPath === 'groups'
+                ? `bg-[#ffffff14] backdrop-blur-xl ${theme.text}`
+                : `${theme.textSecondary} hover:bg-[#ffffff0a] hover:${theme.text}`
+              }`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+            </svg>
+            <span className="font-['Inter'] font-light">Groups</span>
           </Link>
         </nav>
 
         {/* Theme Toggle */}
         <div className="px-6 mb-4 flex items-center justify-between">
           <span className={`font-['Inter'] font-light ${theme.text}`}>
-            {isDark ? ' Turn Light mode': 'Turn Dark mode' }
+            {isDark ? ' Turn Light mode' : 'Turn Dark mode'}
           </span>
           <button
             onClick={toggleTheme}
@@ -114,10 +122,9 @@ function DashboardLayout({ onLogout }) {
                 <FaSun className="w-5 h-5 text-yellow-500 drop-shadow-[0_0_3px_rgba(234,179,8,0.3)]" />
               )}
             </div>
-            <div 
-              className={`absolute w-6 h-6 rounded-full bg-white transform transition-transform duration-300 top-1 ${
-                isDark ? 'translate-x-9' : 'translate-x-1'
-              }`} 
+            <div
+              className={`absolute w-6 h-6 rounded-full bg-white transform transition-transform duration-300 top-1 ${isDark ? 'translate-x-9' : 'translate-x-1'
+                }`}
             />
           </button>
         </div>

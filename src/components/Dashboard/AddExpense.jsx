@@ -6,6 +6,7 @@ import Select from 'react-select';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { endpoints } from '../../config/api';
+import { Link } from 'react-router-dom';
 
 function AddExpense() {
   const { theme, isDark } = useTheme();
@@ -14,6 +15,8 @@ function AddExpense() {
   const [groups, setGroups] = useState([]);
   const [error, setError] = useState('');
   const [selectedGroup, setSelectedGroup] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
   const removeBill = (indexToRemove) => {
     setExpenses(prev => prev.filter((_, index) => index !== indexToRemove));
   };
@@ -118,6 +121,8 @@ function AddExpense() {
         setGroups(response.data.data);
       } catch (err) {
         setError('Failed to fetch users');
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchGroups();
@@ -200,277 +205,301 @@ function AddExpense() {
     // Update the outer container structure
     <div className="max-w-6xl mx-auto h-screen overflow-hidden py-4">
       <div className={`${theme.card} rounded-2xl border ${theme.border} w-full h-full shadow-2xl relative flex flex-col`}>
-        <div className="p-6 lg:p-8 flex flex-col h-full">
-          {/* Header buttons */}
-          <div className="flex justify-between items-center mb-3 flex-shrink-0">
-            <button
-              type="submit"
-              form="expense-form"
-              className="px-4 lg:px-6 py-2.5 text-white rounded-xl bg-green-500/50 hover:bg-green-500/60 transition-all"
-            >
-              Save All
-            </button>
-
-            <button
-              type="button"
-              onClick={addNewExpense}
-              className="hidden lg:block px-4 py-2.5 text-white rounded-xl bg-purple-500/50 hover:bg-purple-500/60 transition-all"
-            >
-              Add Another Bill
-            </button>
+        {isLoading ? (
+          <div className="flex flex-col w-full items-center justify-center min-h-screen gap-4">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-400"></div>
+            <h1 className="text-xl font-medium text-gray-600 dark:text-gray-300">
+              Loading...
+            </h1>
           </div>
-
-          {/* Error message */}
-          {error && (
-            <div className="bg-[#ff000014] backdrop-blur-xl border border-red-500/20 text-red-400 px-6 py-4 rounded-2xl text-base mb-6 flex-shrink-0">
-              {error}
+        ) : groups.length === 0 ? (
+          <div className={`${theme.input} backdrop-blur-md h-full dark:bg-black/10 rounded-3xl p-4 text-center border ${theme.border} flex flex-col items-center space-y-6`}>
+            <div className="w-24 h-24 rounded-full flex items-center justify-center mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className={`h-12 w-12 ${theme.textSecondary}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
             </div>
-          )}
+            <div className={`text-2xl font-medium ${theme.textSecondary}`}>Before You add expenses</div>
+            <p className={`text-sm ${theme.textSecondary} max-w-md`}>
+              Start by creating a group and adding expenses to track your shared payments and settlements
+            </p>
+            <Link to="/dashboard/groups" className={`p-2 bg-green-500 text-white rounded-2xl`}>
+              Go to Groups →
+            </Link>
+          </div>
+        ) : (
+          <div className="p-6 lg:p-8 flex flex-col h-full">
+            {/* Header buttons */}
+            <div className="flex justify-between items-center mb-3 flex-shrink-0">
+              <button
+                type="submit"
+                form="expense-form"
+                className="px-4 lg:px-6 py-2.5 text-white rounded-xl bg-green-500/50 hover:bg-green-500/60 transition-all"
+              >
+                Save All
+              </button>
 
-          <form id="expense-form" onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden">
-            {/* Group selector */}
-            <div className='flex-shrink-0 mb-4'>
-              <Select
-                value={groups.find(group => group.id === selectedGroup)}
-                onChange={(selected) => setSelectedGroup(selected.id)}
-                options={groups}
-                getOptionLabel={(option) => option.name}
-                getOptionValue={(option) => option.id}
-                placeholder="Select Group"
-                className="react-select-container"
-                classNamePrefix="react-select"
-                styles={{
-                  control: (base) => ({
-                    ...base,
-                    background: 'transparent',
-                    backdropFilter: 'blur(100px)',
-                    borderRadius: '0.75rem',
-                    padding: '0.375rem 1rem',
-                    cursor: 'pointer',
-                    fontSize: '1.125rem',
-                    border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.1)',
-                    boxShadow: 'none',
-                    '&:hover': {
-                      borderWidth: '1.5px',
-                      borderColor: isDark ? 'from-black via-gray-900 to-gray-800' : 'from-white via-purple-100 to-purple-50'
-                    }
-                  }),
-                  menu: (base) => ({
-                    ...base,
-                    background: isDark ? '#212937' : '#ffffff 50%',
-                    borderRadius: '0.75rem',
-                    backdropFilter: 'blur(100px)',
-                    marginTop: '0.5rem',
-                    border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid #e5e7eb',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
-                  }),
-                  option: (base, { isFocused, isSelected }) => ({
-                    ...base,
-                    background: isFocused
-                      ? isDark ? 'rgba(255, 255, 255, 0.1)' : '#f3f4f6'
-                      : isSelected
-                        ? isDark ? 'rgba(255, 255, 255, 0.05)' : '#e5e7eb'
-                        : 'transparent',
-                    color: isDark ? '#fff' : '#374151',
-                    cursor: 'pointer',
-                    '&:active': {
-                      background: isDark ? 'rgba(255, 255, 255, 0.15)' : '#e5e7eb'
-                    }
-                  }),
-                  singleValue: (base) => ({
-                    ...base,
-                    color: isDark ? '#fff' : '#374151'
-                  }),
-                  placeholder: (base) => ({
-                    ...base,
-                    color: '#6B7280',
-                    fontSize: '1.125rem'
-                  }),
-                  input: (base) => ({
-                    ...base,
-                    color: isDark ? '#fff' : '#374151'
-                  }),
-                  dropdownIndicator: (base) => ({
-                    ...base,
-                    color: '#6B7280',
-                    '&:hover': {
+              <button
+                type="button"
+                onClick={addNewExpense}
+                className="hidden lg:block px-4 py-2.5 text-white rounded-xl bg-purple-500/50 hover:bg-purple-500/60 transition-all"
+              >
+                Add Another Bill
+              </button>
+            </div>
+
+            {/* Error message */}
+            {error && (
+              <div className="bg-[#ff000014] backdrop-blur-xl border border-red-500/20 text-red-400 px-6 py-4 rounded-2xl text-base mb-6 flex-shrink-0">
+                {error}
+              </div>
+            )}
+
+            <form id="expense-form" onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden">
+              {/* Group selector */}
+              <div className='flex-shrink-0 mb-4'>
+                <Select
+                  value={groups.find(group => group.id === selectedGroup)}
+                  onChange={(selected) => setSelectedGroup(selected.id)}
+                  options={groups}
+                  getOptionLabel={(option) => option.name}
+                  getOptionValue={(option) => option.id}
+                  placeholder="Select Group"
+                  className="react-select-container"
+                  classNamePrefix="react-select"
+                  styles={{
+                    control: (base) => ({
+                      ...base,
+                      background: 'transparent',
+                      backdropFilter: 'blur(100px)',
+                      borderRadius: '0.75rem',
+                      padding: '0.375rem 1rem',
+                      cursor: 'pointer',
+                      fontSize: '1.125rem',
+                      border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.1)',
+                      boxShadow: 'none',
+                      '&:hover': {
+                        borderWidth: '1.5px',
+                        borderColor: isDark ? 'from-black via-gray-900 to-gray-800' : 'from-white via-purple-100 to-purple-50'
+                      }
+                    }),
+                    menu: (base) => ({
+                      ...base,
+                      background: isDark ? '#212937' : '#ffffff 50%',
+                      borderRadius: '0.75rem',
+                      backdropFilter: 'blur(100px)',
+                      marginTop: '0.5rem',
+                      border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid #e5e7eb',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                    }),
+                    option: (base, { isFocused, isSelected }) => ({
+                      ...base,
+                      background: isFocused
+                        ? isDark ? 'rgba(255, 255, 255, 0.1)' : '#f3f4f6'
+                        : isSelected
+                          ? isDark ? 'rgba(255, 255, 255, 0.05)' : '#e5e7eb'
+                          : 'transparent',
+                      color: isDark ? '#fff' : '#374151',
+                      cursor: 'pointer',
+                      '&:active': {
+                        background: isDark ? 'rgba(255, 255, 255, 0.15)' : '#e5e7eb'
+                      }
+                    }),
+                    singleValue: (base) => ({
+                      ...base,
                       color: isDark ? '#fff' : '#374151'
-                    }
-                  })
-                }}
-                required
-              />
-            </div>
-            {/* Scrollable expenses container */}
-            <div className="flex-1 overflow-y-auto pr-2">
-              <div className="grid lg:grid-cols-1 gap-4">
-                
-                {expenses.map((exp, index) => (
-                  <div key={exp.id} className={`${theme.input} backdrop-blur-xl rounded-2xl border ${theme.inputBorder} pb-2 px-2 space-y-6`}>
-                    <div className="flex justify-end items-center">
-                      {expenses.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeBill(index)}
-                          className="px-3 text-red-400 rounded-lg hover:bg-red-500/10 transition-colors"
-                        >
-                          Remove
-                        </button>
-                      )}
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
-                      <div>
-                        <input
-                          type="text"
-                          placeholder="Expense name"
-                          value={exp.name}
-                          onChange={(e) => handleExpenseUpdate(index, 'name', e.target.value)}
-                          className={`flex-1 ${theme.input} ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-lg placeholder-gray-500 w-full`}
-                          required
-                        />
+                    }),
+                    placeholder: (base) => ({
+                      ...base,
+                      color: '#6B7280',
+                      fontSize: '1.125rem'
+                    }),
+                    input: (base) => ({
+                      ...base,
+                      color: isDark ? '#fff' : '#374151'
+                    }),
+                    dropdownIndicator: (base) => ({
+                      ...base,
+                      color: '#6B7280',
+                      '&:hover': {
+                        color: isDark ? '#fff' : '#374151'
+                      }
+                    })
+                  }}
+                  required
+                />
+              </div>
+              {/* Scrollable expenses container */}
+              <div className="flex-1 overflow-y-auto pr-2">
+                <div className="grid lg:grid-cols-1 gap-4">
+
+                  {expenses.map((exp, index) => (
+                    <div key={exp.id} className={`${theme.input} backdrop-blur-xl rounded-2xl border ${theme.inputBorder} pb-2 px-2 space-y-6`}>
+                      <div className="flex justify-end items-center">
+                        {expenses.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeBill(index)}
+                            className="px-3 text-red-400 rounded-lg hover:bg-red-500/10 transition-colors"
+                          >
+                            Remove
+                          </button>
+                        )}
                       </div>
-                  
-                      <div>
-                        <div className="h-full">
-                          <DatePicker
-                            selected={new Date(exp.date)}
-                            onChange={(date) => handleExpenseUpdate(index, 'date', date.toISOString().split('T')[0])}
-                            maxDate={new Date()}
-                            dateFormat="MMM d, yyyy"
-                            className={`w-full  ${theme.input} ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none cursor-pointer text-lg`}
-                            placeholderText="Select date"
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
+                        <div>
+                          <input
+                            type="text"
+                            placeholder="Expense name"
+                            value={exp.name}
+                            onChange={(e) => handleExpenseUpdate(index, 'name', e.target.value)}
+                            className={`flex-1 ${theme.input} ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-lg placeholder-gray-500 w-full`}
+                            required
+                          />
+                        </div>
+
+                        <div>
+                          <div className="h-full">
+                            <DatePicker
+                              selected={new Date(exp.date)}
+                              onChange={(date) => handleExpenseUpdate(index, 'date', date.toISOString().split('T')[0])}
+                              maxDate={new Date()}
+                              dateFormat="MMM d, yyyy"
+                              className={`w-full  ${theme.input} ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none cursor-pointer text-lg`}
+                              placeholderText="Select date"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <Select
+                            value={users.find(user => user.id === exp.paid_by)}
+                            onChange={(selected) => handleExpenseUpdate(index, 'paid_by', selected.id)}
+                            options={users}
+                            getOptionLabel={(option) => `${option.first_name} ${option.last_name}`}
+                            getOptionValue={(option) => option.id}
+                            placeholder="Who paid?"
+                            className="react-select-container"
+                            classNamePrefix="react-select"
+                            styles={{
+                              control: (base) => ({
+                                ...base,
+                                background: 'transparent',
+                                backdropFilter: 'blur(100px)',
+                                borderRadius: '0.75rem',
+                                padding: '0.375rem 1rem',
+                                cursor: 'pointer',
+                                fontSize: '1.125rem',
+                                border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.1)',
+                                boxShadow: 'none',
+                                '&:hover': {
+                                  borderWidth: '1.5px',
+                                  borderColor: isDark ? 'from-black via-gray-900 to-gray-800' : 'from-white via-purple-100 to-purple-50'
+                                }
+                              }),
+                              menu: (base) => ({
+                                ...base,
+                                background: isDark ? '#212937' : '#ffffff 50%',
+                                borderRadius: '0.75rem',
+                                backdropFilter: 'blur(100px)',
+                                marginTop: '0.5rem',
+                                border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid #e5e7eb',
+                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                              }),
+                              option: (base, { isFocused, isSelected }) => ({
+                                ...base,
+                                background: isFocused
+                                  ? isDark ? 'rgba(255, 255, 255, 0.1)' : '#f3f4f6'
+                                  : isSelected
+                                    ? isDark ? 'rgba(255, 255, 255, 0.05)' : '#e5e7eb'
+                                    : 'transparent',
+                                color: isDark ? '#fff' : '#374151',
+                                cursor: 'pointer',
+                                '&:active': {
+                                  background: isDark ? 'rgba(255, 255, 255, 0.15)' : '#e5e7eb'
+                                }
+                              }),
+                              singleValue: (base) => ({
+                                ...base,
+                                color: isDark ? '#fff' : '#374151'
+                              }),
+                              placeholder: (base) => ({
+                                ...base,
+                                color: '#6B7280',
+                                fontSize: '1.125rem'
+                              }),
+                              input: (base) => ({
+                                ...base,
+                                color: isDark ? '#fff' : '#374151'
+                              }),
+                              dropdownIndicator: (base) => ({
+                                ...base,
+                                color: '#6B7280',
+                                '&:hover': {
+                                  color: isDark ? '#fff' : '#374151'
+                                }
+                              })
+                            }}
+                            required
+                          />
+                        </div>
+
+                        <div>
+                          <input
+                            type="number"
+                            placeholder="Amount"
+                            value={exp.amount}
+                            onChange={(e) => handleAmountChange(index, e.target.value)}
+                            className={`w-full ${theme.input} ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-lg placeholder-gray-500`}
                             required
                           />
                         </div>
                       </div>
-                  
-                      <div>
-                        <Select
-                          value={users.find(user => user.id === exp.paid_by)}
-                          onChange={(selected) => handleExpenseUpdate(index, 'paid_by', selected.id)}
-                          options={users}
-                          getOptionLabel={(option) => `${option.first_name} ${option.last_name}`}
-                          getOptionValue={(option) => option.id}
-                          placeholder="Who paid?"
-                          className="react-select-container"
-                          classNamePrefix="react-select"
-                          styles={{
-                            control: (base) => ({
-                              ...base,
-                              background: 'transparent',
-                              backdropFilter: 'blur(100px)',
-                              borderRadius: '0.75rem',
-                              padding: '0.375rem 1rem',
-                              cursor: 'pointer',
-                              fontSize: '1.125rem',
-                              border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.1)',
-                              boxShadow: 'none',
-                              '&:hover': {
-                                borderWidth: '1.5px',
-                                borderColor: isDark ? 'from-black via-gray-900 to-gray-800' : 'from-white via-purple-100 to-purple-50'
-                              }
-                            }),
-                            menu: (base) => ({
-                              ...base,
-                              background: isDark ? '#212937' : '#ffffff 50%',
-                              borderRadius: '0.75rem',
-                              backdropFilter: 'blur(100px)',
-                              marginTop: '0.5rem',
-                              border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid #e5e7eb',
-                              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
-                            }),
-                            option: (base, { isFocused, isSelected }) => ({
-                              ...base,
-                              background: isFocused
-                                ? isDark ? 'rgba(255, 255, 255, 0.1)' : '#f3f4f6'
-                                : isSelected
-                                  ? isDark ? 'rgba(255, 255, 255, 0.05)' : '#e5e7eb'
-                                : 'transparent',
-                              color: isDark ? '#fff' : '#374151',
-                              cursor: 'pointer',
-                              '&:active': {
-                                background: isDark ? 'rgba(255, 255, 255, 0.15)' : '#e5e7eb'
-                              }
-                            }),
-                            singleValue: (base) => ({
-                              ...base,
-                              color: isDark ? '#fff' : '#374151'
-                            }),
-                            placeholder: (base) => ({
-                              ...base,
-                              color: '#6B7280',
-                              fontSize: '1.125rem'
-                            }),
-                            input: (base) => ({
-                              ...base,
-                              color: isDark ? '#fff' : '#374151'
-                            }),
-                            dropdownIndicator: (base) => ({
-                              ...base,
-                              color: '#6B7280',
-                              '&:hover': {
-                                color: isDark ? '#fff' : '#374151'
-                              }
-                            })
-                          }}
-                          required
-                        />
+
+                      <div className="flex flex-wrap gap-1">
+                        {users.map(user => (
+                          <button
+                            key={user.id}
+                            type="button"
+                            onClick={() => handleUserSelection(index, user.id)}
+                            className={`px-4 py-2 rounded-xl text-sm transition-all ${exp.selectedUsers.includes(user.id)
+                              ? `bg-green-800/50 text-white`
+                              : `${theme.input} ${theme.textSecondary} ${theme.hoverBg}`
+                              }`}
+                          >
+                            {user.first_name} {user.last_name}
+                          </button>
+                        ))}
                       </div>
-                  
-                      <div>
-                        <input
-                          type="number"
-                          placeholder="Amount"
-                          value={exp.amount}
-                          onChange={(e) => handleAmountChange(index, e.target.value)}
-                          className={`w-full ${theme.input} ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-lg placeholder-gray-500`}
-                          required
-                        />
-                      </div>
+
+                      {exp.splits.length > 0 && (
+                        // <div className={`rounded-xl`}>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                          {exp.splits.map((split, splitIndex) => {
+                            const user = users.find(u => u.id === split.user);
+                            return user ? (
+                              <div key={splitIndex} className="flex items-center justify-between gap-3 px-3 py-2 rounded-xl bg-green-800/50 text-white/70">
+                                <div className={` text-sm`}>{user.first_name} {user.last_name}</div>
+                                <input
+                                  type="number"
+                                  value={split.amount}
+                                  onChange={(e) => handleSplitAmountChange(index, splitIndex, e.target.value)}
+                                  className={`w-24 ${theme.input} text-center px-1 py-1 rounded-lg border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-center text-sm`}
+                                />
+                              </div>
+                            ) : null;
+                          })}
+                        </div>
+                        // </div>
+                      )}
                     </div>
-          
-                    <div className="flex flex-wrap gap-1">
-                      {users.map(user => (
-                        <button
-                          key={user.id}
-                          type="button"
-                          onClick={() => handleUserSelection(index, user.id)}
-                          className={`px-4 py-2 rounded-xl text-sm transition-all ${exp.selectedUsers.includes(user.id)
-                            ? `bg-green-800/50 text-white`
-                            : `${theme.input} ${theme.textSecondary} ${theme.hoverBg}`
-                            }`}
-                        >
-                          {user.first_name} {user.last_name}
-                        </button>
-                      ))}
-                    </div>
-                  
-                  {exp.splits.length > 0 && (
-                    // <div className={`rounded-xl`}>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                      {exp.splits.map((split, splitIndex) => {
-                        const user = users.find(u => u.id === split.user);
-                        return user ? (
-                          <div key={splitIndex} className="flex items-center justify-between gap-3 px-3 py-2 rounded-xl bg-green-800/50 text-white/70">
-                            <div className={` text-sm`}>{user.first_name} {user.last_name}</div>
-                            <input
-                              type="number"
-                              value={split.amount}
-                              onChange={(e) => handleSplitAmountChange(index, splitIndex, e.target.value)}
-                              className={`w-24 ${theme.input} text-center px-1 py-1 rounded-lg border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-center text-sm`}
-                            />
-                          </div>
-                        ) : null;
-                      })}
-                    </div>
-                    // </div>
-                  )}
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            </form>
           </div>
-          </form>
-        </div>
+        )}
       </div>
     </div>
   );

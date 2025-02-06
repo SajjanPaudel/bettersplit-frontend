@@ -12,10 +12,12 @@ import {
 import { useTheme } from '../../context/ThemeContext';
 import { endpoints } from '../../config/api';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 
 function Activity() {
   const [showModal, setShowModal] = useState(false);
   const [activities, setActivities] = useState([]);
+  const[groups, setGroups]= useState([]);
   const [error, setError] = useState('');
   const [globalFilter, setGlobalFilter] = useState('');
   const currentUser = JSON.parse(localStorage.getItem('user'))?.username;
@@ -48,6 +50,21 @@ function Activity() {
 
   useEffect(() => {
     fetchActivities();
+  }, []);
+
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        const accessToken = localStorage.getItem('access_token');
+        const response = await axios.get(endpoints.groups, {
+          headers: { 'Authorization': `Bearer ${accessToken}` }
+        });
+        setGroups(response.data.data);
+      } catch (err) {
+        setError('Failed to fetch users');
+      }
+    };
+    fetchGroups();
   }, []);
 
   const calculateOwed = (activity) => {
@@ -127,10 +144,14 @@ function Activity() {
             />
             <button
               onClick={() => setShowModal(true)}
-              className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors w-full lg:w-auto"
+              disabled={groups.length == 0}
+              title={groups.length == 0 ? "Create a group before adding Expense" : ""}
+              className={`px-6 py-3 rounded-xl text-sm transition-all ${groups.length != 0
+                ? 'bg-green-500/40 text-white hover:bg-green-500/50'
+                : `${theme.input} ${theme.textSecondary} cursor-not-allowed opacity-50`
+              }`}
             >
-              <FaPlus className="w-4 h-4" />
-              Add Expense
+              {groups.length != 0? 'Add Expense' : 'Add Expense'}
             </button>
           </div>
         </div>
@@ -138,81 +159,98 @@ function Activity() {
         <div className="flex-1 overflow-hidden">
           <div className={`backdrop-blur-xl rounded-2xl border ${theme.border} shadow-2xl relative before:absolute before:inset-0 before:rounded-2xl before:pointer-events-none`}>
             <div className="max-h-[80vh] overflow-y-auto rounded-2xl">
-              <table className="w-full">
-                <thead className={`sticky top-0 ${theme.card} z-10 whitespace-nowrap rounded-2xl`}>
-                  {table.getHeaderGroups().map(headerGroup => (
-                    <tr key={headerGroup.id}>
-                      {headerGroup.headers.map(header => (
-                        <th
-                          key={header.id}
-                          className={`px-4 py-5 text-left text-sm font-semibold ${theme.textSecondary} tracking-wider first:pl-8 last:pr-8`}
-                        >
-                          {flexRender(header.column.columnDef.header, header.getContext())}
-                        </th>
-                      ))}
-                    </tr>
-                  ))}
-                </thead>
-                <tbody className={`divide-y ${theme.border}`}>
-                  {table.getRowModel().rows.map(row => (
-                    <>
-                      <tr
-                        key={row.id}
-                        className={`${theme.cardHover} transition-colors cursor-pointer`}
-                        onClick={() => toggleRow(row.id)}
-                      >
-                        {row.getVisibleCells().map((cell, index) => (
-                          <td
-                            key={cell.id}
-                            className={`px-4 py-5 text-sm first:pl-8 last:pr-8 ${cell.column.id === 'name' ? `font-medium ${theme.text}` : theme.textSecondary
-                              }`}
+              {activities.length === 0 ? (
+                <div className={`${theme.input} backdrop-blur-md  h-full dark:bg-black/10 rounded-3xl p-12 text-center border ${theme.border} flex flex-col items-center justify-center space-y-6`}>
+                  <div className="w-24 h-24 rounded-full flex items-center justify-center mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" className={`h-12 w-12 ${theme.textSecondary}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div className={`text-2xl font-medium ${theme.textSecondary}`}>Looks like there's no activities</div>
+                  <p className={`text-sm ${theme.textSecondary} max-w-md`}>
+                    Start by creating a group and adding expenses to track your shared payments and settlements
+                  </p>
+                  <Link to="/dashboard/add-expense" className={`p-2 bg-green-500 text-white rounded-2xl`}>
+                    Go to Expenses →
+                  </Link>
+                </div>
+              ) : (
+                <table className="w-full">
+                  <thead className={`sticky top-0 ${theme.card} z-10 whitespace-nowrap rounded-2xl`}>
+                    {table.getHeaderGroups().map(headerGroup => (
+                      <tr key={headerGroup.id}>
+                        {headerGroup.headers.map(header => (
+                          <th
+                            key={header.id}
+                            className={`px-4 py-5 text-left text-sm font-semibold ${theme.textSecondary} tracking-wider first:pl-8 last:pr-8`}
                           >
-                            {index === 0 && (
-                              <span className="inline-block mr-5">
-                                {expandedRows.has(row.id) ? (
-                                  <FaChevronUp className={`${theme.textSecondary}`} />
-                                ) : (
-                                  <FaChevronDown className={`${theme.textSecondary}`} />
-                                )}
-                              </span>
-                            )}
-                            {cell.column.id !== 'Split Details' && flexRender(cell.column.columnDef.cell, cell.getContext())}
-                          </td>
+                            {flexRender(header.column.columnDef.header, header.getContext())}
+                          </th>
                         ))}
                       </tr>
-                      {expandedRows.has(row.id) && (
-                        <tr>
-                          <td colSpan={columns.length} className="py-4 px-2 transition-all duration-500 ease-in-out transform origin-top">
-                            <div className=" grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                              {Object.entries(row.original.splits).map(([person, amount], index) => {
-                                const bgColors = [
-                                  'bg-blue-500/10 border-blue-500/20',
-                                  'bg-purple-500/10 border-purple-500/20',
-                                  'bg-green-500/10 border-green-500/20',
-                                  'bg-orange-500/10 border-orange-500/20',
-                                  'bg-pink-500/10 border-pink-500/20'
-                                ];
-                                const colorIndex = index % bgColors.length;
-                                return (
-                                  <div
-                                    key={person}
-                                    className={`px-4 py-3 rounded-xl ${bgColors[colorIndex]} border flex justify-between items-center`}
-                                  >
-                                    <span className={`${theme.text}`}>{person} - {parseFloat(amount)}</span>
-                                    {/* <span className={`${theme.textSecondary}`}>
+                    ))}
+                  </thead>
+                  <tbody className={`divide-y ${theme.border}`}>
+                    {table.getRowModel().rows.map(row => (
+                      <>
+                        <tr
+                          key={row.id}
+                          className={`${theme.cardHover} transition-colors cursor-pointer`}
+                          onClick={() => toggleRow(row.id)}
+                        >
+                          {row.getVisibleCells().map((cell, index) => (
+                            <td
+                              key={cell.id}
+                              className={`px-4 py-5 text-sm first:pl-8 last:pr-8 ${cell.column.id === 'name' ? `font-medium ${theme.text}` : theme.textSecondary
+                                }`}
+                            >
+                              {index === 0 && (
+                                <span className="inline-block mr-5">
+                                  {expandedRows.has(row.id) ? (
+                                    <FaChevronUp className={`${theme.textSecondary}`} />
+                                  ) : (
+                                    <FaChevronDown className={`${theme.textSecondary}`} />
+                                  )}
+                                </span>
+                              )}
+                              {cell.column.id !== 'Split Details' && flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </td>
+                          ))}
+                        </tr>
+                        {expandedRows.has(row.id) && (
+                          <tr>
+                            <td colSpan={columns.length} className="py-4 px-2 transition-all duration-500 ease-in-out transform origin-top">
+                              <div className=" grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                                {Object.entries(row.original.splits).map(([person, amount], index) => {
+                                  const bgColors = [
+                                    'bg-blue-500/10 border-blue-500/20',
+                                    'bg-purple-500/10 border-purple-500/20',
+                                    'bg-green-500/10 border-green-500/20',
+                                    'bg-orange-500/10 border-orange-500/20',
+                                    'bg-pink-500/10 border-pink-500/20'
+                                  ];
+                                  const colorIndex = index % bgColors.length;
+                                  return (
+                                    <div
+                                      key={person}
+                                      className={`px-4 py-3 rounded-xl ${bgColors[colorIndex]} border flex justify-between items-center`}
+                                    >
+                                      <span className={`${theme.text}`}>{person} - {parseFloat(amount)}</span>
+                                      {/* <span className={`${theme.textSecondary}`}>
                                       {parseFloat(amount).toFixed(2)}
                                     </span> */}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </>
-                  ))}
-                </tbody>
-              </table>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           </div>
         </div>

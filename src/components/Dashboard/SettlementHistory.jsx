@@ -9,6 +9,7 @@ import {
   flexRender,
 } from '@tanstack/react-table';
 import { endpoints } from '../../config/api';
+import { Link } from 'react-router-dom';
 
 function SettlementHistory() {
   const { theme } = useTheme();
@@ -83,8 +84,24 @@ function SettlementHistory() {
         />
       </div>
 
-      <div className={`${theme.input} backdrop-blur-xl rounded-2xl border ${theme.border} overflow-hidden h-[calc(100vh-180px)]`}>
+      <div className={` backdrop-blur-xl rounded-2xl border ${theme.border} overflow-hidden h-[calc(100vh-180px)]`}>
         <div className="overflow-y-auto h-full">
+        {settlements.length === 0 ? (
+            <div className={`${theme.input} backdrop-blur-md  h-full dark:bg-black/10 rounded-3xl p-12 text-center border ${theme.border} flex flex-col items-center justify-center space-y-6`}>
+              <div className="w-24 h-24 rounded-full flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" className={`h-12 w-12 ${theme.textSecondary}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className={`text-2xl font-medium ${theme.textSecondary}`}>No Settlements Yet</div>
+              <p className={`text-sm ${theme.textSecondary} max-w-md`}>
+                Start by creating a group and adding expenses to track your shared payments and settlements
+              </p>
+              <Link to="/dashboard/add-expense" className={`p-2 bg-green-500 text-white rounded-2xl`}>
+                Go to Expenses →
+              </Link>
+            </div>
+          ) : (
           <table className="w-full">
             <thead className={`sticky top-0 ${theme.card} z-10`}>
               {table.getHeaderGroups().map(headerGroup => (
@@ -117,6 +134,7 @@ function SettlementHistory() {
               ))}
             </tbody>
           </table>
+          )}
         </div>
       </div>
     </div>

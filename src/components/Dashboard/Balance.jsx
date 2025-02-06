@@ -79,7 +79,14 @@ function Balance() {
   };
 
   if (error) return <div className="p-4 text-red-600">{error}</div>;
-  if (!balances) return <div className="p-4">Loading...</div>;
+  if (!balances) return (
+    <div className="flex flex-col w-full items-center justify-center min-h-screen gap-4">
+      <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-400"></div>
+      <h1 className="text-xl font-medium text-gray-600 dark:text-gray-300">
+        Loading...
+      </h1>
+    </div>
+  );
 
   return (
     <div className="max-w-full mx-auto relative">
@@ -104,41 +111,50 @@ function Balance() {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mb-6 max-h-[40vh] md:max-h-none overflow-y-auto md:overflow-visible">
-        {Object.entries(balances)
-          .filter(([_, data]) => data.net !== 0)
-          .map(([name, data]) => (
-            <div
-              key={name}
-              className={`${theme.card} backdrop-blur-md bg-white/10 dark:bg-black/10 rounded-2xl border ${theme.border} p-4 lg:p-4 relative before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/[0.08] before:to-transparent before:rounded-2xl before:pointer-events-none`}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <h3 className={`text-lg ${theme.text} transition-colors`}>{name}</h3>
-                <div className={`px-2.5 py-1 rounded-lg text-xs ${data.net >= 0
-                  ? "bg-green-500/10 text-green-400"
-                  : "bg-red-500/10 text-red-400"
-                  }`}>
-                  {data.net >= 0 ? "To Receive" : "To Pay"}
-                </div>
-              </div>
-
-              <div className={`flex justify-between items-center ${theme.input} p-4 rounded-xl border-t ${theme.border}`}>
-                <div>
-                  {/* <div className={theme.textSecondary}>Net Balance</div> */}
-                  <div className={`text-xl font-medium ${data.net >= 0 ? "text-green-400" : "text-red-400"}`}>
-                    Rs {Math.abs(data.net).toFixed(2)}
+      {Object.entries(balances).filter(([_, data]) => data.net !== 0).length > 0 ? (
+        <div className="grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mb-6 max-h-[40vh] md:max-h-none overflow-y-auto md:overflow-visible">
+          {Object.entries(balances)
+            .filter(([_, data]) => data.net !== 0)
+            .map(([name, data]) => (
+              <div
+                key={name}
+                className={`${theme.card} backdrop-blur-md bg-white/10 dark:bg-black/10 rounded-2xl border ${theme.border} p-4 lg:p-4 relative before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/[0.08] before:to-transparent before:rounded-2xl before:pointer-events-none`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className={`text-lg ${theme.text} transition-colors`}>{name}</h3>
+                  <div className={`px-2.5 py-1 rounded-lg text-xs ${data.net >= 0
+                    ? "bg-green-500/10 text-green-400"
+                    : "bg-red-500/10 text-red-400"
+                    }`}>
+                    {data.net >= 0 ? "To Receive" : "To Pay"}
                   </div>
                 </div>
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${data.net >= 0 ? "bg-green-500/10" : "bg-red-500/10"
-                  }`}>
-                  <svg className="w-5 h-5 text-current" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+
+                <div className={`flex justify-between items-center ${theme.input} p-4 rounded-xl border-t ${theme.border}`}>
+                  <div>
+                    {/* <div className={theme.textSecondary}>Net Balance</div> */}
+                    <div className={`text-xl font-medium ${data.net >= 0 ? "text-green-400" : "text-red-400"}`}>
+                      Rs {Math.abs(data.net).toFixed(2)}
+                    </div>
+                  </div>
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${data.net >= 0 ? "bg-green-500/10" : "bg-red-500/10"
+                    }`}>
+                    <svg className="w-5 h-5 text-current" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-      </div>
+            ))}
+        </div>
+      ) : (
+        <div className={`${theme.input} backdrop-blur-md bg-white/10 dark:bg-black/10 rounded-2xl p-8 text-center border ${theme.border} mb-6`}>
+          <div className={theme.textSecondary}>✨ You're all done!</div>
+          <p className={`text-sm ${theme.textSecondary} mt-2`}>
+            Go to <span className="text-purple-400">Expenses</span> to add new transactions
+          </p>
+        </div>
+      )}
 
       {/* Settlements Section */}
       <div className={`mb-4 flex-1 flex flex-col h-[50vh] p-4 rounded-2xl before:inset-0 before:bg-gradient-to-b before:from-white/[0.08] before:to-transparent`}>
@@ -176,11 +192,10 @@ function Balance() {
                       }}
                       disabled={calculationType === 'net' || String(settlement.to) !== String(loggedInUser.username)}
                       title={String(settlement.to) !== String(loggedInUser.username) ? "Only the recipient can settle" : ""}
-                      className={`px-6 py-3 rounded-xl text-sm transition-all ${
-                        calculationType === 'individual' && String(settlement.to) === String(loggedInUser.username)
+                      className={`px-6 py-3 rounded-xl text-sm transition-all ${calculationType === 'individual' && String(settlement.to) === String(loggedInUser.username)
                           ? 'bg-green-500/10 text-green-400 hover:bg-green-500/20'
                           : `${theme.input} ${theme.textSecondary} cursor-not-allowed opacity-50`
-                      }`}
+                        }`}
                     >
                       {calculationType === 'individual' ? 'Settle' : 'Settle'}
                     </button>
@@ -191,7 +206,7 @@ function Balance() {
           </div>
         ) : (
           <div className={`${theme.input} backdrop-blur-md bg-white/10 dark:bg-black/10 rounded-2xl p-8 text-center border ${theme.border}`}>
-            <div className={theme.textSecondary}>👍 All settled up!</div>
+            <div className={theme.textSecondary}>✨ All settled up!</div>
             <p className={`text-sm ${theme.textSecondary}`}>No settlements required at the moment</p>
           </div>
         )}

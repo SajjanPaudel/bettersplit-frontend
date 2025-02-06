@@ -12,6 +12,7 @@ function Groups() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     fetchGroups();
@@ -24,6 +25,7 @@ function Groups() {
         headers: { 'Authorization': `Bearer ${accessToken}` }
       });
       setGroups(response.data.data);
+      setIsLoading(false)
     } catch (err) {
       setError('Failed to fetch groups');
     }
@@ -52,6 +54,15 @@ function Groups() {
     navigate(`/dashboard/groups/${groupId}`);
   };
 
+  if (isLoading) return (
+    <div className="flex flex-col w-full items-center justify-center min-h-screen gap-4">
+      <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-400"></div>
+      <h1 className="text-xl font-medium text-gray-600 dark:text-gray-300">
+        Loading...
+      </h1>
+    </div>
+  );
+
   return (
     <div className="max-w-6xl mx-auto">
       <div className={`${theme.card} rounded-2xl border ${theme.border} w-full my-4 lg:my-0 shadow-2xl`}>
@@ -71,7 +82,6 @@ function Groups() {
               {error}
             </div>
           )}
-
           {groups.length === 0 ? (
             <div className={`${theme.input} backdrop-blur-md bg-white/10 dark:bg-black/10 rounded-2xl p-8 text-center border ${theme.border}`}>
               <div className={theme.textSecondary}>👍 No groups found</div>

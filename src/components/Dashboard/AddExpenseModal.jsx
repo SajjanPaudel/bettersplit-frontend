@@ -119,7 +119,7 @@ function AddExpenseModal({ onClose, onSuccess }) {
 
   return (
     <div 
-      className="fixed inset-0 rounded-2xl  backdrop-blur-sm  flex items-start lg:items-center justify-center z-50 p-4 overflow-y-auto"
+      className="fixed inset-0 rounded-2xl backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto"
       onClick={handleBackdropClick}
     >
       <div className={`${theme.card} rounded-2xl border ${theme.border} w-full max-w-2xl my-4 lg:my-0 shadow-2xl relative before:absolute before:inset-0 before:bg-gradient-to-b  before:rounded-2xl before:pointer-events-none`}>

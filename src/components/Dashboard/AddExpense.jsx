@@ -562,7 +562,7 @@ function AddExpense() {
                                   type="number"
                                   value={split.amount}
                                   onChange={(e) => handleSplitAmountChange(index, splitIndex, e.target.value)}
-                                  className={`w-24 ${theme.input} text-center px-1 py-1 rounded-lg border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-center text-sm`}
+                                  className={`w-24 ${theme.text} ${theme.input} text-center px-1 py-1 rounded-lg border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-center text-sm`}
                                 />
                               </div>
                             ) : null;

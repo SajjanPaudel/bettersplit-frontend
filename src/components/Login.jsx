@@ -50,18 +50,10 @@ function Login({ onAuth }) {
   const [rememberMe, setRememberMe] = useState(false);
 
   return (
-    <div className="h-[calc(100vh-2rem)] md:h-[calc(100vh-4rem)] p-8 flex">
+    <div className="h-[calc(100dvh-2rem)] md:h-[calc(100dvh-4rem)] p-2 lg:p-8 flex">
       {/* Left Section with Image */}
-    
-      {/* Right Section with Form */}
-      <div className="w-full lg:w-1/2 flex flex-col p-8 lg:p-12 ">
-        {/* <div className="flex justify-end mb-12">
-          <Link to="/" className="text-white/80 hover:text-white transition-colors px-6 py-2 rounded-full bg-white/10">
-            Back to website →
-          </Link>
-        </div>
-     */}
-        <div className="max-w-md w-full mx-auto py-10">
+      <div className="w-full lg:w-1/2 flex flex-col sm:p-2 md:p-8 lg:p-12 ">
+        <div className="max-w-md w-full mx-auto py-10 sm:py-2">
           <h1 className="text-5xl font-light text-white mb-8">Sign in</h1>
     
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -81,7 +73,7 @@ function Login({ onAuth }) {
               placeholder="Username"
               value={credentials.username}
               onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
-              className="w-full bg-[#ffffff14] text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+              className="w-full bg-[#ffffff14] text-white md:px-4 lg:px-4 px-2 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50"
               required
             />
     

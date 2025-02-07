@@ -140,7 +140,7 @@ function AddExpense() {
         });
         setUsers(response.data.data);
       } catch (err) {
-        setError('Failed to fetch users');
+        // setError('Failed to fetch users');
       }
     };
     fetchUsers();
@@ -155,7 +155,7 @@ function AddExpense() {
         });
         setGroups(response.data.data);
       } catch (err) {
-        setError('Failed to fetch users');
+        // setError('Failed to fetch users');
       } finally {
         setIsLoading(false);
       }
@@ -272,7 +272,7 @@ function AddExpense() {
   return (
     // Update the outer container structure
     <div className="max-w-6xl mx-auto h-screen overflow-hidden py-4">
-      <div className={`${theme.card} rounded-2xl border ${theme.border} w-full h-full shadow-2xl relative flex flex-col`}>
+      <div className={` rounded-2xl border ${theme.border} w-full h-full shadow-2xl relative flex flex-col`}>
         {isLoading ? (
           <div className="flex flex-col w-full items-center justify-center min-h-screen gap-4">
             <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-400"></div>
@@ -281,7 +281,7 @@ function AddExpense() {
             </h1>
           </div>
         ) : groups.length === 0 ? (
-          <div className={`${theme.input} backdrop-blur-md h-full dark:bg-black/10 rounded-3xl p-4 text-center border ${theme.border} flex flex-col items-center space-y-6`}>
+          <div className={` backdrop-blur-md h-full dark:bg-black/10 rounded-3xl p-4 text-center border ${theme.border} flex flex-col items-center space-y-6`}>
             <div className="w-24 h-24 rounded-full flex items-center justify-center mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" className={`h-12 w-12 ${theme.textSecondary}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -331,7 +331,7 @@ function AddExpense() {
               </div>
             )}
 
-            <form id="expense-form" onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden">
+            <form id="expense-form" onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden" noValidate>
               {/* Group selector */}
               <div className='flex-shrink-0 mb-4'>
                 <Select
@@ -410,7 +410,7 @@ function AddExpense() {
                 <div className="grid lg:grid-cols-1 gap-4">
 
                   {expenses.map((exp, index) => (
-                    <div key={exp.id} className={`${theme.input} backdrop-blur-xl rounded-2xl border ${theme.inputBorder} pb-2 px-2 space-y-6`}>
+                    <div key={exp.id} className={` backdrop-blur-lg bg-gray/20 rounded-2xl border border-gray-300/5 shadow-lg pb-2 px-2 space-y-6`}>
                       <div className="flex justify-end items-center">
                         {expenses.length > 1 && (
                           <button
@@ -429,7 +429,7 @@ function AddExpense() {
                             placeholder="Expense name"
                             value={exp.name}
                             onChange={(e) => handleExpenseUpdate(index, 'name', e.target.value)}
-                            className={`flex-1 ${theme.input} ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-lg placeholder-gray-500 w-full`}
+                            className={`flex-1 bg-transparent ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-lg placeholder-gray-500 w-full`}
                             required
                           />
                         </div>
@@ -441,7 +441,7 @@ function AddExpense() {
                               onChange={(date) => handleExpenseUpdate(index, 'date', date.toISOString().split('T')[0])}
                               maxDate={new Date()}
                               dateFormat="MMM d, yyyy"
-                              className={`w-full  ${theme.input} ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none cursor-pointer text-lg`}
+                              className={`w-full bg-transparent ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none cursor-pointer text-lg`}
                               placeholderText="Select date"
                               required
                             />
@@ -521,17 +521,28 @@ function AddExpense() {
                           />
                         </div>
 
-                        <div>
-                          <input
-                            type="text"
-                            pattern="[0-9\+\-\*\/\(\)\.\s]*"
-                            placeholder="Amount"
-                            value={exp.amount}
-                            onChange={(e) => handleAmountChange(index, e.target.value)}
-                            className={`w-full ${theme.input} ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-lg placeholder-gray-500`}
-                            required
-                          />
-                        </div>
+                        <div className="relative group">
+                                  <input
+                                    type="text"
+                                    pattern="[0-9\+\-\*\/\(\)\.\s]*"
+                                    placeholder="Amount"
+                                    value={exp.amount}
+                                    onChange={(e) => handleAmountChange(index, e.target.value)}
+                                    className={`w-full bg-transparent ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-lg placeholder-gray-500`}
+                                    required
+                                  />
+                                  <div className={`absolute -bottom-50 left-1/2 transform -translate-x-1/2  opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none`}>
+                                  <div className={`w-3 h-3 ${theme.card} border ${theme.border} transform rotate-45 absolute -top-1.5 left-1/2 -translate-x-1/2`}></div>
+                                    <div className={`${theme.card} backdrop-blur-xl p-3 rounded-xl border ${theme.border} shadow-lg w-48`}>
+                                      <div className={`text-sm ${theme.text}`}>
+                                        Quick Tip: You can do arithmetic!
+                                      </div>
+                                      <div className={`text-xs ${theme.textSecondary} mt-1`}>
+                                        Try: 100+200, 500/2, etc. just add a space to calculate
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
                       </div>
 
                       <div className="flex flex-wrap gap-1">
@@ -545,7 +556,7 @@ function AddExpense() {
                               : `${theme.input} ${theme.textSecondary} ${theme.hoverBg}`
                               }`}
                           >
-                            {user.first_name} {user.last_name}
+                            {user.first_name}
                           </button>
                         ))}
                       </div>
@@ -557,7 +568,7 @@ function AddExpense() {
                             const user = users.find(u => u.id === split.user);
                             return user ? (
                               <div key={splitIndex} className="flex items-center justify-between gap-3 px-3 py-2 rounded-xl bg-green-800/50 text-white/70">
-                                <div className={` text-sm`}>{user.first_name} {user.last_name}</div>
+                                <div className={` text-sm`}>{user.first_name}</div>
                                 <input
                                   type="number"
                                   value={split.amount}

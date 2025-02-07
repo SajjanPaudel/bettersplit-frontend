@@ -62,7 +62,7 @@ function Signup() {
   )}
 
   return (
-    <div className="h-[calc(100vh-4rem)] md:h-[calc(100vh-4rem) sm:h-[calc(100vh-4rem)] p-8 flex">
+    <div className="h-[calc(100dvh-2rem)] md:h-[calc(100dvh-4rem)] p-2 lg:p-8 flex overflow-none">
       {/* Left Section with Image */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-[#1A1A1F] rounded-2xl overflow-hidden">
         <div className="absolute inset-0">
@@ -91,7 +91,7 @@ function Signup() {
       </div>
 
       {/* Right Section with Form */}
-      <div className="w-full lg:w-1/2 flex flex-col p-10 lg:p-12 ">
+      <div className="w-full lg:w-1/2 flex flex-col sm:p-2 md:p-8 lg:p-12">
         <div className="flex justify-end mb-5">
           <Link to="/login" className="text-white/80 hover:text-white transition-colors px-6  rounded-full bg-white/10">
             Back to login →
@@ -99,8 +99,8 @@ function Signup() {
         </div>
 
         <div className="max-w-md w-full mx-auto">
-          <h1 className="text-5xl font-light text-white mb-4">Create an account</h1>
-          <p className="text-white/60 mb-8">
+          <h1 className="md:text-5xl lg:text-5xl text-3xl font-light text-white mb-4">Create an account</h1>
+          <p className="text-white/60 mb-2 md:mb-8 lg:mb-8">
             Already have an account? <Link to="/login" className="text-white hover:text-white/80">Log in</Link>
           </p>
 

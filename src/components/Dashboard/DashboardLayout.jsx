@@ -18,13 +18,13 @@ function DashboardLayout({ onLogout }) {
 
   return (
     <div className={`flex h-screen bg-gradient-to-br ${isDark
-        ? 'from-black via-gray-900 to-gray-800'
-        : 'from-white via-purple-100 to-purple-50'
-      } p-4`}>
+      ? 'from-black via-gray-900 to-gray-800'
+      : 'from-white via-purple-100 to-purple-50'
+      } px-4`}>
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className={`lg:hidden fixed top-4 left-4 z-50 p-2 rounded-xl ${theme.input} ${theme.text}`}
+        className={`lg:hidden fixed top-4 z-50 p-2 rounded-xl flex items-center justify-center ${theme.input} ${theme.text}`}
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           {isMobileMenuOpen ? (
@@ -39,30 +39,38 @@ function DashboardLayout({ onLogout }) {
       <div className={`${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:relative left-0 top-0 h-full w-64 ${theme.card} ${theme.textSecondary} flex flex-col rounded-3xl mr-4 shadow-2xl border ${theme.border} transition-transform duration-300 ease-in-out z-40 before:bg-gradient-to-b before:from-white/[0.08] before:to-transparent backdrop-blur-md bg-white/10 dark:bg-black/10`}>
         {/* Logo Section */}
         <div className="p-5">
-          <div className="flex items-center justify-center space-x-2 mb-12">
-            <div className={theme.text}>⬡</div>
-            <div className={`text-2xl font-light font-['Inter'] ${theme.text}`}>BetterSplit</div>
+          <div className="flex items-center justify-center space-x-2 lg:mb-12 md:mb-12 lg:mt-4 md:mt-4 mb-5 mt-10">
+            <div className="text-2xl relative flex flex-col">
+              <div className="flex">
+                <span className={`${theme.text}`}>BETTER</span>
+                <span className="text-purple-500 font-bold">SPLIT</span>
+              </div>
+              <div className="flex -mt-1 opacity-60 blur-[1px] transform -skew-x-5">
+                <span className="text-purple-500 font-bold">SPLIT</span>
+                <span className={`${theme.text}`}>BETTER</span>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Navigation Links */}
-        <nav className="px-6 flex-1">
+        <nav className={`px-6 flex-1 ${theme.text}`}>
           <Link
             to="balance"
             className={`flex items-center space-x-4 px-6 py-5 rounded-2xl mb-2 transition-all ${currentPath === 'balance'
-                ? `bg-[#ffffff14] backdrop-blur-xl ${theme.text}`
-                : `${theme.textSecondary} hover:bg-[#ffffff0a] hover:${theme.text}`
+              ? `bg-purple-800 text-white backdrop-blur-xl `
+              : `hover:bg-purple-400/30 hover:text-white hover:backdrop-blur-xl`
               }`}
           >
             <FaChartPie className="w-5 h-5" />
-            <span className="font-['Inter'] font-light">Dashboard</span>
+            <span className={`font-['Inter'] `}>Dashboard</span>
           </Link>
 
           <Link
             to="activity"
             className={`flex items-center space-x-4 px-6 py-5 rounded-2xl mb-2 transition-all ${currentPath === 'activity'
-                ? `bg-[#ffffff14] backdrop-blur-xl ${theme.text}`
-                : `${theme.textSecondary} hover:bg-[#ffffff0a] hover:${theme.text}`
+              ? `bg-purple-800 text-white backdrop-blur-xl ${theme.text}`
+              : `hover:bg-purple-400/30 hover:text-white hover:backdrop-blur-xl hover:${theme.text}`
               }`}
           >
             <FaHistory className="w-5 h-5" />
@@ -73,8 +81,8 @@ function DashboardLayout({ onLogout }) {
           <Link
             to="add-expense"
             className={`flex items-center space-x-4 px-6 py-5 rounded-2xl mb-2 transition-all ${currentPath === 'add-expense'
-                ? `bg-[#ffffff14] backdrop-blur-xl ${theme.text}`
-                : `${theme.textSecondary} hover:bg-[#ffffff0a] hover:${theme.text}`
+              ? `bg-purple-800 text-white backdrop-blur-xl ${theme.text}`
+              : `hover:bg-purple-400/30 hover:text-white hover:backdrop-blur-xl hover:${theme.text}`
               }`}
           >
             <FaPlus className="w-5 h-5" />
@@ -84,8 +92,8 @@ function DashboardLayout({ onLogout }) {
           <Link
             to="settlements"
             className={`flex items-center space-x-4 px-6 py-5 rounded-2xl mb-2 transition-all ${currentPath === 'settlements'
-                ? `bg-[#ffffff14] backdrop-blur-xl ${theme.text}`
-                : `${theme.textSecondary} hover:bg-[#ffffff0a] hover:${theme.text}`
+              ? `bg-purple-800 text-white backdrop-blur-xl ${theme.text}`
+              : `hover:bg-purple-400/30 hover:text-white hover:backdrop-blur-xl hover:${theme.text}`
               }`}
           >
             <FaExchangeAlt className="w-5 h-5" />
@@ -95,8 +103,8 @@ function DashboardLayout({ onLogout }) {
           <Link
             to="groups"
             className={`flex items-center space-x-4 px-6 py-5 rounded-2xl mb-2 transition-all ${currentPath === 'groups'
-                ? `bg-[#ffffff14] backdrop-blur-xl ${theme.text}`
-                : `${theme.textSecondary} hover:bg-[#ffffff0a] hover:${theme.text}`
+              ? `bg-purple-800 text-white backdrop-blur-xl ${theme.text}`
+              : `hover:bg-purple-400/30 hover:text-white hover:backdrop-blur-xl hover:${theme.text}`
               }`}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -153,14 +161,14 @@ function DashboardLayout({ onLogout }) {
       </div>
 
       {/* Main Content */}
-      <div className={`flex-1 overflow-hidden min-w-0 bg-gradient-to-br  p-4`}>
+      <div className={`flex-1 overflow-hidden min-w-0 bg-gradient-to-br sm:p-2 md:p-4 lg:p-4`}>
         <Outlet />
       </div>
 
       {/* Backdrop */}
       {isMobileMenuOpen && (
         <div
-          className="fixed"
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}

@@ -148,3 +148,13 @@
 :root[data-theme='light'] .react-datepicker__day--disabled {
   color: rgba(0, 0, 0, 0.3) !important;
 }
+
+
+input:invalid {
+  box-shadow: none;
+}
+input::-webkit-validation-bubble-message,
+input::-o-validation-bubble-message,
+input::-ms-validation-bubble-message {
+  display: none;
+}

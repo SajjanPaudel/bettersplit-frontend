@@ -74,7 +74,7 @@ function SettlementHistory() {
   return (
     <div className="max-w-[1400px] mx-auto">
       <div className="flex justify-between items-center mb-6">
-        <h1 className={`text-2xl font-light ${theme.text} pl-12 lg:pl-0`}>Settlement History</h1>
+        <h1 className={`md:text-2xl lg:text-2xl text-lg font-light ${theme.text} pl-12 lg:pl-0 p-6 ` }>Settlements</h1>
         <input
           type="text"
           value={globalFilter}

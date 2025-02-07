@@ -112,7 +112,7 @@ function Balance() {
 
       {/* Overview Cards */}
       {Object.entries(balances).filter(([_, data]) => data.net !== 0).length > 0 ? (
-        <div className="grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mb-6 max-h-[40vh] md:max-h-none overflow-y-auto md:overflow-visible">
+        <div className="grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mb-6 max-h-[40vh] overflow-y-auto">
           {Object.entries(balances)
             .filter(([_, data]) => data.net !== 0)
             .map(([name, data]) => (

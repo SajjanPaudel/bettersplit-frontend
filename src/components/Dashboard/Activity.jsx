@@ -133,14 +133,14 @@ function Activity() {
   return (
     <div className={`mb-8 bg-gradient-to-br rounded-2xl`}>
       <div className={`h-screen flex flex-col mb-10 rounded-2xl`}>
-        <div className={`flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4 p-4 lg:p-8  backdrop-blur-md  sticky top-0 z-20`}>
+        <div className={`flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4 p-8 lg:p-8  backdrop-blur-md  sticky top-0 z-20`}>
           <div className="flex lg:flex-row sm:flex-row gap-4 w-max lg:w-auto">
             <input
               type="text"
               value={globalFilter}
               onChange={e => setGlobalFilter(e.target.value)}
               placeholder="Search activities..."
-              className={`w-full lg:w-auto px-4 py-2 ${theme.input} ${theme.text} rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none`}
+              className={`w-full lg:w-auto px-4 py-6 ${theme.input} ${theme.text} rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none`}
             />
             <button
               onClick={() => setShowModal(true)}

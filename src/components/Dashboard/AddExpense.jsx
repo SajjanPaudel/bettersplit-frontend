@@ -7,6 +7,7 @@ import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { endpoints } from '../../config/api';
 import { Link } from 'react-router-dom';
+import { FaCalculator } from 'react-icons/fa';
 
 function AddExpense() {
   const { theme, isDark } = useTheme();
@@ -16,6 +17,10 @@ function AddExpense() {
   const [error, setError] = useState('');
   const [selectedGroup, setSelectedGroup] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [showCalculator, setShowCalculator] = useState(false);
+  const [calcResult, setCalcResult] = useState('');
+  const [fullHistory, setFullHistory] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const removeBill = (indexToRemove) => {
     setExpenses(prev => prev.filter((_, index) => index !== indexToRemove));
@@ -30,6 +35,33 @@ function AddExpense() {
     selectedUsers: [],
     group: ''
   }]);
+
+  const handleCalcButtonClick = (value) => {
+    if (value === '=') {
+      try {
+        const result = eval(calcResult).toString();
+        setFullHistory(prev => [...prev, `${calcResult} = ${result}`]);
+        setCalcResult(result);
+      } catch (error) {
+        setCalcResult('Error');
+      }
+    } else if (value === 'C') {
+      setCalcResult('');
+      setFullHistory([]);
+    } else if (value === '⌫') {
+      setCalcResult(prev => prev.slice(0, -1));
+    } else if (value === '%') {
+      try {
+        const result = (eval(calcResult) / 100).toString();
+        setFullHistory(prev => [...prev, `${calcResult}% = ${result}`]);
+        setCalcResult(result);
+      } catch (error) {
+        setCalcResult('Error');
+      }
+    } else {
+      setCalcResult(prev => prev + value);
+    }
+  };
 
   const addNewExpense = () => {
     setExpenses(prev => [...prev, {
@@ -48,6 +80,7 @@ function AddExpense() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setIsSubmitting(true);
 
 
 
@@ -71,7 +104,7 @@ function AddExpense() {
       const submissionPromises = expenses.map(exp => {
         const expenseData = {
           name: exp.name,
-          amount: exp.amount,
+          amount: parseFloat(exp.amount),
           date: exp.date,
           paid_by: exp.paid_by,
           splits: exp.splits,
@@ -92,6 +125,8 @@ function AddExpense() {
     } catch (err) {
       console.error('Submission error:', err);
       setError(err.response?.data?.message || 'Failed to add expenses');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -132,11 +167,31 @@ function AddExpense() {
     setExpenses(prev => prev.map((exp, i) => {
       if (i !== expenseIndex) return exp;
 
+      const totalAmount = parseFloat(exp.amount) || 0;
       const newSplits = [...exp.splits];
+
+      // Update the changed split amount
       newSplits[splitIndex] = {
         ...newSplits[splitIndex],
-        amount: value
+        amount: value,
+        isManuallySet: true // Mark this split as manually set
       };
+
+      // Calculate total of manually set amounts
+      const manualSplits = newSplits.filter(split => split.isManuallySet);
+      const manualTotal = manualSplits.reduce((sum, split) => sum + (parseFloat(split.amount) || 0), 0);
+
+      // Calculate remaining amount for automatic distribution
+      const remainingAmount = totalAmount - manualTotal;
+      const autoSplits = newSplits.filter(split => !split.isManuallySet);
+
+      // Distribute remaining amount among non-manual splits
+      if (autoSplits.length > 0) {
+        const equalShare = (remainingAmount / autoSplits.length).toFixed(2);
+        autoSplits.forEach(split => {
+          split.amount = equalShare;
+        });
+      }
 
       return {
         ...exp,
@@ -153,6 +208,19 @@ function AddExpense() {
   const handleAmountChange = (index, value) => {
     setExpenses(prev => prev.map((exp, i) => {
       if (i !== index) return exp;
+
+      // Check if the value ends with a space and contains arithmetic operations
+      if (value.endsWith(' ') && /[+\-*/]/.test(value)) {
+        try {
+          // Remove the space and evaluate the expression
+          const expression = value.trim();
+          const result = eval(expression).toString();
+          value = result;
+        } catch (error) {
+          // If evaluation fails, keep the original value without the space
+          value = value.trim();
+        }
+      }
 
       const equalAmount = value
         ? (parseFloat(value) / (exp.selectedUsers.length || 1)).toFixed(2)
@@ -234,9 +302,17 @@ function AddExpense() {
               <button
                 type="submit"
                 form="expense-form"
-                className="px-4 lg:px-6 py-2.5 text-white rounded-xl bg-green-500/50 hover:bg-green-500/60 transition-all"
+                disabled={isSubmitting}
+                className="px-4 lg:px-6 py-2.5 text-white rounded-xl bg-green-500/50 hover:bg-green-500/60 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                Save All
+                {isSubmitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/20 border-t-white/100"></div>
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  'Save All'
+                )}
               </button>
 
               <button
@@ -447,7 +523,8 @@ function AddExpense() {
 
                         <div>
                           <input
-                            type="number"
+                            type="text"
+                            pattern="[0-9\+\-\*\/\(\)\.\s]*"
                             placeholder="Amount"
                             value={exp.amount}
                             onChange={(e) => handleAmountChange(index, e.target.value)}
@@ -501,6 +578,68 @@ function AddExpense() {
           </div>
         )}
       </div>
+      <button
+        onClick={() => setShowCalculator(!showCalculator)}
+        className="fixed bottom-10 right-12 p-4 rounded-full bg-purple-500/50 hover:bg-purple-500/60 text-white transition-all shadow-lg"
+      >
+        <FaCalculator className="text-xl" />
+      </button>
+
+      {/* Calculator Modal */}
+      {showCalculator && (
+        <div className="fixed bottom-24 right-6 z-50">
+          <div className={`${theme.card} backdrop-blur-xl p-4 rounded-2xl border ${theme.border} shadow-xl w-80`}>
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h3 className={`text-lg font-medium ${theme.text}`}>Calculator</h3>
+                <p className={`text-xs ${theme.textSecondary}`}>Tip: click calculator icon to minimize</p>
+              </div>
+              <button
+                onClick={() => setShowCalculator(false)}
+                className={`${theme.textSecondary} hover:text-red-400`}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className={`w-full mb-4 ${theme.input} ${theme.text} px-4 py-2 rounded-xl flex flex-col`}>
+              <div className={`text-sm ${theme.textSecondary} max-h-32 overflow-y-auto space-y-1`}>
+                {fullHistory.map((hist, index) => (
+                  <div key={index} className="text-right">{hist}</div>
+                ))}
+              </div>
+              <div className="text-right text-2xl overflow-x-auto mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                {calcResult || '0'}
+              </div>
+            </div>
+
+            <div className={`grid ${theme.text} grid-cols-4 gap-2`}>
+              {[
+                '%', '(', ')', 'C',
+                '7', '8', '9', '/',
+                '4', '5', '6', '*',
+                '1', '2', '3', '-',
+                '⌫', '0', '=', '+'
+              ].map((btn) => (
+                <button
+                  key={btn}
+                  onClick={() => handleCalcButtonClick(btn)}
+                  className={`${btn === '='
+                    ? 'bg-purple-500/50 hover:bg-purple-500/60 text-white'
+                    : btn === 'C'
+                      ? 'bg-red-500/50 hover:bg-red-500/60 text-white'
+                      : btn === '⌫'
+                        ? 'bg-yellow-500/50 hover:bg-yellow-500/60 text-white'
+                        : `${theme.input} hover:bg-purple-500/10`
+                    } p-3 rounded-xl text-lg transition-all`}
+                >
+                  {btn}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

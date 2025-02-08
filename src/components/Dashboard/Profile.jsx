@@ -13,6 +13,8 @@ import {
 import { QRCodeSVG } from 'qrcode.react';
 import bankData from '../../data/bankData.json';
 import Select from 'react-select';
+import QrScanner from 'react-qr-scanner';
+import jsQR from 'jsqr';
 
 function Profile() {
     const { theme, isDark } = useTheme();
@@ -32,6 +34,168 @@ function Profile() {
         Khalti_ID: ''
     });
     const [isPrimary, setIsPrimary] = useState(false);
+    const [showScanner, setShowScanner] = useState(false);
+    const [scannerError, setScannerError] = useState('');
+
+    // Add this new function to handle image uploads
+
+    // Add state for camera access
+    const [showCamera, setShowCamera] = useState(false);
+
+    // Update the QRScannerModal component
+    const QRScannerModal = () => (
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className={`${theme.card} rounded-2xl border ${theme.border} p-6 shadow-xl max-w-md w-full`}>
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className={`text-lg font-semibold ${theme.text}`}>Scan QR Code</h3>
+                    <button 
+                        onClick={() => setShowScanner(false)}
+                        className={`${theme.textSecondary} hover:${theme.text}`}
+                    >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div className="relative space-y-4">
+                    <div className="flex flex-col gap-4 items-center">
+                        <label className="px-4 py-2 bg-purple-500 text-white rounded-lg cursor-pointer hover:bg-purple-600 transition-colors flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                            </svg>
+                            Upload QR Image
+                            <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={handleImageUpload}
+                            />
+                        </label>
+                        <button
+                            onClick={() => setShowCamera(true)}
+                            className="px-4 py-2 bg-blue-500 text-white rounded-lg flex items-center gap-2 hover:bg-blue-600 transition-colors"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                            </svg>
+                            Use Camera
+                        </button>
+                    </div>
+                    {showCamera && (
+                        <div>
+                            <QrScanner
+                                onScan={handleScan}
+                                onError={handleScanError}
+                                style={{ width: '100%' }}
+                                constraints={{
+                                    video: { facingMode: 'environment' }
+                                }}
+                            />
+                        </div>
+                    )}
+                    {scannerError && (
+                        <p className="text-red-500 text-sm mt-2">{scannerError}</p>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+    const handleScan = (data) => {
+        if (data) {
+            try {
+                const parsedData = JSON.parse(data.text);
+                const detectedType = determineAccountType(parsedData);
+                
+                if (!detectedType) {
+                    setScannerError('Invalid account type in QR code');
+                    return;
+                }
+
+                // Set account type first
+                setAccountType(detectedType);
+
+                // For bank accounts, convert bank code to bank name
+                // if (detectedType === 'bank' && parsedData.bankCode) {
+                //     const bank = bankData.list.find(b => b.swift_code === parsedData.bankCode);
+                //     if (bank) {
+                //         parsedData.bankCode = bank.bank;
+                //     }
+                // }
+
+                setAccountDetails(parsedData);
+                setShowScanner(false);
+                setShowAddAccountModal(true);
+            } catch (error) {
+                console.error('Error parsing QR code:', error);
+                setScannerError('Invalid QR code format');
+            }
+        }
+    };
+
+    const handleScanError = (err) => {
+        console.error(err);
+        setScannerError('Error scanning QR code');
+    };
+
+    const determineAccountType = (data) => {
+        if (data.bankCode && data.accountNumber) return 'bank';
+        if (data.eSewa_id) return 'esewa';
+        if (data.Khalti_ID) return 'khalti';
+        return null;
+    };
+
+    const handleImageUpload = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                    
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const code = jsQR(imageData.data, imageData.width, imageData.height);
+                    
+                    if (code) {
+                        try {
+                            const parsedData = JSON.parse(code.data);
+                            const detectedType = determineAccountType(parsedData);
+
+                            if (!detectedType) {
+                                setScannerError('Invalid account type in QR code');
+                                return;
+                            }
+
+                            // Set account type first
+                            setAccountType(detectedType);
+
+                            // For bank accounts, convert bank code to bank name
+                            // if (detectedType === 'bank' && parsedData.bankCode) {
+                            //     const bank = bankData.list.find(b => b.swift_code === parsedData.bankCode);
+                            //     if (bank) {
+                            //         parsedData.bankCode = bank.bank;
+                            //     }
+                            // }
+
+                            setAccountDetails(parsedData);
+                            setShowScanner(false);
+                            setShowAddAccountModal(true);
+                        } catch (error) {
+                            setScannerError('Invalid QR code format');
+                        }
+                    } else {
+                        setScannerError('No QR code found in image');
+                    }
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const bankOptions = bankData.list.map(bank => ({
         value: bank.bank,
@@ -56,24 +220,49 @@ function Profile() {
         fetchProfile();
     }, []);
 
-    const handleAddAccount = async () => {
-        try {
-            const accessToken = localStorage.getItem('access_token');
-            const response = await axios.post(`${endpoints.accounts}`, {
-                account_type: accountType,
-                account_details: accountDetails,
-                is_primary: isPrimary
-            }, {
-                headers: { 'Authorization': `Bearer ${accessToken}` }
-            });
-            if (response.data.success) {
-                // Refresh profile data or handle success
-                setShowAddAccountModal(false);
+    // Add new state for loading
+        const [isSubmitting, setIsSubmitting] = useState(false);
+    
+        const handleAddAccount = async () => {
+            try {
+                setIsSubmitting(true);
+                const accessToken = localStorage.getItem('access_token');
+                const response = await axios.post(`${endpoints.accounts}`, {
+                    account_type: accountType,
+                    account_details: accountDetails,
+                    is_primary: isPrimary
+                }, {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+                if (response.data.success) {
+                    const profileResponse = await axios.get(endpoints.profile, {
+                        headers: { 'Authorization': `Bearer ${accessToken}` }
+                    });
+                    setProfileData(profileResponse.data.data);
+                    setShowAddAccountModal(false);
+                }
+            } catch (error) {
+                console.error('Error adding account:', error);
+            } finally {
+                setIsSubmitting(false);
             }
-        } catch (error) {
-            console.error('Error adding account:', error);
-        }
-    };
+        };
+    
+        // Update the Add Account button in the modal
+        <button
+            onClick={handleAddAccount}
+            disabled={isSubmitting}
+            className="px-4 py-2 bg-green-500 text-white rounded-lg flex items-center gap-2 disabled:opacity-50"
+        >
+            {isSubmitting ? (
+                <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Adding...
+                </>
+            ) : (
+                'Add Account'
+            )}
+        </button>
 
     const handleBankChange = (e) => {
         const selectedBank = bankData.list.find(bank => bank.bank === e.target.value);
@@ -144,7 +333,11 @@ function Profile() {
                                                     <FaWallet className={`${theme.text}`} />
                                                 )}
                                                 <span className={`font-semibold ${theme.text}`}>
-                                                    {account.account_type === 'bank' ? bankName : account.account_type === 'esewa' ? 'ESewa' : 'Khalti'}
+                                                    {account.account_type === 'bank' 
+                                                        ? bankData.list.find(b => b.swift_code === account.account_details.bankCode)?.bank 
+                                                        : account.account_type === 'esewa' 
+                                                            ? 'ESewa' 
+                                                            : 'Khalti'}
                                                 </span>
                                             </div>
                                             {account.is_primary && (
@@ -236,9 +429,21 @@ function Profile() {
 
                 {/* Add Account Modal */}
                 {showAddAccountModal && (
+                    
                     <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
-                        <div className={`${theme.card}  rounded-2xl border ${theme.border} p-6 rounded-2xl shadow-xl max-w-md w-full grid grid-cols-1  gap-4 items-start`}>
-                            <h3 className={`${theme.text} font-light mb-4`}>Add Payment Method</h3>
+                        <div className={`${theme.card} rounded-2xl border ${theme.border} p-6 rounded-2xl shadow-xl max-w-md w-full grid grid-cols-1 gap-4 items-start`}>
+                            <div className="flex justify-between items-center">
+                                <h3 className={`${theme.text} font-light mb-4`}>Add Payment Method</h3>
+                                <button
+                                    onClick={() => setShowScanner(true)}
+                                    className="px-4 py-2 bg-purple-500 text-white rounded-lg flex items-center gap-2"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M3 4a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm2 2V5h1v1H5zM3 13a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1v-3zm2 2v-1h1v1H5zM13 3a1 1 0 00-1 1v3a1 1 0 001 1h3a1 1 0 001-1V4a1 1 0 00-1-1h-3zm1 2v1h1V5h-1z" clipRule="evenodd" />
+                                    </svg>
+                                    Scan QR
+                                </button>
+                            </div>
                             <div className="mb-4">
                                 <label className={`${theme.text} block mb-2`}>Account Type</label>
                                 <Select
@@ -458,6 +663,7 @@ function Profile() {
                         </div>
                     </div>
                 )}
+                {showScanner && <QRScannerModal />}
             </div>
         </div>
     );

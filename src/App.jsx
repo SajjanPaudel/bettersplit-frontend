@@ -10,6 +10,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import Signup from './components/Signup';
 import Groups from './components/Dashboard/Groups';
 import GroupDetail from './components/Dashboard/GroupDetail';
+import Profile from './components/Dashboard/Profile';
 import { Toaster } from 'react-hot-toast';
 
 function App() {
@@ -25,7 +26,7 @@ function App() {
 
   return (
     <>
-    <Toaster 
+      <Toaster
         position="bottom-right"
         toastOptions={{
           style: {
@@ -45,59 +46,59 @@ function App() {
           },
         }}
       />
-    <ThemeProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route
-            path="/"
-            element={isAuth ? <Navigate to="/dashboard/activity" replace /> : <Navigate to="/login" replace />}
-          />
-          <Route
-            path="/login"
-            element={
-              isAuth ? (
-                <Navigate to="/dashboard/activity" replace />
-              ) : (
-                <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 p-8 md:p-8">
-                  <div className="rounded-2xl bg-gradient-to-br overflow-hidden shadow-2xl">
-                    <Login onAuth={handleAuthUpdate} />
+      <ThemeProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route
+              path="/"
+              element={isAuth ? <Navigate to="/dashboard/balance" replace /> : <Navigate to="/login" replace />}
+            />
+            <Route
+              path="/login"
+              element={
+                isAuth ? (
+                  <Navigate to="/dashboard/balance" replace />
+                ) : (
+                  <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 p-8 md:p-8">
+                    <div className="rounded-2xl bg-gradient-to-br overflow-hidden shadow-2xl">
+                      <Login onAuth={handleAuthUpdate} />
+                    </div>
                   </div>
-                </div>
-              )
-            }
-          />
-          <Route
-            path="/dashboard"
-            element={isAuth ? <DashboardLayout onLogout={() => handleAuthUpdate(false)} /> : <Navigate to="/login" replace />}
-          >
-            <Route index element={<Navigate to="activity" replace />} />
-            <Route path="balance" element={<Balance />} />
-            <Route path="activity" element={<Activity />} />
-            <Route path="add-expense" element={<AddExpense />} />
-            <Route path="settlements" element={<SettlementHistory />} />
-            // In your routes configuration
+                )
+              }
+            />
+            <Route
+              path="/dashboard"
+              element={isAuth ? <DashboardLayout onLogout={() => handleAuthUpdate(false)} /> : <Navigate to="/login" replace />}
+            >
+              <Route index element={<Navigate to="activity" replace />} />
+              <Route path="balance" element={<Balance />} />
+              <Route path="activity" element={<Activity />} />
+              <Route path="add-expense" element={<AddExpense />} />
+              <Route path="settlements" element={<SettlementHistory />} />
               <Route path="groups" element={<Groups />} />
               <Route path="groups/:id" element={<GroupDetail />} />
-          </Route>
-          <Route
-            path="/signup"
-            element={
-              isAuth ? (
-                <Navigate to="/dashboard/activity" replace />
-              ) : (
-                <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 p-8 md:p-8">
-                  <div className="bg-gradient-to-br rounded-2xl overflow-hidden shadow-2xl">
-                  {/* <div className="bg-gradient-to-br from-purple-900/20 via-purple-950/20 to-gray-950/20 backdrop-blur-xl rounded-2xl overflow-hidden shadow-2xl"> */}
-                    <Signup />
+              <Route path="profile" element={<Profile />} />
+            </Route>
+            <Route
+              path="/signup"
+              element={
+                isAuth ? (
+                  <Navigate to="/dashboard/activity" replace />
+                ) : (
+                  <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 p-8 md:p-8">
+                    <div className="bg-gradient-to-br rounded-2xl overflow-hidden shadow-2xl">
+                      {/* <div className="bg-gradient-to-br from-purple-900/20 via-purple-950/20 to-gray-950/20 backdrop-blur-xl rounded-2xl overflow-hidden shadow-2xl"> */}
+                      <Signup />
+                    </div>
                   </div>
-                </div>
-              )
-            }
-          />
-          <Route path="/dashboard/groups" element={<Groups />} />
-        </Routes>
-      </BrowserRouter>
-    </ThemeProvider>
+                )
+              }
+            />
+            <Route path="/dashboard/groups" element={<Groups />} />
+          </Routes>
+        </BrowserRouter>
+      </ThemeProvider>
     </>
   );
 }

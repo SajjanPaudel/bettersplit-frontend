@@ -5,6 +5,7 @@ import { endpoints } from '../../config/api';
 import { FaUser, FaUsers, FaCalendar } from 'react-icons/fa';
 import { FaChevronDown } from 'react-icons/fa';
 import { Menu } from '@headlessui/react';
+import { QRCodeSVG } from 'qrcode.react';
 
 // Add these imports at the top
 import {
@@ -48,7 +49,22 @@ function Balance() {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('metrics'); // Add this line
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7)); // Format: YYYY-MM
+  const [recipientAccount, setRecipientAccount] = useState(null);
 
+  // Function to fetch recipient's accounts
+  const fetchRecipientAccount = async (username) => {
+    try {
+      const accessToken = localStorage.getItem('access_token');
+      const response = await axios.get(endpoints.balances, {
+        headers: { 'Authorization': `Bearer ${accessToken}` }
+      });
+      const accounts = response.data.data.accounts[username] || [];
+      const firstAccount = accounts.find(acc => acc.is_primary) || accounts[0];
+      setRecipientAccount(firstAccount);
+    } catch (error) {
+      console.error('Error fetching recipient account:', error);
+    }
+  };
 
 
   // Add this effect to close dropdown when clicking outside
@@ -344,7 +360,7 @@ function Balance() {
         } h-[45vh]`}>
         {/* Tabs */}
         <div className="flex space-x-2 mb-4">
-        <button
+          <button
             onClick={() => setActiveTab('metrics')}
             className={`px-4 py-2 rounded-xl text-sm transition-all ${activeTab === 'metrics'
               ? `${theme.text} bg-purple-500/20`
@@ -407,6 +423,8 @@ function Balance() {
                             setSelectedSettlement(settlement);
                             setShowSettleModal(true);
                             setEditAmount(settlement.amount);
+                            fetchRecipientAccount(settlement.to); // Wait for the account to be fetched
+                            setShowSettleModal(true);
                           }
                         }}
                         disabled={calculationType === 'net' || String(settlement.to) !== String(loggedInUser.username)}
@@ -470,91 +488,91 @@ function Balance() {
                 {/* Chart container adjustments */}
                 <div className={`mb-4 flex-1 flex flex-col ${showOnlyMine ? 'lg:h-[30vh] md:h-[35vh] h-[45vh] ' : 'lg:h-[30vh] md:h-[20vh]'
                   }`}>
-                    <Line
-                      data={{
-                        labels: dailyExpenses.map(item => item.date),
-                        datasets: [
-                          {
-                            label: 'Daily Expenses',
-                            data: dailyExpenses.map(item => item.amount),
-                            borderColor: 'rgb(147, 51, 234)',
-                            backgroundColor: 'rgba(147, 51, 234, 0.5)',
-                            tension: 0.4,
-                          },
-                        ],
-                      }}
-                      // Update the Line chart options
-                      options={{
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        interaction: {
+                  <Line
+                    data={{
+                      labels: dailyExpenses.map(item => item.date),
+                      datasets: [
+                        {
+                          label: 'Daily Expenses',
+                          data: dailyExpenses.map(item => item.amount),
+                          borderColor: 'rgb(147, 51, 234)',
+                          backgroundColor: 'rgba(147, 51, 234, 0.5)',
+                          tension: 0.4,
+                        },
+                      ],
+                    }}
+                    // Update the Line chart options
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                      },
+                      plugins: {
+                        legend: {
+                          display: false,
+                        },
+                        tooltip: {
+                          enabled: true,
                           mode: 'nearest',
-                          axis: 'x',
-                          intersect: false
-                        },
-                        plugins: {
-                          legend: {
-                            display: false,
+                          intersect: false,
+                          position: 'nearest',
+                          bodySpacing: 4,
+                          bodyFont: {
+                            size: 12
                           },
-                          tooltip: {
-                            enabled: true,
-                            mode: 'nearest',
-                            intersect: false,
-                            position: 'nearest',
-                            bodySpacing: 4,
-                            bodyFont: {
-                              size: 12
-                            },
-                            titleFont: {
-                              size: 12
-                            },
-                            padding: 10,
-                            displayColors: false,
-                            callbacks: {
-                              label: (context) => {
-                                const dayData = dailyExpenses[context.dataIndex];
-                                const expenseNames = dayData.expenses.map(exp => exp.name);
-                                const lines = [];
+                          titleFont: {
+                            size: 12
+                          },
+                          padding: 10,
+                          displayColors: false,
+                          callbacks: {
+                            label: (context) => {
+                              const dayData = dailyExpenses[context.dataIndex];
+                              const expenseNames = dayData.expenses.map(exp => exp.name);
+                              const lines = [];
 
-                                // Add total first
-                                lines.push('Total: Rs ' + context.parsed.y.toFixed(2));
+                              // Add total first
+                              lines.push('Total: Rs ' + context.parsed.y.toFixed(2));
 
-                                // Split items into multiple lines with max 2-3 items per line
-                                const itemsPerLine = window.innerWidth < 768 ? 2 : 3;
-                                for (let i = 0; i < expenseNames.length; i += itemsPerLine) {
-                                  const chunk = expenseNames.slice(i, i + itemsPerLine);
-                                  lines.push(chunk.join(', '));
-                                }
-
-                                return lines;
+                              // Split items into multiple lines with max 2-3 items per line
+                              const itemsPerLine = window.innerWidth < 768 ? 2 : 3;
+                              for (let i = 0; i < expenseNames.length; i += itemsPerLine) {
+                                const chunk = expenseNames.slice(i, i + itemsPerLine);
+                                lines.push(chunk.join(', '));
                               }
-                            }
-                          },
-                        },
-                        scales: {
-                          y: {
-                            beginAtZero: true,
-                            grid: {
-                              color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-                            },
-                            ticks: {
-                              color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)',
-                              callback: (value) => `${value}`
-                            }
-                          },
-                          x: {
-                            grid: {
-                              display: false,
-                            },
-                            ticks: {
-                              color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)',
-                              maxRotation: 45,
-                              minRotation: 45
+
+                              return lines;
                             }
                           }
+                        },
+                      },
+                      scales: {
+                        y: {
+                          beginAtZero: true,
+                          grid: {
+                            color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                          },
+                          ticks: {
+                            color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)',
+                            callback: (value) => `${value}`
+                          }
+                        },
+                        x: {
+                          grid: {
+                            display: false,
+                          },
+                          ticks: {
+                            color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)',
+                            maxRotation: 45,
+                            minRotation: 45
+                          }
                         }
-                      }}
-                    />
+                      }
+                    }}
+                  />
                 </div>
               </div>
             </div>
@@ -572,6 +590,33 @@ function Balance() {
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
           <div className={`${theme.card} backdrop-blur-md bg-white/10 dark:bg-black/10 p-8 rounded-2xl shadow-xl max-w-md w-full border ${theme.border}`}>
             <h3 className={`text-xl font-light font-['Inter'] ${theme.text} mb-6`}>Confirm Settlement</h3>
+            <div className="flex flex-col items-center justify-center mt-4 p-4 bg-black/10 rounded-xl">
+              {recipientAccount ? (
+                <>
+                  <QRCodeSVG
+                    value={JSON.stringify(recipientAccount.account_details)}
+                    size={200}
+                    level="H"
+                    bgColor={`transparent`}
+                    fgColor={`${theme.color}`}
+                    includeMargin={true}
+                    className="mb-4"
+                  />
+                  <div className="text-center text-sm text-gray-600">
+                    <p>Scan to get payment details</p>
+                    <p className="font-semibold mt-2">
+                      {recipientAccount.account_type === 'bank' 
+                        ? recipientAccount.account_details.accountType
+                        : 'eSewa'}
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <div className={`text-center ${theme.textSecondary}`}>
+                  No payment methods available
+                </div>
+              )}
+            </div>
             <div className="space-y-4">
               <div>
                 <p className={`text-sm ${theme.textSecondary} font-['Inter'] mb-1`}>From</p>

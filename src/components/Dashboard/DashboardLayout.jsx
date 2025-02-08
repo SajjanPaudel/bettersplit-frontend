@@ -1,4 +1,4 @@
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { FaChartPie, FaHistory, FaPlus, FaExchangeAlt, FaSignOutAlt } from 'react-icons/fa';
 import { useState } from 'react';
 import { useTheme } from '../../context/ThemeContext';
@@ -12,7 +12,7 @@ function DashboardLayout({ onLogout }) {
   const { isDark, toggleTheme, theme } = useTheme();
 
   const handleLogout = () => {
-    onLogout();
+    onLogout(false);
     navigate('/login');
   };
 
@@ -140,16 +140,19 @@ function DashboardLayout({ onLogout }) {
         {/* Profile Section */}
         <div className={`p-4 border-t ${theme.border} rounded-b-3xl`}>
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <img
-                src="https://ui-avatars.com/api/?name=User&background=random"
-                alt="Profile"
-                className="w-10 h-10 rounded-full"
-              />
-              <div className={`font-light font-['Inter'] ${theme.text}`}>
-                {JSON.parse(localStorage.getItem('user'))?.username || 'User'}
-              </div>
-            </div>
+            <Link
+              to="/dashboard/profile"
+              className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-colors ${
+                currentPath === 'profile' 
+                  ? 'bg-purple-800 text-white backdrop-blur-xl'
+                  : 'hover:bg-purple-400/30 hover:text-white hover:backdrop-blur-xl'
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+              </svg>
+              <span className="font-['Inter'] font-light">{JSON.parse(localStorage.getItem('user'))?.username || 'User'}</span>
+            </Link>
             <button
               onClick={handleLogout}
               className={`${theme.textSecondary} hover:${theme.text} transition-colors p-2`}

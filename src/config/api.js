@@ -10,5 +10,7 @@ export const endpoints = {
   login: `${API_URL}/users/login/`,
   register: `${API_URL}/users/register/`,
   userSearch: `${API_URL}/users/search/`,
-  groups: `${API_URL}/split/groups/`
+  groups: `${API_URL}/split/groups/`,
+  profile: `${API_URL}/users/profile/`,
+  accounts: `${API_URL}/split/expenses/accounts/`
 };

@@ -3,7 +3,11 @@ import { createContext, useContext, useState, useEffect } from 'react';
 const ThemeContext = createContext();
 
 export function ThemeProvider({ children }) {
-  const [isDark, setIsDark] = useState(localStorage.getItem('theme') === 'dark');
+  // Set default theme to dark mode
+  const [isDark, setIsDark] = useState(() => {
+    const savedTheme = localStorage.getItem('theme');
+    return savedTheme ? savedTheme === 'dark' : true; // Default to dark if no theme is saved
+  });
 
   useEffect(() => {
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
@@ -22,6 +26,7 @@ export function ThemeProvider({ children }) {
     input: isDark ? 'bg-[#ffffff0a]' : 'bg-white',
     inputBorder: isDark ? 'border-[#ffffff1a]' : 'border-gray-300',
     inputFocus: isDark ? 'focus:border-[#ffffff33]' : 'focus:border-blue-500',
+    color: isDark ? 'white' : 'black'
   };
 
   return (

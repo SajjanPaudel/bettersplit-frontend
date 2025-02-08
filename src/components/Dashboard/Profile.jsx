@@ -11,9 +11,11 @@ import {
     FaWallet
 } from 'react-icons/fa6';
 import { QRCodeSVG } from 'qrcode.react';
+import bankData from '../../data/bankData.json';
+import Select from 'react-select';
 
 function Profile() {
-    const { theme } = useTheme();
+    const { theme, isDark } = useTheme();
     const [profileData, setProfileData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('accounts');
@@ -30,6 +32,11 @@ function Profile() {
         Khalti_ID: ''
     });
     const [isPrimary, setIsPrimary] = useState(false);
+
+    const bankOptions = bankData.list.map(bank => ({
+        value: bank.bank,
+        label: bank.bank
+    }));
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -68,6 +75,11 @@ function Profile() {
         }
     };
 
+    const handleBankChange = (e) => {
+        const selectedBank = bankData.list.find(bank => bank.bank === e.target.value);
+        setAccountDetails({ ...accountDetails, bankCode: selectedBank ? selectedBank.swift_code : '' });
+    };
+
     const QRModal = ({ account, onClose }) => (
         <div className="fixed inset-0 flex items-center justify-center  backdrop-blur-sm z-50" onClick={onClose}>
             <div className={`${theme.card} backdrop-blur-md justify-center p-6 rounded-2xl max-w-sm w-full mx-4 border ${theme.border}`} onClick={e => e.stopPropagation()}>
@@ -82,7 +94,7 @@ function Profile() {
                 <div className="rounded-xl flex justify-center items-center">
                     <QRCodeSVG
                         value={JSON.stringify(account.account_details)}
-                        size={400}
+                        size='h-max'
                         bgColor='transparent'
                         fgColor={theme.color}
                         level="H"
@@ -90,7 +102,7 @@ function Profile() {
                     />
                 </div>
                 <div className={`text-center mt-4 ${theme.text}`}>
-                    <p className="font-semibold">{account.account_type === 'bank' ? account.account_details.accountType : account.account_type}</p>
+                    <p className="font-semibold">{account.account_type === 'bank' ? account.account_details.bankCode : account.account_type}</p>
                     <p className="text-sm mt-1">
                         {account.account_type === 'bank' ? account.account_details.accountNumber :
                             account.account_type === 'esewa' ? account.account_details.eSewa_id :
@@ -103,41 +115,9 @@ function Profile() {
 
     const renderTabContent = () => {
         switch (activeTab) {
-
-            case 'activity':
-                return (
-                    <div className={`${theme.card} rounded-2xl p-6 backdrop-blur-xl border ${theme.border}`}>
-                        <h2 className={`text-xl font-semibold mb-4 ${theme.text}`}>Recent Activity</h2>
-                        <div className="space-y-4">
-                            {profileData.activities.map((activity) => (
-                                <div key={activity.id} className={`${theme.input} rounded-xl p-4`}>
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <p className={`font-semibold ${theme.text}`}>
-                                                {activity.type === 'expense' ? activity.name : 'Settlement'}
-                                            </p>
-                                            <p className={`text-sm ${theme.textSecondary}`}>
-                                                {activity.type === 'expense'
-                                                    ? `Paid by ${activity.paid_by} in ${activity.group}`
-                                                    : `${activity.from_user} → ${activity.to_user}`}
-                                            </p>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className={`font-semibold ${theme.text}`}>Rs {activity.amount}</p>
-                                            <p className={`text-sm ${theme.textSecondary}`}>
-                                                {new Date(activity.type === 'expense' ? activity.created_at : activity.settled_at).toLocaleDateString()}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                );
-
             case 'accounts':
                 return (
-                    <div className={`${theme.card} rounded-2xl p-6 backdrop-blur-xl border ${theme.border}`}>
+                    <div className={`h-[60vh] ${theme.card} rounded-2xl p-6 backdrop-blur-xl border ${theme.border}`}>
                         <h2 className={`text-xl font-semibold mb-4 ${theme.text}`}>Payment Methods</h2>
                         <button
                             onClick={() => setShowAddAccountModal(true)}
@@ -145,50 +125,55 @@ function Profile() {
                         >
                             Add Payment Method
                         </button>
-                        <div className="space-y-4">
-                            {profileData.accounts.map((account) => (
-                                <div
-                                    key={account.id}
-                                    className={`${theme.input} rounded-xl p-4 cursor-pointer hover:bg-purple-500/10 transition-colors`}
-                                    onClick={() => setSelectedAccount(account)}
-                                >
-                                    <div className="flex items-center justify-between mb-2">
-                                        <div className="flex items-center space-x-3">
-                                            {account.account_type === 'bank' ? (
-                                                <FaBuildingColumns className={`${theme.text}`} />
-                                            ) : (
-                                                <FaWallet className={`${theme.text}`} />
+                        <div className="space-y-4 overflow-y-auto" style={{ maxHeight: '40vh' }}>
+                            {profileData.accounts.map((account) => {
+                                const bankName = account.account_type === 'bank'
+                                    ? bankData.list.find(bank => bank.swift_code === account.account_details.bankCode)?.bank
+                                    : null;
+                                return (
+                                    <div
+                                        key={account.id}
+                                        className={`${theme.input} rounded-xl p-4 cursor-pointer hover:bg-purple-500/10 transition-colors`}
+                                        onClick={() => setSelectedAccount(account)}
+                                    >
+                                        <div className="flex items-center justify-between mb-2">
+                                            <div className="flex items-center space-x-3">
+                                                {account.account_type === 'bank' ? (
+                                                    <FaBuildingColumns className={`${theme.text}`} />
+                                                ) : (
+                                                    <FaWallet className={`${theme.text}`} />
+                                                )}
+                                                <span className={`font-semibold ${theme.text}`}>
+                                                    {account.account_type === 'bank' ? bankName : account.account_type === 'esewa' ? 'ESewa' : 'Khalti'}
+                                                </span>
+                                            </div>
+                                            {account.is_primary && (
+                                                <span className="px-2 py-1 bg-green-500/10 text-green-500 text-xs rounded-lg">Primary</span>
                                             )}
-                                            <span className={`font-semibold ${theme.text}`}>
-                                                {account.account_type === 'bank' ? account.account_details.accountType : account.account_type === 'esewa' ? 'ESewa' : 'Khalti'}
-                                            </span>
                                         </div>
-                                        {account.is_primary && (
-                                            <span className="px-2 py-1 bg-green-500/10 text-green-500 text-xs rounded-lg">Primary</span>
-                                        )}
-                                    </div>
-                                    <div className={`text-sm ${theme.textSecondary} ml-8`}>
-                                        {
-                                            account.account_type === 'bank' ?
-                                                <>
-                                                    <p>Account: {account.account_details.accountNumber}</p>
-                                                    <p>Name: {account.account_details.accountName}</p>
-                                                    <p>Bank Code: {account.account_details.bankCode}</p>
-                                                </>
-                                                : account.account_type === 'esewa' ?
+                                        <div className={`text-sm ${theme.textSecondary} ml-8`}>
+                                            {
+                                                account.account_type === 'bank' ?
                                                     <>
-                                                        <p>eSewa ID: {account.account_details.eSewa_id}</p>
-                                                        <p>Name: {account.account_details.name}</p>
+                                                        <p>Account: {account.account_details.accountNumber}</p>
+                                                        <p>Name: {account.account_details.accountName}</p>
+                                                        <p>Bank Code: {account.account_details.bankCode}</p>
                                                     </>
-                                                    :
-                                                    <>
-                                                        <p>Khalti ID: {account.account_details.Khalti_ID}</p>
-                                                        <p>Name: {account.account_details.name}</p>
-                                                    </>
-                                        }
+                                                    : account.account_type === 'esewa' ?
+                                                        <>
+                                                            <p>eSewa ID: {account.account_details.eSewa_id}</p>
+                                                            <p>Name: {account.account_details.name}</p>
+                                                        </>
+                                                        :
+                                                        <>
+                                                            <p>Khalti ID: {account.account_details.Khalti_ID}</p>
+                                                            <p>Name: {account.account_details.name}</p>
+                                                        </>
+                                            }
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                         {selectedAccount && (
                             <QRModal
@@ -255,15 +240,78 @@ function Profile() {
                         <div className={`${theme.card}  rounded-2xl border ${theme.border} p-6 rounded-2xl shadow-xl max-w-md w-full grid grid-cols-1  gap-4 items-start`}>
                             <h3 className={`${theme.text} font-light mb-4`}>Add Payment Method</h3>
                             <div className="mb-4">
-                                <label className="block mb-2">Account Type</label>
-                                <select
-                                    value={accountType}
-                                    onChange={(e) => setAccountType(e.target.value)}
-                                    className={`flex-1 ${theme.input} ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-lg placeholder-gray-500 w-full`}                                >
-                                    <option value="bank">Bank</option>
-                                    <option value="esewa">eSewa</option>
-                                    <option value="khalti">Khalti</option>
-                                </select>
+                                <label className={`${theme.text} block mb-2`}>Account Type</label>
+                                <Select
+                                    value={{ value: accountType, label: accountType.charAt(0).toUpperCase() + accountType.slice(1) }}
+                                    onChange={(selectedOption) => setAccountType(selectedOption.value)}
+                                    options={[
+                                        { value: 'bank', label: 'Bank' },
+                                        { value: 'esewa', label: 'eSewa' },
+                                        { value: 'khalti', label: 'Khalti' }
+                                    ]}
+                                    placeholder="Select bank or wallet"
+                                    className="react-select-container"
+                                    classNamePrefix="react-select"
+                                    styles={{
+                                        control: (base) => ({
+                                          ...base,
+                                          background: 'transparent',
+                                          backdropFilter: 'blur(100px)',
+                                          borderRadius: '0.75rem',
+                                          padding: '0.375rem 1rem',
+                                          cursor: 'pointer',
+                                          fontSize: '1.125rem',
+                                          border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.1)',
+                                          boxShadow: 'none',
+                                          '&:hover': {
+                                            borderWidth: '1.5px',
+                                            borderColor: isDark ? 'from-black via-gray-900 to-gray-800' : 'from-white via-purple-100 to-purple-50'
+                                          }
+                                        }),
+                                        menu: (base) => ({
+                                          ...base,
+                                          background: isDark ? '#212937' : '#ffffff 50%',
+                                          borderRadius: '0.75rem',
+                                          backdropFilter: 'blur(100px)',
+                                          marginTop: '0.5rem',
+                                          border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid #e5e7eb',
+                                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                                        }),
+                                        option: (base, { isFocused, isSelected }) => ({
+                                          ...base,
+                                          background: isFocused 
+                                            ? isDark ? 'rgba(255, 255, 255, 0.1)' : '#f3f4f6'
+                                            : isSelected 
+                                              ? isDark ? 'rgba(255, 255, 255, 0.05)' : '#e5e7eb'
+                                              : 'transparent',
+                                          color: isDark ? '#fff' : '#374151',
+                                          cursor: 'pointer',
+                                          '&:active': {
+                                            background: isDark ? 'rgba(255, 255, 255, 0.15)' : '#e5e7eb'
+                                          }
+                                        }),
+                                        singleValue: (base) => ({
+                                          ...base,
+                                          color: isDark ? '#fff' : '#374151'
+                                        }),
+                                        placeholder: (base) => ({
+                                          ...base,
+                                          color: '#6B7280',
+                                          fontSize: '1.125rem'
+                                        }),
+                                        input: (base) => ({
+                                          ...base,
+                                          color: isDark ? '#fff' : '#374151'
+                                        }),
+                                        dropdownIndicator: (base) => ({
+                                          ...base,
+                                          color: '#6B7280',
+                                          '&:hover': {
+                                            color: isDark ? '#fff' : '#374151'
+                                          }
+                                        })
+                                    }}
+                                />
                             </div>
                             {/* Conditional form fields based on account type */}
                             {accountType === 'bank' && (
@@ -273,25 +321,82 @@ function Profile() {
                                         placeholder="Account Number"
                                         value={accountDetails.accountNumber}
                                         onChange={(e) => setAccountDetails({ ...accountDetails, accountNumber: e.target.value })}
-                                        className={`flex-1 ${theme.input} ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-lg placeholder-gray-500 w-full`} />
+                                        className={`flex-1 bg-transparent ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-lg placeholder-gray-500 w-full`} />
                                     <input
                                         type="text"
                                         placeholder="Account Name"
                                         value={accountDetails.accountName}
                                         onChange={(e) => setAccountDetails({ ...accountDetails, accountName: e.target.value })}
-                                        className={`flex-1 ${theme.input} ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-lg placeholder-gray-500 w-full`} />
-                                    <input
-                                        type="text"
-                                        placeholder="Bank Code"
-                                        value={accountDetails.bankCode}
-                                        onChange={(e) => setAccountDetails({ ...accountDetails, bankCode: e.target.value })}
-                                        className={`flex-1 ${theme.input} ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-lg placeholder-gray-500 w-full`} />
-                                    <input
-                                        type="text"
-                                        placeholder="Account Type"
-                                        value={accountDetails.accountType}
-                                        onChange={(e) => setAccountDetails({ ...accountDetails, accountType: e.target.value })}
-                                        className={`flex-1 ${theme.input} ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-lg placeholder-gray-500 w-full`} />
+                                        className={`flex-1 bg-transparent ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-lg placeholder-gray-500 w-full`} />
+
+
+                                    <Select
+                                        value={bankOptions.find(option => option.value === accountDetails.bankCode)}
+                                        onChange={selectedOption => handleBankChange({ target: { value: selectedOption.value } })}
+                                        options={bankOptions}
+                                        placeholder="Select bank"
+                                        className="react-select-container"
+                                        classNamePrefix="react-select"
+                                        styles={{
+                                            control: (base) => ({
+                                              ...base,
+                                              background: 'transparent',
+                                              backdropFilter: 'blur(100px)',
+                                              borderRadius: '0.75rem',
+                                              padding: '0.375rem 1rem',
+                                              cursor: 'pointer',
+                                              fontSize: '1.125rem',
+                                              border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.1)',
+                                              boxShadow: 'none',
+                                              '&:hover': {
+                                                borderWidth: '1.5px',
+                                                borderColor: isDark ? 'from-black via-gray-900 to-gray-800' : 'from-white via-purple-100 to-purple-50'
+                                              }
+                                            }),
+                                            menu: (base) => ({
+                                              ...base,
+                                              background: isDark ? '#212937' : '#ffffff 50%',
+                                              borderRadius: '0.75rem',
+                                              backdropFilter: 'blur(100px)',
+                                              marginTop: '0.5rem',
+                                              border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid #e5e7eb',
+                                              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                                            }),
+                                            option: (base, { isFocused, isSelected }) => ({
+                                              ...base,
+                                              background: isFocused 
+                                                ? isDark ? 'rgba(255, 255, 255, 0.1)' : '#f3f4f6'
+                                                : isSelected 
+                                                  ? isDark ? 'rgba(255, 255, 255, 0.05)' : '#e5e7eb'
+                                                  : 'transparent',
+                                              color: isDark ? '#fff' : '#374151',
+                                              cursor: 'pointer',
+                                              '&:active': {
+                                                background: isDark ? 'rgba(255, 255, 255, 0.15)' : '#e5e7eb'
+                                              }
+                                            }),
+                                            singleValue: (base) => ({
+                                              ...base,
+                                              color: isDark ? '#fff' : '#374151'
+                                            }),
+                                            placeholder: (base) => ({
+                                              ...base,
+                                              color: '#6B7280',
+                                              fontSize: '1.125rem'
+                                            }),
+                                            input: (base) => ({
+                                              ...base,
+                                              color: isDark ? '#fff' : '#374151'
+                                            }),
+                                            dropdownIndicator: (base) => ({
+                                              ...base,
+                                              color: '#6B7280',
+                                              '&:hover': {
+                                                color: isDark ? '#fff' : '#374151'
+                                              }
+                                            })
+                                        }}
+                                    />
                                 </>
                             )}
                             {accountType === 'esewa' && (

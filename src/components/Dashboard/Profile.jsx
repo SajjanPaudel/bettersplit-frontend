@@ -389,7 +389,7 @@ function Profile() {
 
     return (
         <div className="flex-1 overflow-y-auto">
-            <div className="max-w-4xl mx-auto px-4 py-8">
+            <div className="max-w-4xl mx-auto lg:px-4 md:px-4 px-1 lg:py-8 md:py-8 sm:py-3">
                 {/* Profile Header */}
                 <div className={`${theme.card} rounded-2xl p-6 mb-6 backdrop-blur-xl border ${theme.border}`}>
                     <div className="flex items-center space-x-4">

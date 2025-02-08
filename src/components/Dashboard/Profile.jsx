@@ -28,7 +28,6 @@ function Profile() {
         accountNumber: '',
         accountName: '',
         bankCode: '',
-        accountType: '',
         eSewa_id: '',
         name: '',
         Khalti_ID: ''
@@ -41,6 +40,16 @@ function Profile() {
 
     // Add state for camera access
     const [showCamera, setShowCamera] = useState(false);
+
+    const handleBankChange = (selectedOption) => {
+        const selectedBank = bankData.list.find(bank => bank.bank === selectedOption.value);
+        const matchedBank = bankData.list.find(bank => bank.bank === bankName);
+        setAccountDetails({ 
+            ...accountDetails, 
+            bankCode: selectedBank ? selectedBank.swift_code : '',
+            swiftCode: matchedBank ? matchedBank.swift_code : "" 
+        });
+    };
 
     // Update the QRScannerModal component
     const QRScannerModal = () => (
@@ -111,18 +120,24 @@ function Profile() {
                     return;
                 }
 
-                // Set account type first
                 setAccountType(detectedType);
 
-                // For bank accounts, convert bank code to bank name
-                // if (detectedType === 'bank' && parsedData.bankCode) {
-                //     const bank = bankData.list.find(b => b.swift_code === parsedData.bankCode);
-                //     if (bank) {
-                //         parsedData.bankCode = bank.bank;
-                //     }
-                // }
+                // For bank accounts, find the matching bank option
+                if (detectedType === 'bank' && parsedData.bankCode) {
+                    const matchingBank = bankData.list.find(b => b.swift_code === parsedData.bankCode);
+                    if (matchingBank) {
+                        // Set the bank name for display in the select input
+                        setAccountDetails({
+                            ...parsedData,
+                            bankCode: matchingBank.bank // Set the bank name for the select input
+                        });
+                    } else {
+                        setAccountDetails(parsedData);
+                    }
+                } else {
+                    setAccountDetails(parsedData);
+                }
 
-                setAccountDetails(parsedData);
                 setShowScanner(false);
                 setShowAddAccountModal(true);
             } catch (error) {
@@ -130,7 +145,7 @@ function Profile() {
                 setScannerError('Invalid QR code format');
             }
         }
-    };
+    }
 
     const handleScanError = (err) => {
         console.error(err);
@@ -170,18 +185,22 @@ function Profile() {
                                 return;
                             }
 
-                            // Set account type first
                             setAccountType(detectedType);
 
-                            // For bank accounts, convert bank code to bank name
-                            // if (detectedType === 'bank' && parsedData.bankCode) {
-                            //     const bank = bankData.list.find(b => b.swift_code === parsedData.bankCode);
-                            //     if (bank) {
-                            //         parsedData.bankCode = bank.bank;
-                            //     }
-                            // }
+                            if (detectedType === 'bank' && parsedData.bankCode) {
+                                const matchingBank = bankData.list.find(b => b.swift_code === parsedData.bankCode);
+                                if (matchingBank) {
+                                    setAccountDetails({
+                                        ...parsedData,
+                                        bankCode: matchingBank.bank
+                                    });
+                                } else {
+                                    setAccountDetails(parsedData);
+                                }
+                            } else {
+                                setAccountDetails(parsedData);
+                            }
 
-                            setAccountDetails(parsedData);
                             setShowScanner(false);
                             setShowAddAccountModal(true);
                         } catch (error) {
@@ -227,19 +246,47 @@ function Profile() {
             try {
                 setIsSubmitting(true);
                 const accessToken = localStorage.getItem('access_token');
+
+                // Prepare account details based on account type
+                let finalAccountDetails = {};
+                const selectedBank = bankData.list.find(bank => bank.bank === accountDetails.bankCode);
+                if (accountType === 'bank') {
+                    finalAccountDetails = {
+                        accountNumber: accountDetails.accountNumber || '',
+                        accountName: accountDetails.accountName || '',
+                        bankCode: selectedBank ? selectedBank.swift_code : '',
+                    };
+                    console.log(finalAccountDetails)
+                } else if (accountType === 'esewa') {
+                    finalAccountDetails = {
+                        eSewa_id: accountDetails.eSewa_id || '',
+                        name: accountDetails.name || '',
+                    };
+                } else if (accountType === 'khalti') {
+                    finalAccountDetails = {
+                        Khalti_ID: accountDetails.Khalti_ID || '',
+                        name: accountDetails.name || '',
+                    };
+                }
+
                 const response = await axios.post(`${endpoints.accounts}`, {
                     account_type: accountType,
-                    account_details: accountDetails,
+                    account_details: finalAccountDetails,
                     is_primary: isPrimary
                 }, {
                     headers: { 'Authorization': `Bearer ${accessToken}` }
                 });
+
                 if (response.data.success) {
                     const profileResponse = await axios.get(endpoints.profile, {
                         headers: { 'Authorization': `Bearer ${accessToken}` }
                     });
                     setProfileData(profileResponse.data.data);
                     setShowAddAccountModal(false);
+                    setAccountDetails({
+                        bankCode: "",
+                        swiftCode: ""
+                    });
                 }
             } catch (error) {
                 console.error('Error adding account:', error);
@@ -263,11 +310,6 @@ function Profile() {
                 'Add Account'
             )}
         </button>
-
-    const handleBankChange = (e) => {
-        const selectedBank = bankData.list.find(bank => bank.bank === e.target.value);
-        setAccountDetails({ ...accountDetails, bankCode: selectedBank ? selectedBank.swift_code : '' });
-    };
 
     const QRModal = ({ account, onClose }) => (
         <div className="fixed inset-0 flex items-center justify-center  backdrop-blur-sm z-50" onClick={onClose}>
@@ -646,18 +688,28 @@ function Profile() {
                                     {/* Set as Primary */}
                                 </label>
                             </div>
+                            {/* Update the Add Account button in the modal */}
                             <div className="flex justify-end space-x-2">
                                 <button
                                     onClick={() => setShowAddAccountModal(false)}
                                     className="px-4 py-2 bg-gray-300 rounded-lg"
+                                    disabled={isSubmitting}
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={handleAddAccount}
-                                    className="px-4 py-2 bg-green-500 text-white rounded-lg"
+                                    disabled={isSubmitting}
+                                    className="px-4 py-2 bg-green-500 text-white rounded-lg flex items-center gap-2 disabled:opacity-50"
                                 >
-                                    Add Account
+                                    {isSubmitting ? (
+                                        <>
+                                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                            Adding...
+                                        </>
+                                    ) : (
+                                        'Add Account'
+                                    )}
                                 </button>
                             </div>
                         </div>

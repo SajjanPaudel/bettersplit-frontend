@@ -148,19 +148,26 @@ function Activity() {
               placeholder="Search activities..."
               className={`w-50 px-4 py-3 ${theme.input} ${theme.text} rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none`}
             />
-            <button
-              onClick={() => setShowModal(true)}
-              disabled={groups.length == 0}
-              title={groups.length == 0 ? "Create a group before adding Expense" : ""}
-              className={`w-full px-6 py-3 rounded-xl text-sm transition-all whitespace-nowrap ${groups.length != 0
-                  ? isDark
-                    ? 'bg-green-500/30 text-green-200 hover:bg-green-500/40'
-                    : 'bg-green-500/70 text-white hover:bg-green-500/30'
-                  : `bg-green-500/30 cursor-not-allowed text-white`
-                }`}
-            >
-              Add Expense
-            </button>
+
+            {groups.length > 0 ? (
+              <Link
+                to="/dashboard/add-expense"
+                className={`w-full px-6 py-3 rounded-xl text-sm transition-all whitespace-nowrap ${isDark
+                  ? "bg-green-500/30 text-green-200 hover:bg-green-500/40"
+                  : "bg-green-500/70 text-white hover:bg-green-500/30"
+                  }`}
+              >
+                Add
+              </Link>
+            ) : (
+              <button
+                disabled
+                title="Create a group before adding Expense"
+                className="w-full px-6 py-3 rounded-xl text-sm transition-all whitespace-nowrap bg-green-500/30 cursor-not-allowed text-white"
+              >
+                Add
+              </button>
+            )}
           </div>
 
           {/* Desktop view */}
@@ -173,30 +180,37 @@ function Activity() {
               className={`w-64 h-[2.75rem] px-4 ${theme.input} ${theme.text} rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none`}
             />
 
-            <button
-              onClick={() => setShowModal(true)}
-              disabled={groups.length == 0}
-              title={groups.length == 0 ? "Create a group before adding Expense" : ""}
-              className={`w-max-content h-[2.75rem] px-6 rounded-xl text-sm transition-all whitespace-nowrap ${groups.length != 0
-                  ? isDark
-                    ? 'bg-green-500/30 text-green-200 hover:bg-green-500/40'
-                    : 'bg-green-500/70 text-white hover:bg-green-500/30'
-                  : `${theme.input} ${theme.textSecondary} cursor-not-allowed opacity-50`
-                }`}
-            >
-              Add Expense
-            </button>
+
+            {groups.length > 0 ? (
+              <Link
+                to="/dashboard/add-expense"
+                className={`w-max px-6 py-3 rounded-xl text-sm transition-all whitespace-nowrap ${isDark
+                    ? "bg-green-500/30 text-green-200 hover:bg-green-500/40"
+                    : "bg-green-500/70 text-white hover:bg-green-500/30"
+                  }`}
+              >
+                Add
+              </Link>
+            ) : (
+              <button
+                disabled
+                title="Create a group before adding Expense"
+                className="w-full px-6 py-3 rounded-xl text-sm transition-all whitespace-nowrap bg-green-500/30 cursor-not-allowed text-white"
+              >
+                Add
+              </button>
+            )}
           </div>
         </div>
         {isLoading ? (
-        <div className={`mb-4 flex-1 flex flex-col lg:h-[45vh] md:h-[45vh] h-[50vh] lg:p-4 md:p-4 rounded-2xl before:inset-0 before:bg-gradient-to-b before:from-white/[0.08] before:to-transparent shadow-md flex items-center justify-center`}>
-          <div className="flex flex-col items-center gap-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-400"></div>
-            {/* <p className={`text-sm ${theme.textSecondary}`}>Loading settlements...</p> */}
+          <div className={`mb-4 flex-1 flex flex-col lg:h-[45vh] md:h-[45vh] h-[50vh] lg:p-4 md:p-4 rounded-2xl before:inset-0 before:bg-gradient-to-b before:from-white/[0.08] before:to-transparent shadow-md flex items-center justify-center`}>
+            <div className="flex flex-col items-center gap-4">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-400"></div>
+              {/* <p className={`text-sm ${theme.textSecondary}`}>Loading settlements...</p> */}
+            </div>
           </div>
-        </div>
-      ) : (
-        <div className="mt-6 flex-1 ">
+        ) : (
+          <div className="mt-6 flex-1 ">
             <div className="md:h-[80vh] lg:h-[80vh] h-[70dvh] shadow-2xl overflow-y-auto rounded-2xl">
               {activities.length === 0 ? (
                 <div className={`${theme.input} p-8 sm:p-12 text-center min-h-[50vh] flex flex-col items-center justify-center`}>
@@ -290,8 +304,8 @@ function Activity() {
                 </div>
               )}
             </div>
-        </div>
-      )}
+          </div>
+        )}
       </div>
 
       {/* Modal */}

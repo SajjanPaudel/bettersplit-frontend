@@ -172,12 +172,12 @@ function Login({ onAuth }) {
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-white/10"></div>
               </div>
-              <div className="relative">
+              {/* <div className="relative">
                 <span className="px-2 text-sm text-white/60 bg-[#1A1A1F]">Or continue with</span>
-              </div>
+              </div> */}
             </div>
     
-            <div className="grid grid-cols-2 gap-4">
+            {/* <div className="grid grid-cols-2 gap-4">
             <button
               type="button"
               className="flex items-center justify-center space-x-2 py-3 px-4 rounded-lg bg-[#ffffff14] hover:bg-[#ffffff1a] text-white transition-colors opacity-50 cursor-not-allowed"
@@ -198,7 +198,7 @@ function Login({ onAuth }) {
                 </svg>
                 <span>Apple</span>
               </button>
-            </div>
+            </div> */}
           </form>
           <p className="text-white/60 mt-8">
             New to BetterSplit? <Link to="/signup" className="text-white hover:text-white/80">Create an account</Link>

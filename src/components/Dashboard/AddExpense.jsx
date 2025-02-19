@@ -30,12 +30,74 @@ function AddExpense() {
     name: '',
     amount: '',
     date: new Date().toISOString().split('T')[0],
-    paid_by: '',
+    payers: [], // Add payers array
     splits: [],
     selectedUsers: [],
     group: ''
   }]);
 
+  const handlePayerSelection = (expenseIndex, userId) => {
+    setExpenses(prev => prev.map((exp, i) => {
+      if (i !== expenseIndex) return exp;
+
+      const existingPayer = exp.payers.find(p => p.user === userId);
+      const newPayers = existingPayer
+        ? exp.payers.filter(p => p.user !== userId)
+        : [...exp.payers, { user: userId, amount: '0' }];
+
+      // Calculate equal amount for payers if there's a total amount
+      const totalAmount = parseFloat(exp.amount) || 0;
+      const equalAmount = newPayers.length > 0 
+        ? (totalAmount / newPayers.length).toFixed(2)
+        : '0';
+
+      // Distribute amount equally among payers
+      const updatedPayers = newPayers.map(payer => ({
+        ...payer,
+        amount: equalAmount
+      }));
+
+      return {
+        ...exp,
+        payers: updatedPayers
+      };
+    }));
+  };
+
+  const handlePayerAmountChange = (expenseIndex, userId, value) => {
+    setExpenses(prev => prev.map((exp, i) => {
+      if (i !== expenseIndex) return exp;
+
+      const totalAmount = parseFloat(exp.amount) || 0;
+      const newPayers = exp.payers.map(payer => {
+        if (payer.user === userId) {
+          return { ...payer, amount: value, isManuallySet: true };
+        }
+        return payer;
+      });
+
+      // Calculate total of manually set amounts
+      const manualPayers = newPayers.filter(p => p.isManuallySet);
+      const manualTotal = manualPayers.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+
+      // Calculate remaining amount for automatic distribution
+      const remainingAmount = totalAmount - manualTotal;
+      const autoPayers = newPayers.filter(p => !p.isManuallySet);
+
+      // Distribute remaining amount among non-manual payers
+      if (autoPayers.length > 0) {
+        const equalShare = (remainingAmount / autoPayers.length).toFixed(2);
+        autoPayers.forEach(payer => {
+          payer.amount = equalShare;
+        });
+      }
+
+      return {
+        ...exp,
+        payers: newPayers
+      };
+    }));
+  };
   const handleCalcButtonClick = (value) => {
     if (value === '=') {
       try {
@@ -69,7 +131,7 @@ function AddExpense() {
       name: '',
       amount: '',
       date: new Date().toISOString().split('T')[0],
-      paid_by: '',
+      payers: [], // Add payers array
       splits: [],
       selectedUsers: [],
       group: ''
@@ -82,8 +144,6 @@ function AddExpense() {
     setError('');
     setIsSubmitting(true);
 
-
-
     try {
       const accessToken = localStorage.getItem('access_token');
 
@@ -94,8 +154,15 @@ function AddExpense() {
 
       // Validate all expenses
       for (const exp of expenses) {
-        if (!exp.name || !exp.amount || !exp.paid_by || exp.selectedUsers.length === 0) {
+        if (!exp.name || !exp.amount || exp.payers.length === 0 || exp.selectedUsers.length === 0) {
           setError('Please fill in all required fields for each expense');
+          return;
+        }
+
+        // Validate payers total amount matches expense amount
+        const payersTotal = exp.payers.reduce((sum, payer) => sum + parseFloat(payer.amount || 0), 0);
+        if (Math.abs(payersTotal - parseFloat(exp.amount)) > 0.01) {
+          setError('Total amount paid must equal the expense amount');
           return;
         }
       }
@@ -106,7 +173,7 @@ function AddExpense() {
           name: exp.name,
           amount: parseFloat(exp.amount),
           date: exp.date,
-          paid_by: exp.paid_by,
+          payers: exp.payers,
           splits: exp.splits,
           group: selectedGroup
         };
@@ -209,29 +276,37 @@ function AddExpense() {
     setExpenses(prev => prev.map((exp, i) => {
       if (i !== index) return exp;
 
-      // Check if the value ends with a space and contains arithmetic operations
+      // Handle arithmetic calculations
       if (value.endsWith(' ') && /[+\-*/]/.test(value)) {
         try {
-          // Remove the space and evaluate the expression
           const expression = value.trim();
           const result = eval(expression).toString();
           value = result;
         } catch (error) {
-          // If evaluation fails, keep the original value without the space
           value = value.trim();
         }
       }
 
-      const equalAmount = value
+      const equalSplitAmount = value
         ? (parseFloat(value) / (exp.selectedUsers.length || 1)).toFixed(2)
+        : '';
+      
+      const equalPayerAmount = value
+        ? (parseFloat(value) / (exp.payers.length || 1)).toFixed(2)
         : '';
 
       return {
         ...exp,
         amount: value,
+        // Update splits with equal amounts
         splits: exp.selectedUsers.map(userId => ({
           user: userId,
-          amount: equalAmount
+          amount: equalSplitAmount
+        })),
+        // Update payers with equal amounts
+        payers: exp.payers.map(payer => ({
+          ...payer,
+          amount: equalPayerAmount
         }))
       };
     }));
@@ -422,8 +497,8 @@ function AddExpense() {
                           </button>
                         )}
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
-                        <div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
+                        <div className='mt-0'>
                           <input
                             type="text"
                             placeholder="Expense name"
@@ -435,7 +510,7 @@ function AddExpense() {
                         </div>
 
                         <div>
-                          <div className="h-full">
+                          <div className="h-full w-full">
                             <DatePicker
                               selected={new Date(exp.date)}
                               onChange={(date) => handleExpenseUpdate(index, 'date', date.toISOString().split('T')[0])}
@@ -444,143 +519,113 @@ function AddExpense() {
                               className={`w-full bg-transparent ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none cursor-pointer text-lg`}
                               placeholderText="Select date"
                               required
+                              wrapperClassName="w-full"
                             />
                           </div>
                         </div>
-
-                        <div>
-                          <Select
-                            value={users.find(user => user.id === exp.paid_by)}
-                            onChange={(selected) => handleExpenseUpdate(index, 'paid_by', selected.id)}
-                            options={users}
-                            getOptionLabel={(option) => `${option.first_name} ${option.last_name}`}
-                            getOptionValue={(option) => option.id}
-                            placeholder="Who paid?"
-                            className="react-select-container"
-                            classNamePrefix="react-select"
-                            styles={{
-                              control: (base) => ({
-                                ...base,
-                                background: 'transparent',
-                                backdropFilter: 'blur(100px)',
-                                borderRadius: '0.75rem',
-                                padding: '0.375rem 1rem',
-                                cursor: 'pointer',
-                                fontSize: '1.125rem',
-                                border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.1)',
-                                boxShadow: 'none',
-                                '&:hover': {
-                                  borderWidth: '1.5px',
-                                  borderColor: isDark ? 'from-black via-gray-900 to-gray-800' : 'from-white via-purple-100 to-purple-50'
-                                }
-                              }),
-                              menu: (base) => ({
-                                ...base,
-                                background: isDark ? '#212937' : '#ffffff 50%',
-                                borderRadius: '0.75rem',
-                                backdropFilter: 'blur(100px)',
-                                marginTop: '0.5rem',
-                                border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid #e5e7eb',
-                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
-                              }),
-                              option: (base, { isFocused, isSelected }) => ({
-                                ...base,
-                                background: isFocused
-                                  ? isDark ? 'rgba(255, 255, 255, 0.1)' : '#f3f4f6'
-                                  : isSelected
-                                    ? isDark ? 'rgba(255, 255, 255, 0.05)' : '#e5e7eb'
-                                    : 'transparent',
-                                color: isDark ? '#fff' : '#374151',
-                                cursor: 'pointer',
-                                '&:active': {
-                                  background: isDark ? 'rgba(255, 255, 255, 0.15)' : '#e5e7eb'
-                                }
-                              }),
-                              singleValue: (base) => ({
-                                ...base,
-                                color: isDark ? '#fff' : '#374151'
-                              }),
-                              placeholder: (base) => ({
-                                ...base,
-                                color: '#6B7280',
-                                fontSize: '1.125rem'
-                              }),
-                              input: (base) => ({
-                                ...base,
-                                color: isDark ? '#fff' : '#374151'
-                              }),
-                              dropdownIndicator: (base) => ({
-                                ...base,
-                                color: '#6B7280',
-                                '&:hover': {
-                                  color: isDark ? '#fff' : '#374151'
-                                }
-                              })
-                            }}
+                        <div className="relative group">
+                          <input
+                            type="text"
+                            pattern="[0-9\+\-\*\/\(\)\.\s]*"
+                            placeholder="Amount"
+                            value={exp.amount}
+                            onChange={(e) => handleAmountChange(index, e.target.value)}
+                            className={`w-full bg-transparent ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-lg placeholder-gray-500`}
                             required
                           />
+                          <div className={`absolute -bottom-50 left-1/2 transform -translate-x-1/2  opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none`}>
+                            <div className={`w-3 h-3 ${theme.card} border ${theme.border} transform rotate-45 absolute -top-1.5 left-1/2 -translate-x-1/2`}></div>
+                            <div className={`${theme.card} backdrop-blur-xl p-3 rounded-xl border ${theme.border} shadow-lg w-48`}>
+                              <div className={`text-sm ${theme.text}`}>
+                                Quick Tip: You can do arithmetic calculations!
+                              </div>
+                              <div className={`text-xs ${theme.textSecondary} mt-1`}>
+                                Try: 100+200, 500/2, etc. just add a space to calculate
+                              </div>
+                            </div>
+                          </div>
                         </div>
 
-                        <div className="relative group">
-                                  <input
-                                    type="text"
-                                    pattern="[0-9\+\-\*\/\(\)\.\s]*"
-                                    placeholder="Amount"
-                                    value={exp.amount}
-                                    onChange={(e) => handleAmountChange(index, e.target.value)}
-                                    className={`w-full bg-transparent ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-lg placeholder-gray-500`}
-                                    required
-                                  />
-                                  <div className={`absolute -bottom-50 left-1/2 transform -translate-x-1/2  opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none`}>
-                                  <div className={`w-3 h-3 ${theme.card} border ${theme.border} transform rotate-45 absolute -top-1.5 left-1/2 -translate-x-1/2`}></div>
-                                    <div className={`${theme.card} backdrop-blur-xl p-3 rounded-xl border ${theme.border} shadow-lg w-48`}>
-                                      <div className={`text-sm ${theme.text}`}>
-                                        Quick Tip: You can do arithmetic!
-                                      </div>
-                                      <div className={`text-xs ${theme.textSecondary} mt-1`}>
-                                        Try: 100+200, 500/2, etc. just add a space to calculate
-                                      </div>
-                                    </div>
+                        <div className="col-span-full">
+                          {/* <div className="mb-2 text-sm text-gray-500">Who paid?</div> */}
+                          <div className="flex flex-wrap gap-2">
+                            <span className="relative px-4 py-2 rounded-2xl text-sm bg-gray-100 dark:bg-gray-800/50 text-gray-600 dark:text-gray-400">
+                              Paid By <span className='text-green-800'> → </span>
+                            </span>
+                            {users.map(user => {
+                              const isPayer = exp.payers.some(p => p.user === user.id);
+                              const payer = exp.payers.find(p => p.user === user.id);
+
+                              return (
+                                <div key={user.id} className="flex items-center">
+                                  <button
+                                    type="button"
+                                    onClick={() => handlePayerSelection(index, user.id)}
+                                    className={`px-4 py-2 rounded-l-2xl text-sm transition-all ${isPayer
+                                      ? `bg-purple-800/50 text-white`
+                                      : ` rounded-r-2xl ${theme.input} ${theme.textSecondary} ${theme.hoverBg}`
+                                      }`}
+                                  >
+                                    {user.first_name}
+                                  </button>
+                                  <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isPayer ? 'w-24 opacity-100 rounded-r-2xl' : 'w-0 opacity-0'
+                                    }`}>
+                                    <input
+                                      type="number"
+                                      value={payer?.amount || ''}
+                                      onChange={(e) => handlePayerAmountChange(index, user.id, e.target.value)}
+                                      className={`${theme.text} bg-purple-800/20 px-2 py-2  focus:outline-none text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                      placeholder="Amount"
+                                    />
                                   </div>
+                                  <div className={`rounded-r-xl transition-all duration-300 ${isPayer ? 'w-1 bg-purple-800/50' : 'w-0'
+                                    }`}></div>
                                 </div>
-                      </div>
+                              );
+                            })}
+                          </div>
+                        </div>
 
+
+                      </div>
+                      <hr className='border border-gray-600' />
+                      {/* <div className="mb-2 text-sm text-gray-500">Paid For?</div> */}
                       <div className="flex flex-wrap gap-1">
-                        {users.map(user => (
-                          <button
-                            key={user.id}
-                            type="button"
-                            onClick={() => handleUserSelection(index, user.id)}
-                            className={`px-4 py-2 rounded-xl text-sm transition-all ${exp.selectedUsers.includes(user.id)
-                              ? `bg-green-800/50 text-white`
-                              : `${theme.input} ${theme.textSecondary} ${theme.hoverBg}`
-                              }`}
-                          >
-                            {user.first_name}
-                          </button>
-                        ))}
-                      </div>
+                        <span className="relative px-4 py-2 rounded-2xl text-sm bg-gray-100 dark:bg-gray-800/50 text-gray-600 dark:text-gray-400">
+                          Paid For <span className='text-green-800'> → </span>
+                        </span>
+                        {users.map(user => {
+                          const isSelected = exp.selectedUsers.includes(user.id);
+                          const split = exp.splits.find(s => s.user === user.id);
 
-                      {exp.splits.length > 0 && (
-                        // <div className={`rounded-xl`}>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                          {exp.splits.map((split, splitIndex) => {
-                            const user = users.find(u => u.id === split.user);
-                            return user ? (
-                              <div key={splitIndex} className="flex items-center justify-between gap-3 px-3 py-2 rounded-xl bg-green-800/50 text-white/70">
-                                <div className={` text-sm`}>{user.first_name}</div>
+                          return (
+                            <div key={user.id} className="flex items-center">
+                              <button
+                                type="button"
+                                onClick={() => handleUserSelection(index, user.id)}
+                                className={`px-4 py-2 rounded-l-2xl text-sm transition-all ${isSelected
+                                  ? `bg-green-800/50 text-white`
+                                  : ` rounded-r-2xl ${theme.input} ${theme.textSecondary} ${theme.hoverBg}`
+                                  }`}
+                              >
+                                {user.first_name}
+                              </button>
+                              <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isSelected ? ' rounded-r-2xl w-24 opacity-100' : 'w-0 opacity-0'
+                                }`}>
                                 <input
                                   type="number"
-                                  value={split.amount}
-                                  onChange={(e) => handleSplitAmountChange(index, splitIndex, e.target.value)}
-                                  className={`w-24 ${theme.text} ${theme.input} text-center px-1 py-1 rounded-lg border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-center text-sm`}
+                                  value={split?.amount || ''}
+                                  onChange={(e) => handleSplitAmountChange(index, exp.splits.findIndex(s => s.user === user.id), e.target.value)}
+                                  className={`w-24 ${theme.text} bg-green-700/10 px-2 py-2  rounded-r-2xl focus:outline-none text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                  placeholder="Amount"
                                 />
                               </div>
-                            ) : null;
-                          })}
-                        </div>
-                        // </div>
-                      )}
+                              <div className={`rounded-r-2xl transition-all duration-300 ${isSelected ? 'bg-green-800/50 ' : 'w-0'
+                                }`}></div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   ))}
                 </div>

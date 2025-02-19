@@ -99,12 +99,15 @@ function Groups() {
                   <div className="flex flex-wrap gap-2">
                     {group.members.map(member => (
                       <span
-                        key={member}
+                        key={member.id}
                         className={`px-3 py-1.5 rounded-lg text-sm ${theme.input} ${theme.textSecondary}`}
                       >
-                        {member}
+                        {member.username}
                       </span>
                     ))}
+                  </div>
+                  <div className={`mt-4 text-sm ${theme.textSecondary}`}>
+                    Created by: {group.created_by}
                   </div>
                 </div>
               ))}

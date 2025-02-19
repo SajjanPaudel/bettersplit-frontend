@@ -244,14 +244,14 @@ function GroupDetail() {
                         <div className="flex flex-wrap gap-2">
                             {group.members.map(member => (
                                 <span
-                                    key={member}
+                                    key={member.id}
                                     className={`px-3 py-1.5 rounded-lg text-sm ${theme.input} ${theme.textSecondary} flex items-center gap-2`}
                                 >
-                                    {member}
+                                    {member.username}
                                     {member !== loggedInUser.username && (
                                         <FaTimes
                                             className="w-3 h-3 cursor-pointer hover:text-red-400 transition-colors"
-                                            onClick={() => handleRemoveMember(member)}
+                                            onClick={() => handleRemoveMember(member.username)}
                                         />
                                     )}
                                 </span>

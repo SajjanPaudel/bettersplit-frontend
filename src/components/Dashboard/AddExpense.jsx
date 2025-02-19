@@ -36,6 +36,16 @@ function AddExpense() {
     group: ''
   }]);
 
+
+  const [groupMembers, setGroupMembers] = useState([]);
+
+  // Modify the group selection handler
+  const handleGroupSelect = (selected) => {
+    setSelectedGroup(selected.id);
+    // Update group members when a group is selected
+    setGroupMembers(selected.members || []);
+  };
+
   const handlePayerSelection = (expenseIndex, userId) => {
     setExpenses(prev => prev.map((exp, i) => {
       if (i !== expenseIndex) return exp;
@@ -47,7 +57,7 @@ function AddExpense() {
 
       // Calculate equal amount for payers if there's a total amount
       const totalAmount = parseFloat(exp.amount) || 0;
-      const equalAmount = newPayers.length > 0 
+      const equalAmount = newPayers.length > 0
         ? (totalAmount / newPayers.length).toFixed(2)
         : '0';
 
@@ -290,7 +300,7 @@ function AddExpense() {
       const equalSplitAmount = value
         ? (parseFloat(value) / (exp.selectedUsers.length || 1)).toFixed(2)
         : '';
-      
+
       const equalPayerAmount = value
         ? (parseFloat(value) / (exp.payers.length || 1)).toFixed(2)
         : '';
@@ -409,9 +419,11 @@ function AddExpense() {
             <form id="expense-form" onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden" noValidate>
               {/* Group selector */}
               <div className='flex-shrink-0 mb-4'>
+
+                // Update the Select component
                 <Select
                   value={groups.find(group => group.id === selectedGroup)}
-                  onChange={(selected) => setSelectedGroup(selected.id)}
+                  onChange={handleGroupSelect}
                   options={groups}
                   getOptionLabel={(option) => option.name}
                   getOptionValue={(option) => option.id}
@@ -552,37 +564,41 @@ function AddExpense() {
                             <span className="relative px-4 py-2 rounded-2xl text-sm bg-gray-100 dark:bg-gray-800/50 text-gray-600 dark:text-gray-400">
                               Paid By <span className='text-green-800'> → </span>
                             </span>
-                            {users.map(user => {
-                              const isPayer = exp.payers.some(p => p.user === user.id);
-                              const payer = exp.payers.find(p => p.user === user.id);
-
-                              return (
-                                <div key={user.id} className="flex items-center">
-                                  <button
-                                    type="button"
-                                    onClick={() => handlePayerSelection(index, user.id)}
-                                    className={`px-4 py-2 rounded-l-2xl text-sm transition-all ${isPayer
-                                      ? `bg-purple-800/50 text-white`
-                                      : ` rounded-r-2xl ${theme.input} ${theme.textSecondary} ${theme.hoverBg}`
-                                      }`}
-                                  >
-                                    {user.first_name}
-                                  </button>
-                                  <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isPayer ? 'w-24 opacity-100 rounded-r-2xl' : 'w-0 opacity-0'
-                                    }`}>
-                                    <input
-                                      type="number"
-                                      value={payer?.amount || ''}
-                                      onChange={(e) => handlePayerAmountChange(index, user.id, e.target.value)}
-                                      className={`${theme.text} bg-purple-800/20 px-2 py-2  focus:outline-none text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
-                                      placeholder="Amount"
-                                    />
+                            {selectedGroup ? (
+                              groupMembers.map(user => {
+                                const isPayer = exp.payers.some(p => p.user === user.id);
+                                const payer = exp.payers.find(p => p.user === user.id);
+                              
+                                return (
+                                  <div key={user.id} className="flex items-center">
+                                    <button
+                                      type="button"
+                                      onClick={() => handlePayerSelection(index, user.id)}
+                                      className={`px-4 py-2 rounded-l-2xl text-sm transition-all ${isPayer
+                                        ? `bg-purple-800/50 text-white`
+                                        : ` rounded-r-2xl ${theme.input} ${theme.textSecondary} ${theme.hoverBg}`
+                                        }`}
+                                    >
+                                      {user.first_name}
+                                    </button>
+                                    <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isPayer ? 'w-24 opacity-100 rounded-r-2xl' : 'w-0 opacity-0'
+                                      }`}>
+                                      <input
+                                        type="number"
+                                        value={payer?.amount || ''}
+                                        onChange={(e) => handlePayerAmountChange(index, user.id, e.target.value)}
+                                        className={`${theme.text} bg-purple-800/20 px-2 py-2  focus:outline-none text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                        placeholder="Amount"
+                                      />
+                                    </div>
+                                    <div className={`rounded-r-xl transition-all duration-300 ${isPayer ? 'w-1 bg-purple-800/50' : 'w-0'
+                                      }`}></div>
                                   </div>
-                                  <div className={`rounded-r-xl transition-all duration-300 ${isPayer ? 'w-1 bg-purple-800/50' : 'w-0'
-                                    }`}></div>
-                                </div>
-                              );
-                            })}
+                                );
+                              })
+                            ) : (
+                              <span className="text-sm text-gray-500"></span>
+                            )}
                           </div>
                         </div>
 
@@ -594,37 +610,39 @@ function AddExpense() {
                         <span className="relative px-4 py-2 rounded-2xl text-sm bg-gray-100 dark:bg-gray-800/50 text-gray-600 dark:text-gray-400">
                           Paid For <span className='text-green-800'> → </span>
                         </span>
-                        {users.map(user => {
-                          const isSelected = exp.selectedUsers.includes(user.id);
-                          const split = exp.splits.find(s => s.user === user.id);
+                        {selectedGroup ? (
+                          groupMembers.map(user => {
+                            const isSelected = exp.selectedUsers.includes(user.id);
+                            const split = exp.splits.find(s => s.user === user.id);
 
-                          return (
-                            <div key={user.id} className="flex items-center">
-                              <button
-                                type="button"
-                                onClick={() => handleUserSelection(index, user.id)}
-                                className={`px-4 py-2 rounded-l-2xl text-sm transition-all ${isSelected
-                                  ? `bg-green-800/50 text-white`
-                                  : ` rounded-r-2xl ${theme.input} ${theme.textSecondary} ${theme.hoverBg}`
-                                  }`}
-                              >
-                                {user.first_name}
-                              </button>
-                              <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isSelected ? ' rounded-r-2xl w-24 opacity-100' : 'w-0 opacity-0'
-                                }`}>
-                                <input
-                                  type="number"
-                                  value={split?.amount || ''}
-                                  onChange={(e) => handleSplitAmountChange(index, exp.splits.findIndex(s => s.user === user.id), e.target.value)}
-                                  className={`w-24 ${theme.text} bg-green-700/10 px-2 py-2  rounded-r-2xl focus:outline-none text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
-                                  placeholder="Amount"
-                                />
+                            return (
+                              <div key={user.id} className="flex items-center">
+                                <button
+                                  type="button"
+                                  onClick={() => handleUserSelection(index, user.id)}
+                                  className={`px-4 py-2 rounded-l-2xl text-sm transition-all ${isSelected
+                                    ? `bg-green-800/50 text-white`
+                                    : ` rounded-r-2xl ${theme.input} ${theme.textSecondary} ${theme.hoverBg}`
+                                    }`}
+                                >
+                                  {user.first_name}
+                                </button>
+                                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isSelected ? ' rounded-r-2xl w-24 opacity-100' : 'w-0 opacity-0'}`}>
+                                  <input
+                                    type="number"
+                                    value={split?.amount || ''}
+                                    onChange={(e) => handleSplitAmountChange(index, exp.splits.findIndex(s => s.user === user.id), e.target.value)}
+                                    className={`w-24 ${theme.text} bg-green-700/10 px-2 py-2  rounded-r-2xl focus:outline-none text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                    placeholder="Amount"
+                                  />
+                                </div>
+                                <div className={`rounded-r-2xl transition-all duration-300 ${isSelected ? 'bg-green-800/50 ' : 'w-0'}`}></div>
                               </div>
-                              <div className={`rounded-r-2xl transition-all duration-300 ${isSelected ? 'bg-green-800/50 ' : 'w-0'
-                                }`}></div>
-                            </div>
-                          );
-                        })}
+                            );
+                          })
+                        ) : (
+                          <span className="text-sm text-gray-500"></span>
+                        )}
                       </div>
                     </div>
                   ))}

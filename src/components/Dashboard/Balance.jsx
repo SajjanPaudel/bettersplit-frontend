@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useTheme } from '../../context/ThemeContext';
 import { endpoints } from '../../config/api';
@@ -8,6 +8,7 @@ import { Menu } from '@headlessui/react';
 import { QRCodeSVG } from 'qrcode.react';
 import { IoNotificationsOutline } from "react-icons/io5";
 import { FaTimes } from 'react-icons/fa';
+import bankData from '../../data/bankData.json';
 
 // Add these imports at the top
 import {
@@ -59,6 +60,13 @@ function Balance() {
   const [notifications, setNotifications] = useState([]);
   const [loadingNotifications, setLoadingNotifications] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedAccountIndex, setSelectedAccountIndex] = useState(0);
+
+
+  const getBankName = (bankCode) => {
+    const bank = bankData.list.find(bank => bank.swift_code === bankCode);
+    return bank ? bank.bank : bankCode;
+  };
 
 
 
@@ -766,11 +774,11 @@ function Balance() {
 
       {/* Settlement Modal remains the same ... */}
       {showSettleModal && selectedSettlement && (
-        <div className="fixed inset-0  flex items-center justify-center z-50">
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
           <div className={`${theme.card} backdrop-blur-md p-8 rounded-2xl shadow-xl max-w-md w-full border ${theme.border}`}>
             <h3 className={`text-xl font-light font-['Inter'] ${theme.text} mb-6`}>Confirm Settlement</h3>
-            <div className="flex flex-col items-center justify-center mt-4 p-4 bg-black/10 rounded-xl">
-              {qrValue && (Object.keys(JSON.parse(qrValue)).length > 0) ? (
+            <div className="flex flex-col items-center justify-center mt-4 p-4 rounded-xl">
+              {recipientAccount && allAccounts[selectedSettlement.to]?.length > 0 ? (
                 <>
                   <QRCodeSVG
                     value={qrValue}
@@ -781,14 +789,38 @@ function Balance() {
                     includeMargin={true}
                     className="mb-4"
                   />
-                  {/* <div className="text-center text-sm text-gray-600">
-                    <p>Scan to get payment details</p>
-                    <p className="font-semibold mt-2">
-                      {recipientAccount.account_type === 'bank' 
-                        ? recipientAccount.account_details.accountType
-                        : 'eSewa'}
-                    </p>
-                  </div> */}
+
+                  {/* Account Selection Dropdown */}
+                  <select
+                    className={`w-full mb-4 ${theme.input} ${theme.text} px-4 py-2 rounded-xl border ${theme.inputBorder}`}
+                    onChange={(e) => {
+                      const index = parseInt(e.target.value);
+                      setSelectedAccountIndex(index);
+                      const account = allAccounts[selectedSettlement.to][index];
+                      setRecipientAccount(account.account_details);
+                      setQrValue(JSON.stringify(account.account_details));
+                    }}
+                    value={selectedAccountIndex}
+                  >
+                    {allAccounts[selectedSettlement.to].map((account, index) => (
+                      <option key={account.id} value={index}>
+                        {account.account_type === 'esewa'
+                          ? ('eSewa') : account.account_type === 'khalti' ? ('Khalti')
+                          : getBankName(account.account_details.bankCode)}
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Account Details */}
+                  <div className={`text-center ${theme.text}`}>
+                    {allAccounts[selectedSettlement.to][selectedAccountIndex].account_type === 'esewa' ? (
+                      <p className="font-semibold"> Esewa Id: {recipientAccount.eSewa_id}</p>
+                    ) : allAccounts[selectedSettlement.to][selectedAccountIndex].account_type === 'khalti' ? (
+                      <p className="font-semibold"> Khalti Id: {recipientAccount.khalti_id}</p>
+                    ) : (
+                    <p className="font-semibold"> Acc No: {recipientAccount.accountNumber}</p>
+                  )}
+                  </div>
                 </>
               ) : (
                 <div className={`text-center ${theme.textSecondary}`}>
@@ -796,14 +828,14 @@ function Balance() {
                 </div>
               )}
             </div>
-            <div className="space-y-4">
-              <div>
-                <p className={`text-sm ${theme.textSecondary} font-['Inter'] mb-1`}>From</p>
-                <p className={`font-['Inter'] ${theme.text}`}>{selectedSettlement.from}</p>
-              </div>
-              <div>
-                <p className={`text-sm ${theme.textSecondary} font-['Inter'] mb-1`}>To</p>
-                <p className={`font-['Inter'] ${theme.text}`}>{selectedSettlement.to}</p>
+            <div className="space-y-2">
+              <div className='grid grid-cols-2 gap-2'>
+                <p className={`w-full ${theme.input} ${theme.text} px-4 py-2 rounded-xl border ${theme.inputBorder} bg-opacity-50`}>From {selectedSettlement.from}</p>
+                {/* <p className={`font-['Inter'] ${theme.text}`}>{selectedSettlement.from}</p> */}
+              {/* </div> */}
+              {/* <div> */}
+                <p className={`w-full ${theme.input} ${theme.text} px-4 py-2 rounded-xl border ${theme.inputBorder} bg-opacity-50`}>To {selectedSettlement.to}</p>
+                {/* <p className={`font-['Inter'] ${theme.text}`}>{selectedSettlement.to}</p> */}
               </div>
               <div>
                 <p className={`text-sm ${theme.textSecondary} font-['Inter'] mb-1`}>Amount</p>
@@ -828,9 +860,9 @@ function Balance() {
                   >
                     {isSubmitting ? (
                       <><div className="flex justify-center items-center gap-2">
-                          <span>Settling</span>
-                          <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-purple-400"></div>
-                          </div>
+                        <span>Settling</span>
+                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-purple-400"></div>
+                      </div>
                       </>
                     ) : (
                       'Confirm Settlement'
@@ -844,7 +876,7 @@ function Balance() {
                     {isSubmitting ? (
                       <>
                         <div className="flex justify-center items-center gap-2">
-                        <span>Sending</span>
+                          <span>Sending</span>
                           <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-purple-400"></div>
                         </div>
                       </>

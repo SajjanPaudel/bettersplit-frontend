@@ -36,7 +36,7 @@ function DashboardLayout({ onLogout }) {
       </button>
 
       {/* Sidebar */}
-      <div className={`${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:relative left-0 top-0 h-full w-64 ${theme.card} ${theme.textSecondary} flex flex-col rounded-3xl mr-4 shadow-2xl border ${theme.border} transition-transform duration-300 ease-in-out z-40 before:bg-gradient-to-b before:from-white/[0.08] before:to-transparent backdrop-blur-md bg-white/10 dark:bg-black/10`}>
+      <div className={`${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:relative left-0 top-0 h-full w-64 ${theme.textSecondary} flex flex-col rounded-3xl mr-4 shadow-2xl border ${theme.border} transition-transform duration-300 ease-in-out z-40 before:bg-gradient-to-b before:from-white/[0.08] before:to-transparent backdrop-blur-md `}>
         {/* Logo Section */}
         <div className="p-5">
           <div className="flex items-center justify-center space-x-2 lg:mb-12 md:mb-12 lg:mt-4 md:mt-4 mb-5 mt-10">

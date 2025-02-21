@@ -21,6 +21,7 @@ function GroupDetail() {
     const [error, setError] = useState('');
     const [showAddMemberModal, setShowAddMemberModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [showRemoveMemberModal, setShowRemoveMemberModal] = useState(false);
     const [searchEmail, setSearchEmail] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
@@ -36,28 +37,28 @@ function GroupDetail() {
 
     const toggleRow = (rowId) => {
         setExpandedRows(prev => {
-          const newExpandedRows = new Set();
-          if (!prev.has(rowId)) {
-            newExpandedRows.add(rowId);
-          }
-          return newExpandedRows;
+            const newExpandedRows = new Set();
+            if (!prev.has(rowId)) {
+                newExpandedRows.add(rowId);
+            }
+            return newExpandedRows;
         });
-      };
+    };
 
     const loggedInUser = JSON.parse(localStorage.getItem('user'));
 
     const calculateOwed = (expense) => {
         if (expense.paid_by === currentUser) {
-          return Object.entries(expense.splits)
-            .reduce((total, [user, amount]) => {
-              if (user !== currentUser) {
-                return total + parseFloat(amount);
-              }
-              return total;
-            }, 0);
+            return Object.entries(expense.splits)
+                .reduce((total, [user, amount]) => {
+                    if (user !== currentUser) {
+                        return total + parseFloat(amount);
+                    }
+                    return total;
+                }, 0);
         }
         return -parseFloat(expense.splits[currentUser] || 0);
-      };
+    };
 
     const fetchGroupDetails = async () => {
         try {
@@ -178,14 +179,14 @@ function GroupDetail() {
 
     // Remove the slice from table initialization
     const table = useReactTable({
-    data: group.expenses || [], // Use expenses from group data
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    state: {
-        globalFilter,
-    },
-    onGlobalFilterChange: setGlobalFilter,
+        data: group.expenses || [], // Use expenses from group data
+        columns,
+        getCoreRowModel: getCoreRowModel(),
+        getFilteredRowModel: getFilteredRowModel(),
+        state: {
+            globalFilter,
+        },
+        onGlobalFilterChange: setGlobalFilter,
     });
 
 
@@ -199,7 +200,7 @@ function GroupDetail() {
                 onClick={() => handleAddMember(user.id, user.email)}
                 className={`p-4 flex items-center justify-between cursor-pointer ${theme.cardHover}`}
             >
-                <div className={theme.text}>{user.username}</div>
+                <div className={`${theme.text}`}>{user.username}</div>
                 <div className={`text-sm ${theme.textSecondary}`}>{user.email}</div>
             </div>
         ))
@@ -224,14 +225,14 @@ function GroupDetail() {
                         <div className="flex gap-4">
                             <button
                                 onClick={() => setShowAddMemberModal(true)}
-                                className="px-4 py-2.5 text-white rounded-xl bg-green-500/50 hover:bg-green-500/60 transition-all"
+                                className="px-4 py-2.5 text-white rounded-xl bg-green-500 hover:bg-green-600 transition-all"
                             >
                                 Add Member
                             </button>
                             {group.created_by === loggedInUser.username && (
                                 <button
                                     onClick={() => setShowDeleteModal(true)}
-                                    className="px-4 py-2.5 text-white rounded-xl bg-red-500/50 hover:bg-red-500/60 transition-all"
+                                    className="px-4 py-2.5 text-white rounded-xl bg-red-500 hover:bg-red-600 transition-all"
                                 >
                                     Delete Group
                                 </button>
@@ -245,14 +246,43 @@ function GroupDetail() {
                             {group.members.map(member => (
                                 <span
                                     key={member.id}
-                                    className={`px-3 py-1.5 rounded-lg text-sm ${theme.input} ${theme.textSecondary} flex items-center gap-2`}
+                                    className={`px-3 py-1.5 rounded-lg text-sm text-white bg-green-500 hover:bg-green-600 flex items-center gap-2`}
                                 >
                                     {member.username}
-                                    {member !== loggedInUser.username && (
-                                        <FaTimes
-                                            className="w-3 h-3 cursor-pointer hover:text-red-400 transition-colors"
-                                            onClick={() => handleRemoveMember(member.username)}
-                                        />
+                                    {group.created_by === loggedInUser.username && (
+                                        <>
+                                            <FaTimes
+                                                className="w-3 h-3 border rounded-full cursor-pointer hover:text-red-400 transition-colors"
+                                                onClick={() => setShowRemoveMemberModal(member.username)}
+                                            />
+                                            {showRemoveMemberModal === member.username && (
+                                                <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50">
+                                                    <div className={`${theme.card} backdrop-blur-md  p-8 rounded-2xl shadow-xl max-w-md w-full border ${theme.border}`}>
+                                                        <h3 className={`text-xl font-light ${theme.text} mb-6`}>Remove Member</h3>
+                                                        <p className={`${theme.textSecondary} mb-6`}>
+                                                            Are you sure you want to remove {member.username} from the group?
+                                                        </p>
+                                                        <div className="flex gap-3">
+                                                            <button
+                                                                onClick={() => {
+                                                                    handleRemoveMember(member.username);
+                                                                    setShowRemoveMemberModal(null);
+                                                                }}
+                                                                className="flex-1 px-4 py-2.5 text-white rounded-xl bg-red-500 hover:bg-red-600 transition-all"
+                                                            >
+                                                                Remove
+                                                            </button>
+                                                            <button
+                                                                onClick={() => setShowRemoveMemberModal(null)}
+                                                                className={`flex-1 px-4 py-2.5 border bg-gray-600 text-white hover:bg-gray-700 ${theme.border} rounded-xl ${theme.textSecondary} transition-colors`}
+                                                            >
+                                                                Cancel
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </>
                                     )}
                                 </span>
                             ))}
@@ -264,7 +294,7 @@ function GroupDetail() {
             {/* Add Member Modal */}
             {showAddMemberModal && (
                 <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-                    <div className={`${theme.card} backdrop-blur-md bg-white/10 dark:bg-black/10 p-8 rounded-2xl shadow-xl max-w-md w-full border ${theme.border}`}>
+                    <div className={`${theme.card} backdrop-blur-md p-8 rounded-2xl shadow-xl max-w-md w-full border ${theme.border}`}>
                         <h3 className={`text-xl font-light ${theme.text} mb-6`}>Add Member</h3>
                         {error && (
                             <div className="bg-[#ff000014] backdrop-blur-xl border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm mb-4">
@@ -281,7 +311,7 @@ function GroupDetail() {
                             />
                             <button
                                 onClick={() => handleSearch(searchEmail)}
-                                className="px-6 py-3 text-white rounded-xl bg-purple-500/50 hover:bg-purple-500/60 transition-all"
+                                className="px-6 py-3 text-white rounded-xl bg-purple-500 hover:bg-purple-600 transition-all"
                             >
                                 Search
                             </button>
@@ -325,16 +355,16 @@ function GroupDetail() {
 
 
             {showDeleteModal && (
-                <div className="fixed inset-0 bg-black/5 backdrop-blur-sm flex items-center justify-center z-50">
-                    <div className={`${theme.card} backdrop-blur-md bg-white/10 dark:bg-black/10 p-8 rounded-2xl shadow-xl max-w-md w-full border ${theme.border}`}>
-                        <h3 className={`text-xl font-light ${theme.text} mb-6`}>Delete Group</h3>
+                <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
+                    <div className={`${theme.card} backdrop-blur-md  p-8 rounded-2xl shadow-xl max-w-md w-full border ${theme.border}`}>
+                        <h3 className={`text-xl font-semibold ${theme.text} mb-6`}>Delete Group</h3>
                         <p className={`${theme.textSecondary} mb-6`}>
                             Are you sure you want to delete this group? This action cannot be undone.
                         </p>
                         <div className="flex gap-3">
                             <button
                                 onClick={handleDeleteGroup}
-                                className="flex-1 px-4 py-2.5 text-white rounded-xl bg-red-500/50 hover:bg-red-500/60 transition-all"
+                                className="flex-1 px-4 py-2.5 text-white rounded-xl bg-red-500 hover:bg-red-600 transition-all"
                             >
                                 Delete
                             </button>

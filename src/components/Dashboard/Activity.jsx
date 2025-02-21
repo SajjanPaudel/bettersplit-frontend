@@ -184,10 +184,7 @@ function Activity() {
             {groups.length > 0 ? (
               <Link
                 to="/dashboard/add-expense"
-                className={`w-max px-6 py-3 rounded-xl text-sm transition-all whitespace-nowrap ${isDark
-                    ? "bg-green-500/30 text-green-200 hover:bg-green-500/40"
-                    : "bg-green-500/70 text-white hover:bg-green-500/30"
-                  }`}
+                className={`w-max px-6 py-3 rounded-xl text-sm transition-all whitespace-nowrap bg-green-500 text-white hover:bg-green-600 `}
               >
                 Add
               </Link>

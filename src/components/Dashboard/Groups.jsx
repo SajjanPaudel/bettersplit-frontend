@@ -71,7 +71,7 @@ function Groups() {
             <h1 className={`md:text-2xl lg:text-2xl text-lg font-light ${theme.text} pl-12 lg:pl-0`}>Groups</h1>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="px-4 mr-2 py-2.5 text-white rounded-xl bg-purple-500/50 hover:bg-purple-500/60 transition-all"
+              className="px-4 mr-2 py-2.5 text-white rounded-xl bg-purple-500 hover:bg-purple-600 transition-all"
             >
               Create New Group
             </button>
@@ -100,13 +100,13 @@ function Groups() {
                     {group.members.map(member => (
                       <span
                         key={member.id}
-                        className={`px-3 py-1.5 rounded-lg text-sm ${theme.input} ${theme.textSecondary}`}
+                        className={`px-3 py-1.5 rounded-lg text-sm bg-green-500 text-white  ${theme.textSecondary}`}
                       >
                         {member.username}
                       </span>
                     ))}
                   </div>
-                  <div className={`mt-4 text-sm ${theme.textSecondary}`}>
+                  <div className={`mt-4 text-sm  font-semibold ${theme.textSecondary}`}>
                     Created by: {group.created_by}
                   </div>
                 </div>
@@ -119,7 +119,7 @@ function Groups() {
       {/* Create Group Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className={`${theme.card} backdrop-blur-md bg-white/10 dark:bg-black/10 p-8 rounded-2xl shadow-xl max-w-md w-full border ${theme.border}`}>
+          <div className={`${theme.card} backdrop-blur-md p-8 rounded-2xl shadow-xl max-w-md w-full border ${theme.border}`}>
             <h3 className={`text-xl font-light ${theme.text} mb-6`}>Create New Group</h3>
             <form onSubmit={handleCreateGroup}>
               <div className="mb-6">
@@ -142,7 +142,7 @@ function Groups() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-purple-500/50 text-white rounded-lg hover:bg-purple-500/60 transition-colors"
+                  className="flex-1 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
                 >
                   Create Group
                 </button>

@@ -388,7 +388,7 @@ function AddExpense() {
                 type="submit"
                 form="expense-form"
                 disabled={isSubmitting}
-                className="px-4 lg:px-6 py-2.5 text-white rounded-xl bg-green-500/50 hover:bg-green-500/60 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-4 lg:px-6 py-2.5 text-white rounded-xl bg-green-500 hover:bg-green-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {isSubmitting ? (
                   <>
@@ -403,7 +403,7 @@ function AddExpense() {
               <button
                 type="button"
                 onClick={addNewExpense}
-                className="hidden lg:block px-4 py-2.5 text-white rounded-xl bg-purple-500/50 hover:bg-purple-500/60 transition-all"
+                className="hidden lg:block px-4 py-2.5 text-white rounded-xl bg-purple-500 hover:bg-purple-600 transition-all"
               >
                 Add Another Bill
               </button>
@@ -419,8 +419,6 @@ function AddExpense() {
             <form id="expense-form" onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden" noValidate>
               {/* Group selector */}
               <div className='flex-shrink-0 mb-4'>
-
-                // Update the Select component
                 <Select
                   value={groups.find(group => group.id === selectedGroup)}
                   onChange={handleGroupSelect}
@@ -561,8 +559,8 @@ function AddExpense() {
                         <div className="col-span-full">
                           {/* <div className="mb-2 text-sm text-gray-500">Who paid?</div> */}
                           <div className="flex flex-wrap gap-2">
-                            <span className="relative px-4 py-2 rounded-2xl text-sm bg-gray-100 dark:bg-gray-800/50 text-gray-600 dark:text-gray-400">
-                              Paid By <span className='text-green-800'> → </span>
+                            <span className={`relative px-4 py-2 rounded-2xl text-sm border border-purple-500 ${theme.text}`}>
+                              Paid By <span className={`${theme.text}`}> → </span>
                             </span>
                             {selectedGroup ? (
                               groupMembers.map(user => {
@@ -575,7 +573,7 @@ function AddExpense() {
                                       type="button"
                                       onClick={() => handlePayerSelection(index, user.id)}
                                       className={`px-4 py-2 rounded-l-2xl text-sm transition-all ${isPayer
-                                        ? `bg-purple-800/50 text-white`
+                                        ? `bg-purple-800 text-white`
                                         : ` rounded-r-2xl ${theme.input} ${theme.textSecondary} ${theme.hoverBg}`
                                         }`}
                                     >
@@ -607,8 +605,8 @@ function AddExpense() {
                       <hr className='border border-gray-600' />
                       {/* <div className="mb-2 text-sm text-gray-500">Paid For?</div> */}
                       <div className="flex flex-wrap gap-1">
-                        <span className="relative px-4 py-2 rounded-2xl text-sm bg-gray-100 dark:bg-gray-800/50 text-gray-600 dark:text-gray-400">
-                          Paid For <span className='text-green-800'> → </span>
+                      <span className={`relative px-4 py-2 rounded-2xl text-sm border border-green-500 ${theme.text}`}>
+                      Paid For <span className={`${theme.text}`}> → </span>
                         </span>
                         {selectedGroup ? (
                           groupMembers.map(user => {
@@ -621,7 +619,7 @@ function AddExpense() {
                                   type="button"
                                   onClick={() => handleUserSelection(index, user.id)}
                                   className={`px-4 py-2 rounded-l-2xl text-sm transition-all ${isSelected
-                                    ? `bg-green-800/50 text-white`
+                                    ? `bg-green-800 text-white`
                                     : ` rounded-r-2xl ${theme.input} ${theme.textSecondary} ${theme.hoverBg}`
                                     }`}
                                 >

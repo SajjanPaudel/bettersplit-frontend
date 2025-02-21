@@ -807,15 +807,11 @@ function Balance() {
               </div>
               <div>
                 <p className={`text-sm ${theme.textSecondary} font-['Inter'] mb-1`}>Amount</p>
-                <input
-                  type="number"
-                  value={editAmount}
-                  onChange={(e) => setEditAmount(e.target.value)}
-                  className={`w-full ${theme.input} ${theme.text} px-4 py-2 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none`}
-                  min="0"
-                  step="0.01"
-                  required
-                />
+                <div
+                  className={`w-full ${theme.input} ${theme.text} px-4 py-2 rounded-xl border ${theme.inputBorder} bg-opacity-50`}
+                >
+                  {editAmount}
+                </div>
               </div>
               <div className="flex space-x-3 mt-6">
                 <button

@@ -168,6 +168,7 @@ function Balance() {
     } catch (err) {
       setError('Failed to fetch data');
     } finally {
+      fetchNotifications();
       setIsLoading(false);
     }
   };
@@ -286,7 +287,7 @@ function Balance() {
 
   useEffect(() => {
     if (showNotifications) {
-      fetchNotifications();
+      // fetchNotifications();
     }
   }, [showNotifications]);
 
@@ -372,8 +373,11 @@ function Balance() {
               className={`p-2 rounded-full hover:bg-purple-500/10 transition-colors relative`}
             >
               <IoNotificationsOutline className={`w-6 h-6 ${theme.text}`} />
-              {/* Notification dot - you can conditionally render this based on new notifications */}
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+              {notifications.filter(n => !n.is_read).length > 0 && (
+                <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full flex items-center justify-center text-xs text-white font-medium">
+                  {notifications.filter(n => !n.is_read).length}
+                </span>
+              )}
             </button>
           </div>
 

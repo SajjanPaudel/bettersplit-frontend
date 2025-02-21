@@ -99,7 +99,7 @@ function Balance() {
 
       // Fetch both balances and activities
       const [balancesResponse, activitiesResponse] = await Promise.all([
-        axios.get(`${endpoints.balances}?type=${calculationType}/`, {
+        axios.get(`${endpoints.balances}/?type=${calculationType}/`, {
           headers: { 'Authorization': `Bearer ${accessToken}` }
         }),
         axios.get(endpoints.activity, {

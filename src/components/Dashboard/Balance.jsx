@@ -810,7 +810,7 @@ function Balance() {
                 <div
                   className={`w-full ${theme.input} ${theme.text} px-4 py-2 rounded-xl border ${theme.inputBorder} bg-opacity-50`}
                 >
-                  {editAmount}
+                  {editAmount.toFixed(0)}
                 </div>
               </div>
               <div className="flex space-x-3 mt-6">

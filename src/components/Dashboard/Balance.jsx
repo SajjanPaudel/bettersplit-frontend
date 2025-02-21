@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { useTheme } from '../../context/ThemeContext';
 import { endpoints } from '../../config/api';
@@ -6,6 +6,8 @@ import { FaUser, FaUsers, FaCalendar } from 'react-icons/fa';
 import { FaChevronDown } from 'react-icons/fa';
 import { Menu } from '@headlessui/react';
 import { QRCodeSVG } from 'qrcode.react';
+import { IoNotificationsOutline } from "react-icons/io5";
+import { FaTimes } from 'react-icons/fa';
 
 // Add these imports at the top
 import {
@@ -19,6 +21,7 @@ import {
   Legend
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import { CgSpinner } from "react-icons/cg";
 
 // Register ChartJS components
 ChartJS.register(
@@ -34,6 +37,7 @@ ChartJS.register(
 function Balance() {
   const { theme, isDark } = useTheme();
   const [balances, setBalances] = useState(null);
+  const [allAccounts, setAllAccounts] = useState(null);
   const [settlements, setSettlements] = useState([]);
   const [error, setError] = useState('');
   const [dateRange, setDateRange] = useState('this-month');
@@ -50,21 +54,12 @@ function Balance() {
   const [activeTab, setActiveTab] = useState('metrics'); // Add this line
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7)); // Format: YYYY-MM
   const [recipientAccount, setRecipientAccount] = useState(null);
+  const [qrValue, setQrValue] = useState('');
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [loadingNotifications, setLoadingNotifications] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Function to fetch recipient's accounts
-  const fetchRecipientAccount = async (username) => {
-    try {
-      const accessToken = localStorage.getItem('access_token');
-      const response = await axios.get(endpoints.balances, {
-        headers: { 'Authorization': `Bearer ${accessToken}` }
-      });
-      const accounts = response.data.data.accounts[username] || [];
-      const firstAccount = accounts.find(acc => acc.is_primary) || accounts[0];
-      setRecipientAccount(firstAccount);
-    } catch (error) {
-      console.error('Error fetching recipient account:', error);
-    }
-  };
 
 
   // Add this effect to close dropdown when clicking outside
@@ -105,6 +100,7 @@ function Balance() {
       ]);
 
       setBalances(balancesResponse.data.data.balances);
+      setAllAccounts(balancesResponse.data.data.accounts);
       setSettlements(balancesResponse.data.data.settlements);
 
       // Process activities into daily expenses
@@ -176,14 +172,85 @@ function Balance() {
     }
   };
 
+  // Function to fetch recipient's accounts
+  const fetchRecipientAccount = async (username) => {
+    try {
+      const accounts = allAccounts[username] || []; // Get accounts for the user, or empty array if not found
+      const primaryAccount = accounts.find(acc => acc.is_primary);
+      const firstAccount = primaryAccount ? { ...primaryAccount.account_details } : (accounts.length > 0 ? { ...accounts[0].account_details } : {});
+      setRecipientAccount(firstAccount);
+      console.log(firstAccount)
+      // Pre-generate QR value
+      if (firstAccount) {
+        const qrData = JSON.stringify(firstAccount);
+        setQrValue(qrData);
+      }
+    } catch (error) {
+      console.error('Error fetching recipient account:', error);
+    }
+  };
+
+
   useEffect(() => {
     fetchBalances();
   }, [calculationType, showOnlyMine, dateRange]);
   // Update the handleSettle function to use editAmount
   const handleSettle = async () => {
+    setIsSubmitting(true);
     try {
       const accessToken = localStorage.getItem('access_token');
-      const response = await axios.post(endpoints.settlements, {
+
+      if (calculationType === 'individual') {
+        // Handle individual settlement as before
+        const response = await axios.post(endpoints.settlements, {
+          from_user: selectedSettlement.from,
+          to_user: selectedSettlement.to,
+          amount: parseFloat(editAmount)
+        }, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          }
+        });
+
+        if (response.data.success) {
+          await fetchBalances();
+          setShowSettleModal(false);
+          setSelectedSettlement(null);
+          setEditAmount(0);
+        }
+      } else {
+        // Handle combined settlement by processing individual settlements
+        const settlementPromises = selectedSettlement.individual_settlements.map(settlement => {
+          return axios.post(endpoints.settlements, {
+            from_user: settlement.from,
+            to_user: settlement.to,
+            amount: parseFloat(settlement.amount)
+          }, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`
+            }
+          });
+        });
+
+        await Promise.all(settlementPromises);
+        await fetchBalances();
+        setShowSettleModal(false);
+        setSelectedSettlement(null);
+        setEditAmount(0);
+      }
+    } catch (err) {
+      setError('Failed to process settlement');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  //function to send settlement request
+  const sendSettlementRequest = async () => {
+    setIsSubmitting(true);
+    try {
+      const accessToken = localStorage.getItem('access_token');
+      const response = await axios.post(endpoints.settlementRequest, {
         from_user: selectedSettlement.from,
         to_user: selectedSettlement.to,
         amount: parseFloat(editAmount)
@@ -192,7 +259,6 @@ function Balance() {
           'Authorization': `Bearer ${accessToken}`
         }
       });
-
       if (response.data.success) {
         await fetchBalances();
         setShowSettleModal(false);
@@ -200,7 +266,42 @@ function Balance() {
         setEditAmount(0);
       }
     } catch (err) {
-      setError('Failed to process settlement');
+      setError('Failed to send settlement request');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const fetchNotifications = async () => {
+    try {
+      const accessToken = localStorage.getItem('access_token');
+      const response = await axios.get(endpoints.notifications, {
+        headers: { 'Authorization': `Bearer ${accessToken}` }
+      });
+      setNotifications(response.data.data);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (showNotifications) {
+      fetchNotifications();
+    }
+  }, [showNotifications]);
+
+  const handleMarkAsRead = async (notificationId) => {
+    try {
+      setLoadingNotifications(prev => ({ ...prev, [notificationId]: true }));
+      const accessToken = localStorage.getItem('access_token');
+      await axios.post(endpoints.markRead(notificationId), {}, {
+        headers: { 'Authorization': `Bearer ${accessToken}` }
+      });
+      await fetchNotifications();
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    } finally {
+      setLoadingNotifications(prev => ({ ...prev, [notificationId]: false }));
     }
   };
 
@@ -264,7 +365,76 @@ function Balance() {
                 <FaUsers className={`absolute right-2 text-xs ${!showOnlyMine ? 'text-gray-500' : 'text-white'}`} />
               </label>
             </div>
+
+            {/* Add Notifications Icon */}
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
+              className={`p-2 rounded-full hover:bg-purple-500/10 transition-colors relative`}
+            >
+              <IoNotificationsOutline className={`w-6 h-6 ${theme.text}`} />
+              {/* Notification dot - you can conditionally render this based on new notifications */}
+              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
           </div>
+
+          {/* Add Notifications Panel */}
+          {showNotifications && (
+            <div className="fixed inset-0 z-50 overflow-hidden" onClick={() => setShowNotifications(false)}>
+              <div className="absolute inset-0 bg-black/20 backdrop-blur-sm">
+                <div
+                  className={`absolute right-4 top-16 w-80 md:w-96 lg:w-[30rem] rounded-2xl ${theme.card} border ${theme.border} shadow-xl`}
+                  onClick={e => e.stopPropagation()}
+                >
+                  <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                    <h3 className={`text-lg font-medium ${theme.text}`}>Notifications</h3>
+                  </div>
+                  <div className="max-h-[70vh] overflow-y-auto">
+                    {notifications.length > 0 ? (
+                      notifications.map(notification => (
+                        <div
+                          key={notification.id}
+                          className={`p-4 border-b ${theme.border} hover:bg-purple-500/10 cursor-pointer flex justify-between items-start`}
+                        >
+                          <div>
+                            <p className={`${theme.text} text-sm`}>{notification.message}</p>
+                            <span className={`${theme.textSecondary} text-xs`}>
+                              {new Date(notification.created_at).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </span>
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMarkAsRead(notification.id);
+                            }}
+                            className={`p-1.5 rounded-full hover:bg-purple-500/10 transition-all ${theme.textSecondary} hover:text-purple-500`}
+                            title="Mark as read"
+                            disabled={loadingNotifications[notification.id]}
+                          >
+                            {loadingNotifications[notification.id] ? (
+                              <CgSpinner className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <FaTimes className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
+                      ))
+                    ) : (
+                      <div className={`p-8 text-center ${theme.textSecondary}`}>
+                        <p>No notifications</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center space-x-2">
             <div className="relative inline-block w-32">
               <div className="relative">
@@ -418,23 +588,28 @@ function Balance() {
                         <div className={`${theme.text}`}>{settlement.amount.toFixed(0)}</div>
                       </div>
                       <button
-                        onClick={() => {
-                          if (calculationType === 'individual') {
-                            setSelectedSettlement(settlement);
-                            setShowSettleModal(true);
-                            setEditAmount(settlement.amount);
-                            fetchRecipientAccount(settlement.to); // Wait for the account to be fetched
-                            setShowSettleModal(true);
+                        onClick={async () => { // Make the onClick handler async
+                          setSelectedSettlement(settlement);
+                          setEditAmount(settlement.amount);
+
+                          try {
+                            await fetchRecipientAccount(settlement.to); // Wait for the account to be fetched
+                            setShowSettleModal(true); // Show the modal *after* the account is fetched
+                          } catch (error) {
+                            // Handle error, e.g., display an error message to the user
+                            console.error("Error fetching account:", error);
+                            alert("Error fetching recipient account. Please try again later."); // Example error handling
                           }
                         }}
-                        disabled={calculationType === 'net' || String(settlement.to) !== String(loggedInUser.username)}
-                        title={String(settlement.to) !== String(loggedInUser.username) ? "Only the recipient can settle" : ""}
-                        className={`md:px-6 lg:px-6 px-3 py-3 rounded-xl text-sm transition-all ${calculationType === 'individual' && String(settlement.to) === String(loggedInUser.username)
-                          ? 'bg-green-500/70 text-white hover:bg-green-500/70'
-                          : `bg-green-500/70 text-white hover:bg-green-500/70 cursor-not-allowed opacity-50`
+                        disabled={settlement.from !== loggedInUser.username && settlement.to !== loggedInUser.username} // Simplified condition
+                        title={settlement.to !== loggedInUser.username ? "Only the recipient can settle" : ""} // Simplified condition
+                        className={`md:px-6 lg:px-6 px-3 py-3 rounded-xl text-sm transition-all 
+                            ${settlement.to === loggedInUser.username || settlement.from === loggedInUser.username
+                            ? 'bg-green-600/80 text-white hover:bg-green-600'
+                            : 'bg-green-500/70 text-white hover:bg-green-500/70 cursor-not-allowed opacity-50'
                           }`}
                       >
-                        {calculationType === 'individual' ? 'Settle' : 'Settle'}
+                        Settle {/* Simplified text */}
                       </button>
                     </div>
                   </div>
@@ -587,14 +762,14 @@ function Balance() {
 
       {/* Settlement Modal remains the same ... */}
       {showSettleModal && selectedSettlement && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className={`${theme.card} backdrop-blur-md bg-white/10 dark:bg-black/10 p-8 rounded-2xl shadow-xl max-w-md w-full border ${theme.border}`}>
+        <div className="fixed inset-0  flex items-center justify-center z-50">
+          <div className={`${theme.card} backdrop-blur-md p-8 rounded-2xl shadow-xl max-w-md w-full border ${theme.border}`}>
             <h3 className={`text-xl font-light font-['Inter'] ${theme.text} mb-6`}>Confirm Settlement</h3>
             <div className="flex flex-col items-center justify-center mt-4 p-4 bg-black/10 rounded-xl">
-              {recipientAccount ? (
+              {qrValue && (Object.keys(JSON.parse(qrValue)).length > 0) ? (
                 <>
                   <QRCodeSVG
-                    value={JSON.stringify(recipientAccount.account_details)}
+                    value={qrValue}
                     size={200}
                     level="H"
                     bgColor={`transparent`}
@@ -602,14 +777,14 @@ function Balance() {
                     includeMargin={true}
                     className="mb-4"
                   />
-                  <div className="text-center text-sm text-gray-600">
+                  {/* <div className="text-center text-sm text-gray-600">
                     <p>Scan to get payment details</p>
                     <p className="font-semibold mt-2">
                       {recipientAccount.account_type === 'bank' 
                         ? recipientAccount.account_details.accountType
                         : 'eSewa'}
                     </p>
-                  </div>
+                  </div> */}
                 </>
               ) : (
                 <div className={`text-center ${theme.textSecondary}`}>
@@ -645,17 +820,45 @@ function Balance() {
                 >
                   Cancel
                 </button>
-                <button
-                  onClick={handleSettle}
-                  className="flex-1 px-4 py-2 bg-yellow-400 text-black rounded-lg font-['Inter'] hover:bg-yellow-300 transition-colors"
-                >
-                  Confirm Settlement
-                </button>
+                {selectedSettlement.to == loggedInUser.username ? (
+                  <button
+                    onClick={handleSettle}
+                    disabled={isSubmitting}
+                    className="flex-1 px-4 py-2 bg-yellow-400 text-black rounded-lg font-['Inter'] hover:bg-yellow-300 transition-colors"
+                  >
+                    {isSubmitting ? (
+                      <><div className="flex justify-center items-center gap-2">
+                          <span>Settling</span>
+                          <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-purple-400"></div>
+                          </div>
+                      </>
+                    ) : (
+                      'Confirm Settlement'
+                    )}
+                  </button>
+                ) : (
+                  <button
+                    onClick={sendSettlementRequest}
+                    className="flex-1 px-4 py-2 bg-yellow-400 text-black rounded-lg font-['Inter'] hover:bg-yellow-300 transition-colors"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="flex justify-center items-center gap-2">
+                        <span>Sending</span>
+                          <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-purple-400"></div>
+                        </div>
+                      </>
+                    ) : (
+                      'Send Settlement request'
+                    )}
+                  </button>
+                )}
               </div>
             </div>
           </div>
         </div>
-      )}
+      )
+      }
     </div>
   );
 }

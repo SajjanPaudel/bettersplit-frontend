@@ -12,5 +12,8 @@ export const endpoints = {
   userSearch: `${API_URL}/users/search/`,
   groups: `${API_URL}/split/groups/`,
   profile: `${API_URL}/users/profile/`,
-  accounts: `${API_URL}/split/expenses/accounts/`
+  accounts: `${API_URL}/split/expenses/accounts/`,
+  settlementRequest: `${API_URL}/split/expenses/request-settlement/`,
+  notifications: `${API_URL}/split/notifications/`,
+  markRead: (id) => `${API_URL}/split/notifications/${id}/mark-read/`,
 };

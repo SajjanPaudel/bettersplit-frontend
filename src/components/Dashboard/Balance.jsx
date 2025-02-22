@@ -411,8 +411,8 @@ function Balance() {
                   className={`absolute right-4 top-16 w-80 md:w-96 lg:w-[30rem] rounded-2xl ${theme.card} border ${theme.border} shadow-xl`}
                   onClick={e => e.stopPropagation()}
                 >
-                  <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                    <h3 className={`text-lg font-medium ${theme.text}`}>Notifications</h3>
+                  <div className="p-4 border-gray-200 dark:border-gray-700">
+                    <h3 className={`text-lg border-b border-purple-800/50 font-medium ${theme.text}`}>Notifications</h3>
                   </div>
                   <div className="max-h-[70vh] overflow-y-auto">
                     {notifications.length > 0 ? (

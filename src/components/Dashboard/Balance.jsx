@@ -9,6 +9,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { IoNotificationsOutline } from "react-icons/io5";
 import { FaTimes } from 'react-icons/fa';
 import bankData from '../../data/bankData.json';
+import { Link } from 'react-router-dom';
 
 // Add these imports at the top
 import {
@@ -90,11 +91,11 @@ function Balance() {
     try {
       setIsLoading(true);
       const accessToken = localStorage.getItem('access_token');
-      
+
       const balancesResponse = await axios.get(`${endpoints.balances}/?type=${calculationType}`, {
         headers: { 'Authorization': `Bearer ${accessToken}` }
       });
-  
+
       setBalances(balancesResponse.data.data.balances);
       setAllAccounts(balancesResponse.data.data.accounts);
       setSettlements(balancesResponse.data.data.settlements);
@@ -208,7 +209,7 @@ function Balance() {
   useEffect(() => {
     fetchActivities();
   }, [dateRange, showOnlyMine]);
-  
+
   // Update the handleSettle function to use editAmount
   const handleSettle = async () => {
     setIsSubmitting(true);
@@ -387,11 +388,18 @@ function Balance() {
               className={`p-2 rounded-full hover:bg-purple-500/10 transition-colors relative`}
             >
               <IoNotificationsOutline className={`w-6 h-6 ${theme.text}`} />
-              {notifications.filter(n => !n.is_read).length > 0 && (
+              {notifications.filter(n => !n.is_read).length > 0 && allAccounts[loggedInUser.username]?.length > 0 ? (
                 <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full flex items-center justify-center text-xs text-white font-medium">
-                  {notifications.filter(n => !n.is_read).length}
-                </span>
-              )}
+                {notifications.filter(n => !n.is_read).length}
+              </span>
+              ): notifications.filter(n => !n.is_read).length == 0 && allAccounts[loggedInUser.username]?.length > 0 ? (
+                <></>
+              ):(
+                <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full flex items-center justify-center text-xs text-white font-medium">
+                {notifications.filter(n => !n.is_read).length +1 }
+              </span>
+              )
+            }
             </button>
           </div>
 
@@ -442,9 +450,22 @@ function Balance() {
                           </button>
                         </div>
                       ))
-                    ) : (
+                    ) : allAccounts[loggedInUser.username]?.length > 0 ? (
                       <div className={`p-8 text-center ${theme.textSecondary}`}>
                         <p>No notifications</p>
+                      </div>
+                    ) : (
+                      <div className='p-4 border-b rounded-xl'>
+                        <p className={`${theme.text} text-sm`}>Please add your account Information by going <Link to="/dashboard/profile/" className="text-purple-500 hover:text-purple-600 underline">here</Link></p>
+                        <span className={`${theme.textSecondary} text-xs`}>
+                          {new Date().toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
                       </div>
                     )}
                   </div>

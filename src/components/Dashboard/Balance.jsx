@@ -90,31 +90,36 @@ function Balance() {
     try {
       setIsLoading(true);
       const accessToken = localStorage.getItem('access_token');
+      
+      const balancesResponse = await axios.get(`${endpoints.balances}/?type=${calculationType}`, {
+        headers: { 'Authorization': `Bearer ${accessToken}` }
+      });
+  
+      setBalances(balancesResponse.data.data.balances);
+      setAllAccounts(balancesResponse.data.data.accounts);
+      setSettlements(balancesResponse.data.data.settlements);
+      setError('');
+    } catch (err) {
+      setError('Failed to fetch data');
+    } finally {
+      fetchNotifications();
+      setIsLoading(false);
+    }
+  };
 
-      // Add date filter variables
+  const fetchActivities = async () => {
+    try {
+      setIsLoading(true);
+      const accessToken = localStorage.getItem('access_token');
       const today = new Date();
       const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
       const firstDayOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
       const lastDayOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
 
-      // Fetch both balances and activities
-      const [balancesResponse, activitiesResponse] = await Promise.all([
-        axios.get(`${endpoints.balances}/?type=${calculationType}`, {
-          headers: { 'Authorization': `Bearer ${accessToken}` }
-        }),
-        axios.get(endpoints.activity, {
-          headers: { 'Authorization': `Bearer ${accessToken}` }
-        })
-      ]);
+      const activitiesResponse = await axios.get(endpoints.activity, {
+        headers: { 'Authorization': `Bearer ${accessToken}` }
+      });
 
-      setBalances(balancesResponse.data.data.balances);
-      setAllAccounts(balancesResponse.data.data.accounts);
-      setSettlements(balancesResponse.data.data.settlements);
-
-      // Process activities into daily expenses
-      // Add new state for month filter
-
-      // Modify the activities processing in fetchBalances
       const activities = activitiesResponse.data.data;
       const filteredActivities = activities.filter(activity => {
         const activityDate = new Date(activity.date);
@@ -131,7 +136,6 @@ function Balance() {
         }
       });
 
-      // First, modify the dailyTotals reduction to include expense names
       const dailyTotals = filteredActivities.reduce((acc, activity) => {
         const date = new Date(activity.date);
         const formattedDate = window.innerWidth < 768
@@ -161,7 +165,6 @@ function Balance() {
         return acc;
       }, {});
 
-      // Update the sorting to work with the new structure
       const sortedDailyExpenses = Object.entries(dailyTotals)
         .map(([date, data]) => ({
           date,
@@ -172,11 +175,9 @@ function Balance() {
         .reverse();
 
       setDailyExpenses(sortedDailyExpenses);
-      setError('');
     } catch (err) {
-      setError('Failed to fetch data');
+      console.error('Failed to fetch activities:', err);
     } finally {
-      fetchNotifications();
       setIsLoading(false);
     }
   };
@@ -202,7 +203,12 @@ function Balance() {
 
   useEffect(() => {
     fetchBalances();
-  }, [calculationType, showOnlyMine, dateRange]);
+  }, [calculationType]);
+
+  useEffect(() => {
+    fetchActivities();
+  }, [dateRange, showOnlyMine]);
+  
   // Update the handleSettle function to use editAmount
   const handleSettle = async () => {
     setIsSubmitting(true);
@@ -806,7 +812,7 @@ function Balance() {
                       <option key={account.id} value={index}>
                         {account.account_type === 'esewa'
                           ? ('eSewa') : account.account_type === 'khalti' ? ('Khalti')
-                          : getBankName(account.account_details.bankCode)}
+                            : getBankName(account.account_details.bankCode)}
                       </option>
                     ))}
                   </select>
@@ -818,8 +824,8 @@ function Balance() {
                     ) : allAccounts[selectedSettlement.to][selectedAccountIndex].account_type === 'khalti' ? (
                       <p className="font-semibold"> Khalti Id: {recipientAccount.khalti_id}</p>
                     ) : (
-                    <p className="font-semibold"> Acc No: {recipientAccount.accountNumber}</p>
-                  )}
+                      <p className="font-semibold"> Acc No: {recipientAccount.accountNumber}</p>
+                    )}
                   </div>
                 </>
               ) : (
@@ -832,8 +838,8 @@ function Balance() {
               <div className='grid grid-cols-2 gap-2'>
                 <p className={`w-full ${theme.input} ${theme.text} px-4 py-2 rounded-xl border ${theme.inputBorder} bg-opacity-50`}>From {selectedSettlement.from}</p>
                 {/* <p className={`font-['Inter'] ${theme.text}`}>{selectedSettlement.from}</p> */}
-              {/* </div> */}
-              {/* <div> */}
+                {/* </div> */}
+                {/* <div> */}
                 <p className={`w-full ${theme.input} ${theme.text} px-4 py-2 rounded-xl border ${theme.inputBorder} bg-opacity-50`}>To {selectedSettlement.to}</p>
                 {/* <p className={`font-['Inter'] ${theme.text}`}>{selectedSettlement.to}</p> */}
               </div>

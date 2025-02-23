@@ -11,6 +11,7 @@ import Signup from './components/Signup';
 import Groups from './components/Dashboard/Groups';
 import GroupDetail from './components/Dashboard/GroupDetail';
 import Profile from './components/Dashboard/Profile';
+import ResetPasswordConfirm from './components/ResetPasswordConfirm';
 import { Toaster } from 'react-hot-toast';
 
 function App() {
@@ -96,6 +97,16 @@ function App() {
               }
             />
             <Route path="/dashboard/groups" element={<Groups />} />
+            <Route path="/password-reset-confirm/:uid/:token" 
+            element={
+            <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 p-8 md:p-8">
+              <div className="bg-gradient-to-br rounded-2xl overflow-hidden shadow-2xl">
+                {/* <div className="bg-gradient-to-br from-purple-900/20 via-purple-950/20 to-gray-950/20 backdrop-blur-xl rounded-2xl overflow-hidden shadow-2xl"> */}
+                <ResetPasswordConfirm />
+              </div>
+            </div>
+            }
+            />
           </Routes>
         </BrowserRouter>
       </ThemeProvider>

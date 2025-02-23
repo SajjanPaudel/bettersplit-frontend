@@ -16,4 +16,6 @@ export const endpoints = {
   settlementRequest: `${API_URL}/split/expenses/request-settlement/`,
   notifications: `${API_URL}/split/notifications/`,
   markRead: (id) => `${API_URL}/split/notifications/${id}/mark-read/`,
+  forgotPassword: `${API_URL}/users/password-reset/`,
+  resetPasswordConfirm: `${API_URL}/users/password-reset-confirm`,
 };

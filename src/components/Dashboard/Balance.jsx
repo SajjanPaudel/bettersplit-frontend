@@ -322,18 +322,18 @@ function Balance() {
   };
 
   // Update the amount section in the modal
-  <div>
-    <p className={`text-sm ${theme.textSecondary} font-['Inter'] mb-1`}>Amount</p>
-    <input
-      type="number"
-      value={editAmount}
-      onChange={(e) => setEditAmount(e.target.value)}
-      className={`w-full ${theme.input} ${theme.text} px-4 py-2 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none`}
-      min="0"
-      step="0.01"
-      required
-    />
-  </div>
+  // <div>
+  //   <p className={`text-sm ${theme.textSecondary} font-['Inter'] mb-1`}>Amount</p>
+  //   <input
+  //     type="number"
+  //     value={editAmount}
+  //     onChange={(e) => setEditAmount(e.target.value)}
+  //     className={`w-full ${theme.input} ${theme.text} px-4 py-2 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none`}
+  //     min="0"
+  //     step="0.01"
+  //     required
+  //   />
+  // </div>
 
   // const calculateTotalPositiveNet = () => {
   //   if (!balances) return 0;
@@ -390,16 +390,16 @@ function Balance() {
               <IoNotificationsOutline className={`w-6 h-6 ${theme.text}`} />
               {notifications.filter(n => !n.is_read).length > 0 && allAccounts[loggedInUser.username]?.length > 0 ? (
                 <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full flex items-center justify-center text-xs text-white font-medium">
-                {notifications.filter(n => !n.is_read).length}
-              </span>
-              ): notifications.filter(n => !n.is_read).length == 0 && allAccounts[loggedInUser.username]?.length > 0 ? (
+                  {notifications.filter(n => !n.is_read).length}
+                </span>
+              ) : notifications.filter(n => !n.is_read).length == 0 && allAccounts[loggedInUser.username]?.length > 0 ? (
                 <></>
-              ):(
+              ) : (
                 <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full flex items-center justify-center text-xs text-white font-medium">
-                {notifications.filter(n => !n.is_read).length +1 }
-              </span>
+                  {notifications.filter(n => !n.is_read).length + 1}
+                </span>
               )
-            }
+              }
             </button>
           </div>
 
@@ -866,11 +866,20 @@ function Balance() {
               </div>
               <div>
                 <p className={`text-sm ${theme.textSecondary} font-['Inter'] mb-1`}>Amount</p>
-                <div
-                  className={`w-full ${theme.input} ${theme.text} px-4 py-2 rounded-xl border ${theme.inputBorder} bg-opacity-50`}
-                >
-                  {editAmount.toFixed(0)}
-                </div>
+                {calculationType === 'individual' ? (
+                  <input
+                    type="number"
+                    value={editAmount}
+                    onChange={(e) => setEditAmount(e.target.value)}
+                    className={`w-full ${theme.input} ${theme.text} px-4 py-2 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none`}
+                    min="0"
+                    step="0.01"
+                  />
+                ) : (
+                  <div className={`w-full ${theme.input} ${theme.text} px-4 py-2 rounded-xl border ${theme.inputBorder} bg-opacity-50`}>
+                    {editAmount.toFixed(0)}
+                  </div>
+                )}
               </div>
               <div className="flex space-x-3 mt-6">
                 <button

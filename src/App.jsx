@@ -13,6 +13,7 @@ import GroupDetail from './components/Dashboard/GroupDetail';
 import Profile from './components/Dashboard/Profile';
 import ResetPasswordConfirm from './components/ResetPasswordConfirm';
 import { Toaster } from 'react-hot-toast';
+import Dashboard from './components/Dashboard/Dashboard';
 
 function App() {
   const [isAuth, setIsAuth] = useState(!!localStorage.getItem('access_token'));
@@ -52,13 +53,13 @@ function App() {
           <Routes>
             <Route
               path="/"
-              element={isAuth ? <Navigate to="/dashboard/balance" replace /> : <Navigate to="/login" replace />}
+              element={isAuth ? <Navigate to="/dashboard/dashboard" replace /> : <Navigate to="/login" replace />}
             />
             <Route
               path="/login"
               element={
                 isAuth ? (
-                  <Navigate to="/dashboard/balance" replace />
+                  <Navigate to="/dashboard/dashboard" replace />
                 ) : (
                   <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 p-8 md:p-8">
                     <div className="rounded-2xl bg-gradient-to-br overflow-hidden shadow-2xl">
@@ -80,6 +81,7 @@ function App() {
               <Route path="groups" element={<Groups />} />
               <Route path="groups/:id" element={<GroupDetail />} />
               <Route path="profile" element={<Profile />} />
+              <Route path="dashboard" element={<Dashboard />} />
             </Route>
             <Route
               path="/signup"

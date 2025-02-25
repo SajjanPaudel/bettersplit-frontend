@@ -1,3 +1,5 @@
+import { s } from "framer-motion/client";
+
 export const API_URL = import.meta.env.VITE_BACKEND_URL;
 
 export const endpoints = {
@@ -18,4 +20,8 @@ export const endpoints = {
   markRead: (id) => `${API_URL}/split/notifications/${id}/mark-read/`,
   forgotPassword: `${API_URL}/users/password-reset/`,
   resetPasswordConfirm: `${API_URL}/users/password-reset-confirm`,
+  simple_balances: `${API_URL}/split/expenses/simple_balances/`,
+  simple_accounts: `${API_URL}/split/expenses/simple_accounts/`,
+  simple_settlements: `${API_URL}/split/expenses/simple_settlements/`,
+  simpleActivity: `${API_URL}/split/expenses/simple_activities/`,
 };

@@ -543,24 +543,26 @@ function Dashboard() {
                 ) : (
                     <div>
                         <div className={`bg-gradient-to-l backdrop-blur-md h-full rounded-2xl border ${theme.border} lg:mb-8`}>
-                            <div className="flex gap-4 p-2">
+                            <div className="flex gap-2 p-2">
                                 <input
                                     type="date"
                                     value={dateRange.startDate ? dateRange.startDate.toISOString().split('T')[0] : ''}
+                                    max={new Date().toISOString().split('T')[0]}
                                     onChange={(e) => {
                                         const date = e.target.value ? new Date(e.target.value) : null;
                                         setDateRange(prev => ({ ...prev, startDate: date }));
                                     }}
-                                    className={`${theme.input} ${theme.text} px-4 py-1 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none`}
+                                    className={`${theme.input} ${theme.text} py-1 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none`}
                                 />
                                 <input
                                     type="date"
                                     value={dateRange.endDate ? dateRange.endDate.toISOString().split('T')[0] : ''}
+                                    max={new Date().toISOString().split('T')[0]}
                                     onChange={(e) => {
                                         const date = e.target.value ? new Date(e.target.value) : null;
                                         setDateRange(prev => ({ ...prev, endDate: date }));
                                     }}
-                                    className={`${theme.input} ${theme.text} px-4 py-1 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none`}
+                                    className={`${theme.input} ${theme.text} py-1  rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none`}
                                 />
                             </div>
                             <div className="h-[400px] p-4 pb-8">

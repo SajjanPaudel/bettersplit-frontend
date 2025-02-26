@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useTheme } from '../../context/ThemeContext';
 import { endpoints } from '../../config/api';
-import { FaUser, FaUsers, FaChevronDown } from 'react-icons/fa';
+import { FaUser, FaUsers, FaChevronDown, FaArrowRight } from 'react-icons/fa';
 import bankData from '../../data/bankData.json';
 import { QRCodeSVG } from 'qrcode.react';
 import { toast } from 'react-hot-toast';
@@ -60,7 +60,7 @@ function Dashboard() {
         try {
             const accessToken = localStorage.getItem('access_token');
             const params = {};
-            
+
             if (dateRange.startDate && dateRange.endDate) {
                 params.start_date = dateRange.startDate.toISOString().split('T')[0];
                 params.end_date = dateRange.endDate.toISOString().split('T')[0];
@@ -164,7 +164,7 @@ function Dashboard() {
         const fetchAccounts = async () => {
             try {
                 setAccountsLoading(true);
-                const response = await axios.get(endpoints.simple_accounts, { 
+                const response = await axios.get(endpoints.simple_accounts, {
                     headers,
                     params: {
                         type: 'all'
@@ -188,29 +188,37 @@ function Dashboard() {
         setIsSubmitting(true);
         try {
             const accessToken = localStorage.getItem('access_token');
-            // Handle combined settlement by processing individual settlements
-            const settlementPromises = selectedSettlement.individual_settlements.map(settlement => {
-                return axios.post(endpoints.settlements, {
-                    from_user: settlement.from,
-                    to_user: settlement.to,
-                    amount: parseFloat(settlement.amount)
-                }, {
-                    headers: {
-                        'Authorization': `Bearer ${accessToken}`
-                    }
-                });
+            const loggedInUser = JSON.parse(localStorage.getItem('user'));
+
+            // Find the individual settlement where the logged-in user is the receiver
+            const relevantSettlement = selectedSettlement.individual_settlements.find(
+                settlement => settlement.to === loggedInUser.username
+            );
+
+            if (!relevantSettlement) {
+                toast.error('No valid settlement found for the current user');
+                return;
+            }
+
+            // Post only the settlement where the logged-in user is the receiver
+            await axios.post(endpoints.settlements, {
+                from_user: relevantSettlement.from,
+                to_user: relevantSettlement.to,
+                amount: parseFloat(editAmount)
+            }, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
             });
 
-            await Promise.all(settlementPromises);
             setShowSettleModal(false);
             setSelectedSettlement(null);
             setEditAmount(0);
             toast.success('Settlement processed successfully');
+            await fetchDashboardData(); // Refresh the data
         } catch (err) {
-            // setError('Failed to process settlement');
             toast.error('Failed to process settlement');
         } finally {
-
             setIsSubmitting(false);
         }
     };
@@ -240,7 +248,11 @@ function Dashboard() {
             className={`backdrop-blur-md bg-purple-900/5 rounded-2xl border ${theme.border} p-4 relative`}
         >
             <div className="flex items-center justify-between mb-2">
-                <h3 className={`text-lg ${theme.text}`}>{username}</h3>
+                {showOnlyMine ? (
+                    <></>
+                ) : (
+                    <h3 className={`text-lg ${theme.text}`}>{username}</h3>
+                )}
                 <div className={`px-2.5 py-1 rounded-lg text-xs ${data.net >= 0
                     ? "bg-green-500/10 text-green-400"
                     : "bg-red-500/20 text-red-600"
@@ -251,15 +263,15 @@ function Dashboard() {
             <div className={`${theme.input} p-4 rounded-xl border-t ${theme.border}`}>
                 <div className="flex justify-between items-center">
                     <div className="flex flex-col">
-                        <span className={`text-sm ${theme.textSecondary}`}>Net Balance</span>
+                        {showOnlyMine ? (
+                            <span className={`text-sm ${theme.textSecondary}`}>Final Balance</span>
+                        ) : (
+                            <span className={`text-sm ${theme.textSecondary}`}>Net Balance</span>
+                        )}
                         <span className={`text-xl font-semibold ${data.net >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                             Rs {Math.abs(data.net).toFixed(2)}
                         </span>
                     </div>
-                    {/* <div className="flex flex-col items-end">
-                        <span className={`text-sm ${theme.textSecondary}`}>Total Paid</span>
-                        <span className={`${theme.text}`}>Rs {data.paid.toFixed(2)}</span>
-                    </div> */}
                 </div>
             </div>
         </div>
@@ -314,7 +326,7 @@ function Dashboard() {
                 key={settlementId}
                 className={`${theme.card} rounded-2xl border ${theme.border} p-4 cursor-pointer transition-all duration-200 hover:bg-purple-500/5`}
             >
-                <div className="flex justify-between items-center mb-3">
+                <div className="flex justify-between items-center">
                     <div
                         className="flex items-center flex-1"
                         onClick={() => hasIndividualSettlements && toggleSettlementExpansion(settlementId)}
@@ -328,10 +340,10 @@ function Dashboard() {
                                 )}
                             </div>
                         )}
-                        <div className="flex items-center space-x-2">
-                            <span className={`${theme.text} font-medium`}>{settlement.from}</span>
-                            <span className={theme.textSecondary}>→</span>
-                            <span className={`${theme.text} font-medium`}>{settlement.to}</span>
+                        <div className="flex items-center">
+                            <span className={`${theme.text} font-medium mr-1`}>{settlement.from}</span>
+                            <span className={theme.textSecondary}> → </span>
+                            <span className={`${theme.text} font-medium ml-1`}> {settlement.to}</span>
                         </div>
                     </div>
                     <div className="flex items-center gap-4">
@@ -359,11 +371,11 @@ function Dashboard() {
                     </div>
                 </div>
                 {isExpanded && settlement.individual_settlements.length > 0 && (
-                    <div className="mt-2 space-y-2">
+                    <div className="mt-4 space-y-2">
                         {settlement.individual_settlements.map((indSettlement, index) => (
                             <div
                                 key={index}
-                                className={`${theme.input} rounded-lg p-2 text-sm flex justify-between items-center`}
+                                className={`${theme.input} font-semibold rounded-lg p-2 text-sm flex justify-between items-center`}
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 <span className={theme.textSecondary}>
@@ -423,13 +435,59 @@ function Dashboard() {
                             </div>
                         ))
                     ) : (
-                        Object.entries(balances)
-                            .filter(([username]) => !showOnlyMine || username === loggedInUser.username)
-                            .map(([username, data]) => (
-                                <div key={username} className="w-[300px]">
-                                    {renderBalanceCard(username, data)}
-                                </div>
-                            ))
+                        <>
+                            {showOnlyMine && balances[loggedInUser.username] && (
+                                <>
+                                    <div className="w-[300px]">
+                                        <div className={`backdrop-blur-md bg-purple-900/5 rounded-2xl border ${theme.border} p-4 relative`}>
+                                            <div className="flex items-center justify-between mb-2">
+                                                {/* <h3 className={`text-lg ${theme.text}`}>Total Receiveable</h3> */}
+                                                <div className="px-2.5 py-1 rounded-lg text-xs bg-blue-500/10 text-blue-400">
+                                                    Paying to Others
+                                                </div>
+                                            </div>
+                                            <div className={`${theme.input} p-4 rounded-xl border-t ${theme.border}`}>
+                                                <div className="flex justify-between items-center">
+                                                    <div className="flex flex-col">
+                                                        <span className={`text-sm ${theme.textSecondary}`}>To pay other people</span>
+                                                        <span className="text-xl font-semibold text-blue-500">
+                                                            Rs {balances[loggedInUser.username].owed.toFixed(2)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="w-[300px]">
+                                        <div className={`backdrop-blur-md bg-purple-900/5 rounded-2xl border ${theme.border} p-4 relative`}>
+                                            <div className="flex items-center justify-between mb-2">
+                                                {/* <h3 className={`text-lg ${theme.text}`}>Total Paid</h3> */}
+                                                <div className="px-2.5 py-1 rounded-lg text-xs bg-purple-500/10 text-purple-400">
+                                                    Receiving from Others
+                                                </div>
+                                            </div>
+                                            <div className={`${theme.input} p-4 rounded-xl border-t ${theme.border}`}>
+                                                <div className="flex justify-between items-center">
+                                                    <div className="flex flex-col">
+                                                        <span className={`text-sm ${theme.textSecondary}`}>To Receive from other people</span>
+                                                        <span className="text-xl font-semibold text-purple-500">
+                                                            Rs {balances[loggedInUser.username].paid.toFixed(2)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                            {Object.entries(balances)
+                                .filter(([username]) => !showOnlyMine || username === loggedInUser.username)
+                                .map(([username, data]) => (
+                                    <div key={username} className="w-[300px]">
+                                        {renderBalanceCard(username, data)}
+                                    </div>
+                                ))}
+                        </>
                     )}
                 </div>
             </div>
@@ -485,26 +543,26 @@ function Dashboard() {
                 ) : (
                     <div>
                         <div className={`bg-gradient-to-l backdrop-blur-md h-full rounded-2xl border ${theme.border} lg:mb-8`}>
-                                <div className="flex gap-4 p-2">
-                                    <input
-                                        type="date"
-                                        value={dateRange.startDate ? dateRange.startDate.toISOString().split('T')[0] : ''}
-                                        onChange={(e) => {
-                                            const date = e.target.value ? new Date(e.target.value) : null;
-                                            setDateRange(prev => ({ ...prev, startDate: date }));
-                                        }}
-                                        className={`${theme.input} ${theme.text} px-4 py-1 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none`}
-                                    />
-                                    <input
-                                        type="date"
-                                        value={dateRange.endDate ? dateRange.endDate.toISOString().split('T')[0] : ''}
-                                        onChange={(e) => {
-                                            const date = e.target.value ? new Date(e.target.value) : null;
-                                            setDateRange(prev => ({ ...prev, endDate: date }));
-                                        }}
-                                        className={`${theme.input} ${theme.text} px-4 py-1 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none`}
-                                    />
-                                </div>
+                            <div className="flex gap-4 p-2">
+                                <input
+                                    type="date"
+                                    value={dateRange.startDate ? dateRange.startDate.toISOString().split('T')[0] : ''}
+                                    onChange={(e) => {
+                                        const date = e.target.value ? new Date(e.target.value) : null;
+                                        setDateRange(prev => ({ ...prev, startDate: date }));
+                                    }}
+                                    className={`${theme.input} ${theme.text} px-4 py-1 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none`}
+                                />
+                                <input
+                                    type="date"
+                                    value={dateRange.endDate ? dateRange.endDate.toISOString().split('T')[0] : ''}
+                                    onChange={(e) => {
+                                        const date = e.target.value ? new Date(e.target.value) : null;
+                                        setDateRange(prev => ({ ...prev, endDate: date }));
+                                    }}
+                                    className={`${theme.input} ${theme.text} px-4 py-1 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none`}
+                                />
+                            </div>
                             <div className="h-[400px] p-4 pb-8">
                                 <Line
                                     data={{
@@ -525,7 +583,7 @@ function Dashboard() {
                                             mode: 'nearest',
                                             axis: 'x',
                                             intersect: false
-                                          },
+                                        },
                                         plugins: {
                                             legend: {
                                                 display: true,
@@ -539,21 +597,21 @@ function Dashboard() {
                                                 beginAtZero: true,
                                                 grid: {
                                                     color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-                                                  },
-                                                  ticks: {
+                                                },
+                                                ticks: {
                                                     color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)',
                                                     callback: (value) => `${value}`
-                                                  }
+                                                }
                                             },
                                             x: {
                                                 grid: {
                                                     display: false,
-                                                  },
-                                                  ticks: {
+                                                },
+                                                ticks: {
                                                     color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)',
                                                     maxRotation: 45,
                                                     minRotation: 45
-                                                  }
+                                                }
                                             }
                                         }
                                     }}
@@ -631,7 +689,7 @@ function Dashboard() {
                             </div>
                             <div>
                                 <p className={`text-sm ${theme.textSecondary} font-['Inter'] mb-1`}>Amount</p>
-                                {calculationType === 'individual' ? (
+                                
                                     <input
                                         type="number"
                                         value={editAmount}
@@ -640,11 +698,7 @@ function Dashboard() {
                                         min="0"
                                         step="0.01"
                                     />
-                                ) : (
-                                    <div className={`w-full ${theme.input} ${theme.text} px-4 py-2 rounded-xl border ${theme.inputBorder} bg-opacity-50`}>
-                                        {editAmount.toFixed(0)}
-                                    </div>
-                                )}
+                                
                             </div>
                             <div className="flex space-x-3 mt-6">
                                 <button

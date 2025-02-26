@@ -324,7 +324,7 @@ function Dashboard() {
         return (
             <div
                 key={settlementId}
-                className={`${theme.card} rounded-2xl border ${theme.border} p-4 cursor-pointer transition-all duration-200 hover:bg-purple-500/5`}
+                className={`${theme.card} rounded-2xl border ${theme.border} cursor-pointer transition-all duration-200 hover:bg-purple-500/5`}
             >
                 <div className="flex justify-between items-center">
                     <div

@@ -324,7 +324,7 @@ function Dashboard() {
         return (
             <div
                 key={settlementId}
-                className={`${theme.card} rounded-2xl border ${theme.border} cursor-pointer transition-all duration-200 hover:bg-purple-500/5`}
+                className={`${theme.card} rounded-2xl border ${theme.border} p-4 cursor-pointer transition-all duration-200 hover:bg-purple-500/5`}
             >
                 <div className="flex justify-between items-center">
                     <div
@@ -348,7 +348,7 @@ function Dashboard() {
                     </div>
                     <div className="flex items-center gap-4">
                         <div className={`px-3 py-1 rounded-lg text-sm bg-purple-500/10 text-purple-500`}>
-                            Rs {settlement.amount.toFixed(2)}
+                            {settlement.amount.toFixed(2)}
                         </div>
                         <button
                             onClick={async () => {
@@ -393,10 +393,10 @@ function Dashboard() {
     if (error) return <div className="p-4 text-red-600">{error}</div>;
 
     return (
-        <div className="max-w-7xl mx-auto p-4">
+        <div className="max-w-7xl mx-auto py-4 px-1">
             <div className="flex justify-between items-center mb-6">
-                <h1 className={`text-2xl font-light ${theme.text}`}>Dashboard</h1>
-                <div className="flex items-center space-x-4">
+                {/* <h1 className={`text-2xl font-light ${theme.text} mr-2`}>Dashboard</h1> */}
+                <div className="flex ml-auto space-x-4">
                     <div className="relative inline-flex items-center">
                         <input
                             id="show-mine-toggle"

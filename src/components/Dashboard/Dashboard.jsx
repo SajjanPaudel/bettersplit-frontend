@@ -472,7 +472,12 @@ function Dashboard() {
                                     .filter(settlement => !showOnlyMine ||
                                         settlement.from === loggedInUser.username ||
                                         settlement.to === loggedInUser.username)
-                                    .slice(0, 5)
+                                    .sort((a, b) => {
+                                        // Sort by number of individual settlements (descending)
+                                        const aCount = a.individual_settlements?.length || 0;
+                                        const bCount = b.individual_settlements?.length || 0;
+                                        return bCount - aCount;
+                                    })
                                     .map(settlement => renderSettlementCard(settlement))
                             )}
                         </div>

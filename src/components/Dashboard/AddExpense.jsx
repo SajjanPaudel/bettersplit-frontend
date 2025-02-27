@@ -493,9 +493,8 @@ function AddExpense() {
               {/* Scrollable expenses container */}
               <div className="flex-1 overflow-y-auto pr-2">
                 <div className="grid lg:grid-cols-1 gap-4">
-
                   {expenses.map((exp, index) => (
-                    <div key={exp.id} className={` backdrop-blur-lg bg-gray/20 rounded-2xl border border-gray-300/5 shadow-lg pb-2 px-2 space-y-6`}>
+                    <div key={exp.id} className={`bg-gray/20 rounded-2xl border border-gray-300/5 shadow-lg pb-2 px-2 space-y-6 relative`}> {/* Added relative positioning */}
                       <div className="flex justify-end items-center">
                         {expenses.length > 1 && (
                           <button
@@ -507,7 +506,7 @@ function AddExpense() {
                           </button>
                         )}
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start relative"> {/* Added relative positioning */}
                         <div className='mt-0'>
                           <input
                             type="text"
@@ -519,7 +518,7 @@ function AddExpense() {
                           />
                         </div>
 
-                        <div>
+                        <div className='relative'>
                           <div className="h-full w-full">
                             <DatePicker
                               selected={new Date(exp.date)}
@@ -529,10 +528,12 @@ function AddExpense() {
                               className={`w-full bg-transparent ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none cursor-pointer text-lg`}
                               placeholderText="Select date"
                               required
-                              wrapperClassName="w-full"
+                              wrapperClassName="w-full z-60 relative"
+                              popperClassName="date-picker-popper"
                             />
                           </div>
                         </div>
+
                         <div className="relative group">
                           <input
                             type="text"
@@ -652,14 +653,14 @@ function AddExpense() {
       </div>
       <button
         onClick={() => setShowCalculator(!showCalculator)}
-        className="fixed bottom-10 right-12 p-4 rounded-full bg-purple-500/50 hover:bg-purple-500/60 text-white transition-all shadow-lg"
+        className="fixed bottom-10 right-12 p-4 rounded-full bg-purple-500/50 hover:bg-purple-500/60 text-white transition-all shadow-lg z-50"
       >
         <FaCalculator className="text-xl" />
       </button>
 
       {/* Calculator Modal */}
       {showCalculator && (
-        <div className="fixed bottom-24 right-6 z-50">
+        <div className="fixed bottom-24 right-6 z-5">
           <div className={`${theme.card} backdrop-blur-xl p-4 rounded-2xl border ${theme.border} shadow-xl w-80`}>
             <div className="flex justify-between items-center mb-4">
               <div>

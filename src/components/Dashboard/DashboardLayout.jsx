@@ -69,7 +69,7 @@ function DashboardLayout({ onLogout }) {
             <span className="font-['Inter'] font-light">Dashboard V2</span>
           </Link>
 
-          <Link
+          {/* <Link
             to="balance"
             className={`flex items-center space-x-4 px-6 py-5 rounded-2xl mb-2 transition-all ${currentPath === 'balance'
               ? `bg-purple-800 text-white backdrop-blur-xl `
@@ -78,7 +78,7 @@ function DashboardLayout({ onLogout }) {
           >
             <FaChartPie className="w-5 h-5" />
             <span className={`font-['Inter'] `}>Dashboard</span>
-          </Link>
+          </Link> */}
 
           <Link
             to="activity"

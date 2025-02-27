@@ -7,6 +7,8 @@ import bankData from '../../data/bankData.json';
 import { QRCodeSVG } from 'qrcode.react';
 import { toast } from 'react-hot-toast';
 import { Line } from 'react-chartjs-2';
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -47,7 +49,7 @@ function Dashboard() {
     const [selectedAccountIndex, setSelectedAccountIndex] = useState(0);
     const [calculationType, setCalculationType] = useState('combined');
     const [allAccounts, setAllAccounts] = useState(null);
-    const [activeTab, setActiveTab] = useState('settlements');
+    const [activeTab, setActiveTab] = useState('metrics');
     const [dailyExpenses, setDailyExpenses] = useState([]);
     const [dateRange, setDateRange] = useState({ startDate: null, endDate: null });
 
@@ -495,15 +497,6 @@ function Dashboard() {
             <div>
                 <div className="flex space-x-2 mb-4">
                     <button
-                        onClick={() => setActiveTab('settlements')}
-                        className={`px-4 py-2 rounded-xl text-sm transition-all ${activeTab === 'settlements'
-                            ? `bg-purple-800 text-white backdrop-blur-xl`
-                            : `${theme.input} ${theme.text} hover:bg-purple-500/10`
-                            }`}
-                    >
-                        Settlements
-                    </button>
-                    <button
                         onClick={() => setActiveTab('metrics')}
                         className={`px-4 py-2 rounded-xl text-sm transition-all ${activeTab === 'metrics'
                             ? `bg-purple-800 text-white backdrop-blur-xl`
@@ -511,6 +504,15 @@ function Dashboard() {
                             }`}
                     >
                         Metrics
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('settlements')}
+                        className={`px-4 py-2 rounded-xl text-sm transition-all ${activeTab === 'settlements'
+                            ? `bg-purple-800 text-white backdrop-blur-xl`
+                            : `${theme.input} ${theme.text} hover:bg-purple-500/10`
+                            }`}
+                    >
+                        Settlements
                     </button>
                 </div>
 
@@ -543,26 +545,18 @@ function Dashboard() {
                 ) : (
                     <div>
                         <div className={`bg-gradient-to-l backdrop-blur-md h-full rounded-2xl border ${theme.border} lg:mb-8`}>
-                            <div className="flex gap-2 p-2">
-                                <input
-                                    type="date"
-                                    value={dateRange.startDate ? dateRange.startDate.toISOString().split('T')[0] : ''}
-                                    max={new Date().toISOString().split('T')[0]}
-                                    onChange={(e) => {
-                                        const date = e.target.value ? new Date(e.target.value) : null;
-                                        setDateRange(prev => ({ ...prev, startDate: date }));
+                            <div className={`flex gap-2 p-2 justify-end`}>
+                                <DatePicker
+                                    selectsRange
+                                    startDate={dateRange.startDate}
+                                    endDate={dateRange.endDate}
+                                    onChange={(update) => {
+                                        setDateRange({ startDate: update[0], endDate: update[1] });
                                     }}
-                                    className={`${theme.input} ${theme.text} py-1 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none`}
-                                />
-                                <input
-                                    type="date"
-                                    value={dateRange.endDate ? dateRange.endDate.toISOString().split('T')[0] : ''}
-                                    max={new Date().toISOString().split('T')[0]}
-                                    onChange={(e) => {
-                                        const date = e.target.value ? new Date(e.target.value) : null;
-                                        setDateRange(prev => ({ ...prev, endDate: date }));
-                                    }}
-                                    className={`${theme.input} ${theme.text} py-1  rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none`}
+                                    maxDate={new Date()}
+                                    dateFormat="yyyy-MM-dd"
+                                    placeholderText="Select Date Range"
+                                    className={`${theme.card} text-${theme.color} px-4 py-2 rounded-xl border ${theme.inputBorder} focus:outline-none w-[15rem]`} // Increased max-w for better display
                                 />
                             </div>
                             <div className="h-[400px] p-4 pb-8">
@@ -691,16 +685,16 @@ function Dashboard() {
                             </div>
                             <div>
                                 <p className={`text-sm ${theme.textSecondary} font-['Inter'] mb-1`}>Amount</p>
-                                
-                                    <input
-                                        type="number"
-                                        value={editAmount}
-                                        onChange={(e) => setEditAmount(e.target.value)}
-                                        className={`w-full ${theme.input} ${theme.text} px-4 py-2 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none`}
-                                        min="0"
-                                        step="0.01"
-                                    />
-                                
+
+                                <input
+                                    type="number"
+                                    value={editAmount}
+                                    onChange={(e) => setEditAmount(e.target.value)}
+                                    className={`w-full ${theme.input} ${theme.text} px-4 py-2 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none`}
+                                    min="0"
+                                    step="0.01"
+                                />
+
                             </div>
                             <div className="flex space-x-3 mt-6">
                                 <button

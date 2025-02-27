@@ -436,9 +436,27 @@ function Dashboard() {
 
     return (
         <div className="max-w-7xl mx-auto py-4 px-1">
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex justify-end items-end mb-6">
                 {/* <h1 className={`text-2xl font-light ${theme.text} mr-2`}>Dashboard</h1> */}
-                <div className="flex ml-auto space-x-4">
+                <button
+                    onClick={() => setShowNotifications(!showNotifications)}
+                    className={`p-3 rounded-full hover:bg-purple-500/10 transition-colors relative mr-2`}
+                >
+                    <IoNotificationsOutline className={`w-6 h-6 ${theme.text}`} />
+                    {notifications.filter(n => !n.is_read).length > 0 && allAccounts && allAccounts[loggedInUser.username]?.length > 0 ? (
+                        <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full flex items-center justify-center text-xs text-white font-medium">
+                            {notifications.filter(n => !n.is_read).length}
+                        </span>
+                    ) : notifications.filter(n => !n.is_read).length == 0 && allAccounts && allAccounts[loggedInUser.username]?.length > 0 ? (
+                        <></>
+                    ) : (
+                        <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full flex items-center justify-center text-xs text-white font-medium">
+                            {notifications.filter(n => !n.is_read).length + 1}
+                        </span>
+                    )
+                    }
+                </button>
+                <div className="space-x-4">
                     <div className="relative inline-flex items-center">
                         <input
                             id="show-mine-toggle"
@@ -462,96 +480,77 @@ function Dashboard() {
                         </label>
                     </div>
                 </div>
-
-                <button
-                    onClick={() => setShowNotifications(!showNotifications)}
-                    className={`p-2 rounded-full hover:bg-purple-500/10 transition-colors relative`}
-                >
-                    <IoNotificationsOutline className={`w-6 h-6 ${theme.text}`} />
-                    {notifications.filter(n => !n.is_read).length > 0 && allAccounts && allAccounts[loggedInUser.username]?.length > 0 ? (
-                        <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full flex items-center justify-center text-xs text-white font-medium">
-                            {notifications.filter(n => !n.is_read).length}
-                        </span>
-                    ) : notifications.filter(n => !n.is_read).length == 0 && allAccounts && allAccounts[loggedInUser.username]?.length > 0 ? (
-                        <></>
-                    ) : (
-                        <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full flex items-center justify-center text-xs text-white font-medium">
-                            {notifications.filter(n => !n.is_read).length + 1}
-                        </span>
-                    )
-                    }
-                </button>
             </div>
 
             {showNotifications && (
-            <div className="fixed inset-0 z-50 overflow-hidden" onClick={() => setShowNotifications(false)}>
-              <div className="absolute inset-0 bg-black/20 backdrop-blur-sm">
-                <div
-                  className={`absolute right-4 top-16 w-80 md:w-96 lg:w-[30rem] rounded-2xl ${theme.card} border ${theme.border} shadow-xl`}
-                  onClick={e => e.stopPropagation()}
-                >
-                  <div className="p-4 border-gray-200 dark:border-gray-700">
-                    <h3 className={`text-lg border-b border-purple-800/50 font-medium ${theme.text}`}>Notifications</h3>
-                  </div>
-                  <div className="max-h-[70vh] overflow-y-auto">
-                    {notifications.length > 0 ? (
-                      notifications.map(notification => (
+                <div className="fixed inset-0 z-50 overflow-hidden" onClick={() => setShowNotifications(false)}>
+                    <div className="absolute inset-0 bg-black/20 backdrop-blur-sm">
                         <div
-                          key={notification.id}
-                          className={`p-4 border-b ${theme.border} hover:bg-purple-500/10 cursor-pointer flex justify-between items-start`}
+                            className={`absolute right-4 top-16 w-80 md:w-96 lg:w-[30rem] rounded-2xl ${theme.card} border ${theme.border} shadow-xl`}
+                            onClick={e => e.stopPropagation()}
                         >
-                          <div>
-                            <p className={`${theme.text} text-sm`}>{notification.message}</p>
-                            <span className={`${theme.textSecondary} text-xs`}>
-                              {new Date(notification.created_at).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
-                            </span>
-                          </div>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleMarkAsRead(notification.id);
-                            }}
-                            className={`p-1.5 rounded-full hover:bg-purple-500/10 transition-all ${theme.textSecondary} hover:text-purple-500`}
-                            title="Mark as read"
-                            disabled={loadingNotifications[notification.id]}
-                          >
-                            {loadingNotifications[notification.id] ? (
-                              <CgSpinner className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <FaTimes className="w-4 h-4" />
-                            )}
-                          </button>
+                            <div className="p-4 border-gray-200 dark:border-gray-700">
+                                <h3 className={`text-lg border-b border-purple-800/50 font-medium ${theme.text}`}>Notifications</h3>
+                            </div>
+                            <div className="max-h-[70vh] overflow-y-auto">
+                                {notifications.length > 0 ? (
+                                    notifications.map(notification => (
+                                        <div
+                                            key={notification.id}
+                                            className={`p-4 border-b ${theme.border} hover:bg-purple-500/10 cursor-pointer flex justify-between items-start`}
+                                        >
+                                            <div>
+                                                <p className={`${theme.text} text-sm`}>{notification.message}</p>
+                                                <span className={`${theme.textSecondary} text-xs`}>
+                                                    {new Date(notification.created_at).toLocaleDateString('en-US', {
+                                                        year: 'numeric',
+                                                        month: 'short',
+                                                        day: 'numeric',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                    })}
+                                                </span>
+                                            </div>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleMarkAsRead(notification.id);
+                                                }}
+                                                className={`p-1.5 rounded-full hover:bg-purple-500/10 transition-all ${theme.textSecondary} hover:text-purple-500`}
+                                                title="Mark as read"
+                                                disabled={loadingNotifications[notification.id]}
+                                            >
+                                                {loadingNotifications[notification.id] ? (
+                                                    <CgSpinner className="w-4 h-4 animate-spin" />
+                                                ) : (
+                                                    <FaTimes className="w-4 h-4" />
+                                                )}
+                                            </button>
+                                        </div>
+                                    ))
+                                ) : allAccounts && allAccounts[loggedInUser.username]?.length > 0 ? (
+                                    <div className={`p-8 text-center ${theme.textSecondary}`}>
+                                        <p>No notifications</p>
+                                    </div>
+                                ) : (
+                                    <div className='p-4 rounded-xl'>
+                                        <p className={`${theme.text} text-sm`}>Please add your account Information by going <Link to="/dashboard/profile/" className="text-purple-500 hover:text-purple-600 underline">here</Link></p>
+                                        <span className={`${theme.textSecondary} text-xs`}>
+                                            {new Date().toLocaleDateString('en-US', {
+                                                year: 'numeric',
+                                                month: 'short',
+                                                day: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                            })}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                      ))
-                    ) : allAccounts && allAccounts[loggedInUser.username]?.length > 0 ? (
-                      <div className={`p-8 text-center ${theme.textSecondary}`}>
-                        <p>No notifications</p>
-                      </div>
-                    ) : (
-                      <div className='p-4 rounded-xl'>
-                        <p className={`${theme.text} text-sm`}>Please add your account Information by going <Link to="/dashboard/profile/" className="text-purple-500 hover:text-purple-600 underline">here</Link></p>
-                        <span className={`${theme.textSecondary} text-xs`}>
-                          {new Date().toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                    </div>
                 </div>
-              </div>
-            </div>
-          )}
+            )}
 
             <div className="overflow-x-auto pb-4 mb-6 scrollbar-hide" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
                 <div className="flex space-x-4 min-w-max ">

@@ -282,7 +282,7 @@ function Balance() {
         setEditAmount(0);
       }
     } catch (err) {
-      setError('Failed to send settlement request');
+      setError('Failed to send settlement request.');
     } finally {
       setIsSubmitting(false);
     }

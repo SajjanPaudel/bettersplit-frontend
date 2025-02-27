@@ -53,13 +53,13 @@ function App() {
           <Routes>
             <Route
               path="/"
-              element={isAuth ? <Navigate to="/dashboard/dashboard" replace /> : <Navigate to="/login" replace />}
+              element={isAuth ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />}
             />
             <Route
               path="/login"
               element={
                 isAuth ? (
-                  <Navigate to="/dashboard/dashboard" replace />
+                  <Navigate to="/dashboard" replace />
                 ) : (
                   <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 p-8 md:p-8">
                     <div className="rounded-2xl bg-gradient-to-br overflow-hidden shadow-2xl">
@@ -70,7 +70,7 @@ function App() {
               }
             />
             <Route
-              path="/dashboard"
+              path=""
               element={isAuth ? <DashboardLayout onLogout={() => handleAuthUpdate(false)} /> : <Navigate to="/login" replace />}
             >
               <Route index element={<Navigate to="activity" replace />} />

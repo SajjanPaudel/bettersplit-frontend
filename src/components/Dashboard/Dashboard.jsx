@@ -2,13 +2,17 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useTheme } from '../../context/ThemeContext';
 import { endpoints } from '../../config/api';
-import { FaUser, FaUsers, FaChevronDown, FaArrowRight } from 'react-icons/fa';
+import { FaUser, FaUsers, FaChevronDown, FaArrowRight, FaTimes } from 'react-icons/fa';
 import bankData from '../../data/bankData.json';
 import { QRCodeSVG } from 'qrcode.react';
 import { toast } from 'react-hot-toast';
 import { Line } from 'react-chartjs-2';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
+import { IoNotificationsOutline } from "react-icons/io5";
+import { Link } from 'react-router-dom';
+import { CgSpinner } from 'react-icons/cg';
+
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -52,6 +56,9 @@ function Dashboard() {
     const [activeTab, setActiveTab] = useState('metrics');
     const [dailyExpenses, setDailyExpenses] = useState([]);
     const [dateRange, setDateRange] = useState({ startDate: null, endDate: null });
+    const [showNotifications, setShowNotifications] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+    const [loadingNotifications, setLoadingNotifications] = useState({});
 
     const getBankName = (bankCode) => {
         const bank = bankData.list.find(bank => bank.swift_code === bankCode);
@@ -118,14 +125,47 @@ function Dashboard() {
         }
     };
 
+    const fetchNotifications = async () => {
+        try {
+            const accessToken = localStorage.getItem('access_token');
+            const response = await axios.get(endpoints.notifications, {
+                headers: { 'Authorization': `Bearer ${accessToken}` }
+            });
+            setNotifications(response.data.data);
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+        }
+    };
+
+    const handleMarkAsRead = async (notificationId) => {
+        try {
+            setLoadingNotifications(prev => ({ ...prev, [notificationId]: true }));
+            const accessToken = localStorage.getItem('access_token');
+            await axios.post(endpoints.markRead(notificationId), {}, {
+                headers: { 'Authorization': `Bearer ${accessToken}` }
+            });
+            await fetchNotifications();
+        } catch (error) {
+            console.error('Error marking notification as read:', error);
+        } finally {
+            setLoadingNotifications(prev => ({ ...prev, [notificationId]: false }));
+        }
+    };
+
     useEffect(() => {
         fetchDashboardData();
         fetchActivities();
+        fetchNotifications();
     }, []);
 
     useEffect(() => {
         fetchActivities();
     }, [showOnlyMine, dateRange.startDate, dateRange.endDate]);
+
+    useEffect(() => {
+        if (showNotifications) {
+        }
+    }, [showNotifications]);
 
 
     const [balancesLoading, setBalancesLoading] = useState(true);
@@ -422,7 +462,96 @@ function Dashboard() {
                         </label>
                     </div>
                 </div>
+
+                <button
+                    onClick={() => setShowNotifications(!showNotifications)}
+                    className={`p-2 rounded-full hover:bg-purple-500/10 transition-colors relative`}
+                >
+                    <IoNotificationsOutline className={`w-6 h-6 ${theme.text}`} />
+                    {notifications.filter(n => !n.is_read).length > 0 && allAccounts && allAccounts[loggedInUser.username]?.length > 0 ? (
+                        <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full flex items-center justify-center text-xs text-white font-medium">
+                            {notifications.filter(n => !n.is_read).length}
+                        </span>
+                    ) : notifications.filter(n => !n.is_read).length == 0 && allAccounts && allAccounts[loggedInUser.username]?.length > 0 ? (
+                        <></>
+                    ) : (
+                        <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full flex items-center justify-center text-xs text-white font-medium">
+                            {notifications.filter(n => !n.is_read).length + 1}
+                        </span>
+                    )
+                    }
+                </button>
             </div>
+
+            {showNotifications && (
+            <div className="fixed inset-0 z-50 overflow-hidden" onClick={() => setShowNotifications(false)}>
+              <div className="absolute inset-0 bg-black/20 backdrop-blur-sm">
+                <div
+                  className={`absolute right-4 top-16 w-80 md:w-96 lg:w-[30rem] rounded-2xl ${theme.card} border ${theme.border} shadow-xl`}
+                  onClick={e => e.stopPropagation()}
+                >
+                  <div className="p-4 border-gray-200 dark:border-gray-700">
+                    <h3 className={`text-lg border-b border-purple-800/50 font-medium ${theme.text}`}>Notifications</h3>
+                  </div>
+                  <div className="max-h-[70vh] overflow-y-auto">
+                    {notifications.length > 0 ? (
+                      notifications.map(notification => (
+                        <div
+                          key={notification.id}
+                          className={`p-4 border-b ${theme.border} hover:bg-purple-500/10 cursor-pointer flex justify-between items-start`}
+                        >
+                          <div>
+                            <p className={`${theme.text} text-sm`}>{notification.message}</p>
+                            <span className={`${theme.textSecondary} text-xs`}>
+                              {new Date(notification.created_at).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </span>
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMarkAsRead(notification.id);
+                            }}
+                            className={`p-1.5 rounded-full hover:bg-purple-500/10 transition-all ${theme.textSecondary} hover:text-purple-500`}
+                            title="Mark as read"
+                            disabled={loadingNotifications[notification.id]}
+                          >
+                            {loadingNotifications[notification.id] ? (
+                              <CgSpinner className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <FaTimes className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
+                      ))
+                    ) : allAccounts && allAccounts[loggedInUser.username]?.length > 0 ? (
+                      <div className={`p-8 text-center ${theme.textSecondary}`}>
+                        <p>No notifications</p>
+                      </div>
+                    ) : (
+                      <div className='p-4 rounded-xl'>
+                        <p className={`${theme.text} text-sm`}>Please add your account Information by going <Link to="/dashboard/profile/" className="text-purple-500 hover:text-purple-600 underline">here</Link></p>
+                        <span className={`${theme.textSecondary} text-xs`}>
+                          {new Date().toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
             <div className="overflow-x-auto pb-4 mb-6 scrollbar-hide" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
                 <div className="flex space-x-4 min-w-max ">

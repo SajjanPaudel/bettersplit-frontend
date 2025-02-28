@@ -534,7 +534,7 @@ function Dashboard() {
                                     </div>
                                 ) : (
                                     <div className='p-4 rounded-xl'>
-                                        <p className={`${theme.text} text-sm`}>Please add your account Information by going <Link to="/dashboard/profile/" className="text-purple-500 hover:text-purple-600 underline">here</Link></p>
+                                        <p className={`${theme.text} text-sm`}>Please add your account Information by going <Link to="/profile" className="text-purple-500 hover:text-purple-600 underline">here</Link></p>
                                         <span className={`${theme.textSecondary} text-xs`}>
                                             {new Date().toLocaleDateString('en-US', {
                                                 year: 'numeric',

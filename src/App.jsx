@@ -98,7 +98,7 @@ function App() {
                 )
               }
             />
-            <Route path="/dashboard/groups" element={<Groups />} />
+            <Route path="/groups" element={<Groups />} />
             <Route path="/password-reset-confirm/:uid/:token" 
             element={
             <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 p-8 md:p-8">

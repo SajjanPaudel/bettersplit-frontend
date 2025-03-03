@@ -183,7 +183,7 @@ function Activity() {
 
             {groups.length > 0 ? (
               <Link
-                to="/dashboard/add-expense"
+                to="/add-expense"
                 className={`w-max px-6 py-3 rounded-xl text-sm transition-all whitespace-nowrap bg-green-500 text-white hover:bg-green-600 `}
               >
                 Add
@@ -220,7 +220,7 @@ function Activity() {
                   <p className={`text-sm ${theme.textSecondary} max-w-md`}>
                     Start by creating a group and adding expenses to track your shared payments and settlements
                   </p>
-                  <Link to="/dashboard/add-expense" className={`p-2 bg-green-500 text-white rounded-2xl`}>
+                  <Link to="/add-expense" className={`p-2 bg-green-500 text-white rounded-2xl`}>
                     Go to Expenses →
                   </Link>
                 </div>

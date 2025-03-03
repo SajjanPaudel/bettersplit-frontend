@@ -151,7 +151,7 @@ function Activity() {
 
             {groups.length > 0 ? (
               <Link
-                to="/dashboard/add-expense"
+                to="/add-expense"
                 className={`w-full px-6 py-3 rounded-xl text-sm transition-all whitespace-nowrap ${isDark
                   ? "bg-green-500/30 text-green-200 hover:bg-green-500/40"
                   : "bg-green-500/70 text-white hover:bg-green-500/30"

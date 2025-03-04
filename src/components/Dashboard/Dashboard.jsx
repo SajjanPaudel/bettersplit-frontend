@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useTheme } from '../../context/ThemeContext';
 import { endpoints } from '../../config/api';
-import { FaUser, FaUsers, FaChevronDown, FaArrowRight, FaTimes } from 'react-icons/fa';
+import { FaUser, FaUsers, FaChevronDown, FaArrowRight, FaTimes,FaExclamationTriangle } from 'react-icons/fa';
 import bankData from '../../data/bankData.json';
 import { QRCodeSVG } from 'qrcode.react';
 import { toast } from 'react-hot-toast';
@@ -232,26 +232,37 @@ function Dashboard() {
             const accessToken = localStorage.getItem('access_token');
             const loggedInUser = JSON.parse(localStorage.getItem('user'));
 
-            // Find the individual settlement where the logged-in user is the receiver
-            const relevantSettlement = selectedSettlement.individual_settlements.find(
-                settlement => settlement.to === loggedInUser.username
-            );
+            // Check if amount has been modified
+            const isAmountModified = parseFloat(editAmount) !== selectedSettlement.amount;
 
-            if (!relevantSettlement) {
-                toast.error('No valid settlement found for the current user');
-                return;
-            }
-
-            // Post only the settlement where the logged-in user is the receiver
-            await axios.post(endpoints.settlements, {
-                from_user: relevantSettlement.from,
-                to_user: relevantSettlement.to,
-                amount: parseFloat(editAmount)
-            }, {
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`
+            if (isAmountModified) {
+                // If amount is modified, send only the outer settlement with the new amount
+                await axios.post(endpoints.settlements, {
+                    from_user: selectedSettlement.from,
+                    to_user: selectedSettlement.to,
+                    amount: parseFloat(editAmount)
+                }, {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+            } else {
+                // If amount is not modified, send all individual settlements
+                const individualSettlements = selectedSettlement.individual_settlements.map(settlement => ({
+                    from_user: settlement.from,
+                    to_user: settlement.to,
+                    amount: settlement.amount
+                }));
+                
+                // Send each individual settlement
+                for (const settlement of individualSettlements) {
+                    await axios.post(endpoints.settlements, settlement, {
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`
+                        }
+                    });
                 }
-            });
+            }
 
             setShowSettleModal(false);
             setSelectedSettlement(null);
@@ -260,6 +271,7 @@ function Dashboard() {
             await fetchDashboardData(); // Refresh the data
         } catch (err) {
             toast.error('Failed to process settlement');
+            console.error('Settlement error:', err);
         } finally {
             setIsSubmitting(false);
         }
@@ -822,7 +834,12 @@ function Dashboard() {
                                     min="0"
                                     step="0.01"
                                 />
-
+                                {selectedSettlement && editAmount !== selectedSettlement.amount && (
+                                    <p className="text-sm text-yellow-500 mt-1 flex items-center">
+                                    <FaExclamationTriangle className="w-4 h-4 mr-1" />
+                                    Partial settlement will be done as the total amount doesn't match.
+                                </p>
+                                )}
                             </div>
                             <div className="flex space-x-3 mt-6">
                                 <button
@@ -832,21 +849,21 @@ function Dashboard() {
                                     Cancel
                                 </button>
                                 {selectedSettlement.to == loggedInUser.username ? (
-                                    <button
-                                        onClick={handleSettle}
-                                        disabled={isSubmitting}
-                                        className="flex-1 px-4 py-2 bg-yellow-400 text-black rounded-lg font-['Inter'] hover:bg-yellow-300 transition-colors"
-                                    >
-                                        {isSubmitting ? (
-                                            <><div className="flex justify-center items-center gap-2">
-                                                <span>Settling</span>
-                                                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-purple-400"></div>
-                                            </div>
-                                            </>
-                                        ) : (
-                                            'Confirm Settlement'
-                                        )}
-                                    </button>
+                                <button
+                                    onClick={handleSettle}
+                                    disabled={isSubmitting}
+                                    className="flex-1 px-4 py-2 bg-yellow-400 text-black rounded-lg font-['Inter'] hover:bg-yellow-300 transition-colors"
+                                >
+                                    {isSubmitting ? (
+                                        <><div className="flex justify-center items-center gap-2">
+                                            <span>Settling</span>
+                                            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-purple-400"></div>
+                                        </div>
+                                        </>
+                                    ) : (
+                                        'Confirm Settlement'
+                                    )}
+                                </button>
                                 ) : (
                                     <button
                                         onClick={sendSettlementRequest}

@@ -381,7 +381,7 @@ function GroupDetail() {
             <div className='p-4'>
                 <h1 className={`${theme.text}`}>Group expenses</h1>
             </div>
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1 h-[30vh] md:h-[40vh] overflow-hidden">
                 <div className={`backdrop-blur-xl rounded-2xl border ${theme.border} shadow-2xl relative before:absolute before:inset-0 before:rounded-2xl before:pointer-events-none`}>
                     <div className="max-h-[500px] overflow-y-auto rounded-2xl">
                         <table className="w-full">

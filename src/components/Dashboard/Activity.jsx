@@ -24,6 +24,7 @@ function Activity() {
   const { theme, isDark } = useTheme();
   const [expandedRows, setExpandedRows] = useState(new Set());
   const [isLoading, setIsLoading] = useState(false);
+  const [showOnlyMe, setShowOnlyMe] = useState(true);
 
   const fetchActivities = async () => {
     try {
@@ -32,6 +33,9 @@ function Activity() {
       const response = await axios.get(endpoints.activity, {
         headers: {
           'Authorization': `Bearer ${accessToken}`
+        },
+        params: {
+          type: showOnlyMe ? 'me' : 'all'
         }
       });
       setActivities(response.data.data);
@@ -54,7 +58,7 @@ function Activity() {
 
   useEffect(() => {
     fetchActivities();
-  }, []);
+  }, [showOnlyMe]); 
 
   useEffect(() => {
     const fetchGroups = async () => {
@@ -140,14 +144,39 @@ function Activity() {
         {/* Header Section */}
         <div className={`flex flex-col gap-4 p-4 backdrop-blur-md sticky top-0 z-20 rounded-xl ${theme.card}`}>
           {/* Mobile view */}
-          <div className="flex flex-col justify-end  items-end gap-4 sm:hidden w-full">
-            <input
-              type="text"
-              value={globalFilter}
-              onChange={e => setGlobalFilter(e.target.value)}
-              placeholder="Search activities..."
-              className={`w-50 px-4 py-3 ${theme.input} ${theme.text} rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none`}
-            />
+          <div className="flex flex-col justify-end items-end gap-4 sm:hidden w-full">
+            <div className="flex items-center gap-4 w-full">
+              
+              <input
+                type="text"
+                value={globalFilter}
+                onChange={e => setGlobalFilter(e.target.value)}
+                placeholder="Search activities..."
+                className={`flex-1 px-4 py-3 ${theme.input} ${theme.text} rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none`}
+              />
+              <div className="relative inline-flex items-center">
+                <input
+                  id="show-mine-toggle-mobile"
+                  type="checkbox"
+                  checked={showOnlyMe}
+                  onChange={(e) => setShowOnlyMe(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <label
+                  htmlFor="show-mine-toggle-mobile"
+                  className={`w-16 h-8 flex items-center rounded-full cursor-pointer relative
+                  ${isDark ? 'bg-gray-700' : 'bg-gray-200'}
+                  peer-checked:after:translate-x-8
+                  after:content-[''] after:absolute after:top-1 after:left-1
+                  after:bg-white after:rounded-full after:h-6 after:w-6
+                  after:transition-all after:duration-300 ease-in-out
+                  peer-checked:bg-purple-500`}
+                >
+                  <span className={`absolute left-2 text-xs ${showOnlyMe ? 'text-white' : 'text-gray-500'}`}>Me</span>
+                  <span className={`absolute right-2 text-xs ${!showOnlyMe ? 'text-gray-500' : 'text-white'}`}>All</span>
+                </label>
+              </div>
+            </div>
 
             {groups.length > 0 ? (
               <Link
@@ -171,7 +200,9 @@ function Activity() {
           </div>
 
           {/* Desktop view */}
-          <div className="sm:flex hidden flex-row items-start justify-start w-full gap-4">
+          <div className="sm:flex hidden flex-row items-center justify-between w-full gap-4">
+
+            <div className="flex items-center gap-4">
             <input
               type="text"
               value={globalFilter}
@@ -180,23 +211,46 @@ function Activity() {
               className={`w-64 h-[2.75rem] px-4 ${theme.input} ${theme.text} rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none`}
             />
 
+              {groups.length > 0 ? (
+                <Link
+                  to="/add-expense"
+                  className={`w-max px-6 py-3 rounded-xl text-sm transition-all whitespace-nowrap bg-green-500 text-white hover:bg-green-600 `}
+                >
+                  Add
+                </Link>
+              ) : (
+                <button
+                  disabled
+                  title="Create a group before adding Expense"
+                  className="w-max px-6 py-3 rounded-xl text-sm transition-all whitespace-nowrap bg-green-500/30 cursor-not-allowed text-white"
+                >
+                  Add
+                </button>
+              )}
+            </div>
 
-            {groups.length > 0 ? (
-              <Link
-                to="/add-expense"
-                className={`w-max px-6 py-3 rounded-xl text-sm transition-all whitespace-nowrap bg-green-500 text-white hover:bg-green-600 `}
-              >
-                Add
-              </Link>
-            ) : (
-              <button
-                disabled
-                title="Create a group before adding Expense"
-                className="w-full px-6 py-3 rounded-xl text-sm transition-all whitespace-nowrap bg-green-500/30 cursor-not-allowed text-white"
-              >
-                Add
-              </button>
-            )}
+            <div className="relative inline-flex items-center">
+                <input
+                  id="show-mine-toggle"
+                  type="checkbox"
+                  checked={showOnlyMe}
+                  onChange={(e) => setShowOnlyMe(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <label
+                  htmlFor="show-mine-toggle"
+                  className={`w-16 h-8 flex items-center rounded-full cursor-pointer relative
+                  ${isDark ? 'bg-gray-700' : 'bg-gray-200'}
+                  peer-checked:after:translate-x-8
+                  after:content-[''] after:absolute after:top-1 after:left-1
+                  after:bg-white after:rounded-full after:h-6 after:w-6
+                  after:transition-all after:duration-300 ease-in-out
+                  peer-checked:bg-purple-500`}
+                >
+                  <span className={`absolute left-2 text-xs ${showOnlyMe ? 'text-white' : 'text-gray-500'}`}>Me</span>
+                  <span className={`absolute right-2 text-xs ${!showOnlyMe ? 'text-gray-500' : 'text-white'}`}>All</span>
+                </label>
+              </div>
           </div>
         </div>
         {isLoading ? (

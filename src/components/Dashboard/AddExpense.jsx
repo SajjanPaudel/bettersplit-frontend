@@ -21,6 +21,7 @@ function AddExpense() {
   const [calcResult, setCalcResult] = useState('');
   const [fullHistory, setFullHistory] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const currentUser = JSON.parse(localStorage.getItem('user'))?.username;
 
   const removeBill = (indexToRemove) => {
     setExpenses(prev => prev.filter((_, index) => index !== indexToRemove));
@@ -44,6 +45,25 @@ function AddExpense() {
     setSelectedGroup(selected.id);
     // Update group members when a group is selected
     setGroupMembers(selected.members || []);
+    
+    // Find the current user in the group members
+    const currentUserMember = selected.members?.find(member => member.username === currentUser);
+    
+    // If current user is found in the group, set them as the default payer for all expenses
+    if (currentUserMember) {
+      setExpenses(prev => prev.map(exp => {
+        // Calculate equal amount for payers if there's a total amount
+        const totalAmount = parseFloat(exp.amount) || 0;
+        
+        return {
+          ...exp,
+          payers: [{ 
+            user: currentUserMember.id, 
+            amount: totalAmount.toString() 
+          }]
+        };
+      }));
+    }
   };
 
   const handlePayerSelection = (expenseIndex, userId) => {
@@ -587,7 +607,7 @@ function AddExpense() {
                                         value={payer?.amount || ''}
                                         onChange={(e) => handlePayerAmountChange(index, user.id, e.target.value)}
                                         className={`${theme.text} bg-purple-800/20 px-2 py-2  focus:outline-none text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
-                                        placeholder="Amount"
+                                        // placeholder="Amount"
                                       />
                                     </div>
                                     <div className={`rounded-r-xl transition-all duration-300 ${isPayer ? 'w-1 bg-purple-800/50' : 'w-0'
@@ -632,7 +652,7 @@ function AddExpense() {
                                     value={split?.amount || ''}
                                     onChange={(e) => handleSplitAmountChange(index, exp.splits.findIndex(s => s.user === user.id), e.target.value)}
                                     className={`w-24 ${theme.text} bg-green-700/10 px-2 py-2  rounded-r-2xl focus:outline-none text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
-                                    placeholder="Amount"
+                                    // placeholder="Amount"
                                   />
                                 </div>
                                 <div className={`rounded-r-2xl transition-all duration-300 ${isSelected ? 'bg-green-800/50 ' : 'w-0'}`}></div>

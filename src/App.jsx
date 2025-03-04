@@ -73,7 +73,7 @@ function App() {
               path=""
               element={isAuth ? <DashboardLayout onLogout={() => handleAuthUpdate(false)} /> : <Navigate to="/login" replace />}
             >
-              <Route index element={<Navigate to="activity" replace />} />
+              <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="balance" element={<Balance />} />
               <Route path="activity" element={<Activity />} />
               <Route path="add-expense" element={<AddExpense />} />

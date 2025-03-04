@@ -659,7 +659,7 @@ function Dashboard() {
                 {activeTab === 'settlements' ? (
                     <div>
                         {/* <h2 className={`text-xl font-light ${theme.text} mb-4`}>Recent Settlements</h2> */}
-                        <div className="space-y-4 overflow-y-auto h-[calc(100vh-350px)] scrollbar-hide" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
+                        <div className="space-y-4 overflow-y-auto h-[50vh] p-4 scrollbar-hide" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
                             {settlementsLoading ? (
                                 Array(3).fill(0).map((_, index) => (
                                     <div key={index} className={`${theme.card} rounded-2xl border ${theme.border} px-2 py-4 animate-pulse`}>

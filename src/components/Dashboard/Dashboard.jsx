@@ -699,7 +699,7 @@ function Dashboard() {
                                     className={`${theme.card} text-${theme.color} px-4 py-2 rounded-xl border ${theme.inputBorder} focus:outline-none w-[15rem]`} // Increased max-w for better display
                                 />
                             </div>
-                            <div className="h-[400px] p-4 pb-8">
+                            <div className="min-h-[300px] max-h-[400px] p-2  overflow-hidden">
                                 <Line
                                     data={{
                                         labels: dailyExpenses.map(expense => new Date(expense.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),

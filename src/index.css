@@ -89,17 +89,17 @@
   border-radius: 0.75rem !important;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   position: relative !important;
-  z-index: 1000 !important;
+  /* z-index: 1000 !important; */
 }
 
-.react-datepicker-popper {
-  z-index: 2000 !important; /* Significantly higher z-index */
-}
+/* .react-datepicker-popper {
+  z-index: 2000 !important; Significantly higher z-index
+} */
 
-.react-datepicker-wrapper {
+/* .react-datepicker-wrapper {
   position: relative !important;
   z-index: 1500 !important; /* High z-index for the wrapper */
-}
+/* } */ 
 
 
 .react-datepicker__header {

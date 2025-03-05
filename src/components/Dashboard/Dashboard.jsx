@@ -69,11 +69,16 @@ function Dashboard() {
         try {
             const accessToken = localStorage.getItem('access_token');
             const params = {};
+            const today = new Date();
+            const sevenDaysAgo = new Date(today);
+            sevenDaysAgo.setDate(today.getDate() - 7);
 
-            if (dateRange.startDate && dateRange.endDate) {
-                params.start_date = dateRange.startDate.toISOString().split('T')[0];
-                params.end_date = dateRange.endDate.toISOString().split('T')[0];
-            }
+            const startDate = dateRange.startDate || sevenDaysAgo;
+            const endDate = dateRange.endDate || today;
+    
+            // Format dates in YYYY-MM-DD format
+            params.start_date = startDate.toISOString().split('T')[0];
+            params.end_date = endDate.toISOString().split('T')[0];
 
             const response = await axios.get(endpoints.simpleActivity, {
                 headers: { 'Authorization': `Bearer ${accessToken}` },

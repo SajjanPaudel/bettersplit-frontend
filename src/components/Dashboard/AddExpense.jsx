@@ -382,9 +382,6 @@ function AddExpense() {
         {isLoading ? (
           <div className="flex flex-col w-full items-center justify-center min-h-screen gap-4">
             <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-400"></div>
-            <h1 className="text-xl font-medium text-gray-600 dark:text-gray-300">
-              Loading...
-            </h1>
           </div>
         ) : groups.length === 0 ? (
           <div className={` backdrop-blur-md h-full dark:bg-black/10 rounded-3xl p-4 text-center border ${theme.border} flex flex-col items-center space-y-6`}>

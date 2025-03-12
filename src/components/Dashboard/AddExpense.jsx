@@ -298,6 +298,25 @@ function AddExpense() {
     }));
   };
 
+  const toggleAllMembers = (index) => {
+    setExpenses(prev => prev.map((exp, i) => {
+      if (i !== index) return exp;
+
+      const allSelected = exp.selectedUsers.length === groupMembers.length;
+      const newSelectedUsers = allSelected ? [] : groupMembers.map(m => m.id);
+      const equalAmount = allSelected ? '' : (parseFloat(exp.amount) / groupMembers.length || 0).toFixed(2);
+
+      return {
+        ...exp,
+        selectedUsers: newSelectedUsers,
+        splits: groupMembers.map(member => ({
+          user: member.id,
+          amount: allSelected ? '' : equalAmount
+        }))
+      };
+    }));
+  };
+
   // Add new state for multiple expenses
   // Update the state management
   // Remove the single expense state and keep only the expenses array state
@@ -550,11 +569,10 @@ function AddExpense() {
                           <button
                             type="button"
                             onClick={index === 0 ? addNewExpense : () => removeBill(index)}
-                            className={`absolute right-3 top-1/2 transform -translate-y-1/2 p-2 w-10 h-10 rounded-full hidden md:block ${
-                              index === 0
-                                ? "text-white bg-purple-500/50 hover:bg-purple-500/80"
-                                : "text-white bg-red-500/50 hover:bg-red-500/80"
-                            } transition-colors`}
+                            className={`absolute right-3 top-1/2 transform -translate-y-1/2 p-2 w-10 h-10 rounded-full hidden md:block ${index === 0
+                              ? "text-white bg-purple-500/50 hover:bg-purple-500/80"
+                              : "text-white bg-red-500/50 hover:bg-red-500/80"
+                              } transition-colors`}
                           >
                             {index === 0 ? "+" : "−"}
                           </button>
@@ -570,58 +588,66 @@ function AddExpense() {
                             </div>
                           </div>
                         </div>
-
-                        <div className="col-span-full">
-                          {/* <div className="mb-2 text-sm text-gray-500">Who paid?</div> */}
-                          <div className="flex flex-wrap gap-2">
-                            <span className={`relative px-4 py-2 rounded-2xl text-sm border border-purple-500 ${theme.text}`}>
-                              Paid By <span className={`${theme.text}`}> → </span>
-                            </span>
-                            {selectedGroup ? (
-                              groupMembers.map(user => {
-                                const isPayer = exp.payers.some(p => p.user === user.id);
-                                const payer = exp.payers.find(p => p.user === user.id);
-
-                                return (
-                                  <div key={user.id} className="flex items-center">
-                                    <button
-                                      type="button"
-                                      onClick={() => handlePayerSelection(index, user.id)}
-                                      className={`px-4 py-2 rounded-l-2xl text-sm transition-all ${isPayer
-                                        ? `bg-purple-800 text-white`
-                                        : ` rounded-r-2xl ${theme.input} ${theme.textSecondary} ${theme.hoverBg}`
-                                        }`}
-                                    >
-                                      {user.first_name}
-                                    </button>
-                                    <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isPayer ? 'w-24 opacity-100 rounded-r-2xl' : 'w-0 opacity-0'
-                                      }`}>
-                                      <input
-                                        type="number"
-                                        value={payer?.amount || ''}
-                                        onChange={(e) => handlePayerAmountChange(index, user.id, e.target.value)}
-                                        className={`${theme.text} bg-purple-800/20 px-2 py-2  focus:outline-none text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
-                                      // placeholder="Amount"
-                                      />
-                                    </div>
-                                    <div className={`rounded-r-xl transition-all duration-300 ${isPayer ? 'w-1 bg-purple-800/50' : 'w-0'
-                                      }`}></div>
-                                  </div>
-                                );
-                              })
-                            ) : (
-                              <span className="text-sm text-gray-500"></span>
-                            )}
-                          </div>
-                        </div>
-
-
                       </div>
-                      <hr className='border border-gray-600' />
-                      {/* <div className="mb-2 text-sm text-gray-500">Paid For?</div> */}
-                      <div className="flex flex-wrap gap-1">
-                        <span className={`relative px-4 py-2 rounded-2xl text-sm border border-green-500 ${theme.text}`}>
-                          Paid For <span className={`${theme.text}`}> → </span>
+                      {selectedGroup && (
+                          <>    
+                      <div className="col-span-full animate-slide-down">
+                        {/* <div className="mb-2 text-sm text-gray-500">Who paid?</div> */}
+                        <div className="flex flex-wrap gap-2">
+                          <span className={`relative px-4 py-2 rounded-2xl text-sm border border-purple-500 ${theme.text}`}>
+                            Paid By <span className={`${theme.text}`}> → </span>
+                          </span>
+                          {selectedGroup ? (
+                            groupMembers.map(user => {
+                              const isPayer = exp.payers.some(p => p.user === user.id);
+                              const payer = exp.payers.find(p => p.user === user.id);
+
+                              return (
+                                <div key={user.id} className="flex items-center">
+                                  <button
+                                    type="button"
+                                    onClick={() => handlePayerSelection(index, user.id)}
+                                    className={`px-4 py-2 rounded-l-2xl text-sm transition-all ${isPayer
+                                      ? `bg-purple-800 text-white`
+                                      : ` rounded-r-2xl ${theme.input} ${theme.textSecondary} ${theme.hoverBg}`
+                                      }`}
+                                  >
+                                    {user.first_name}
+                                  </button>
+                                  <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isPayer ? 'w-24 opacity-100 rounded-r-2xl' : 'w-0 opacity-0'
+                                    }`}>
+                                    <input
+                                      type="number"
+                                      value={payer?.amount || ''}
+                                      onChange={(e) => handlePayerAmountChange(index, user.id, e.target.value)}
+                                      className={`${theme.text} bg-purple-800/20 px-2 py-2  focus:outline-none text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                    // placeholder="Amount"
+                                    />
+                                  </div>
+                                  <div className={`rounded-r-xl transition-all duration-300 ${isPayer ? 'w-1 bg-purple-800/50' : 'w-0'
+                                    }`}></div>
+                                </div>
+                              );
+                            })
+                          ) : (
+                            <span className="text-sm text-gray-500"></span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-1 opacity-0 animate-slide-down-delay">
+                        <span className={`relative flex gap-2 px-4 py-2 rounded-2xl text-sm border border-green-500 ${theme.text}`}>
+                          Paid For <span className={`${theme.text}`}>
+                            <button
+                              type="button"
+                              onClick={() => toggleAllMembers(index)}
+                              className={`flex items-center justify-center w-4 h-4 p-2 rounded-md border-2 ${exp.selectedUsers.length === groupMembers.length
+                                ? 'bg-green-500 border-green-600'
+                                : 'bg-transparent border-green-500/50'
+                                } transition-colors`}
+                            >
+                            </button>
+                          </span>
                         </span>
                         {selectedGroup ? (
                           groupMembers.map(user => {
@@ -657,6 +683,8 @@ function AddExpense() {
                           <span className="text-sm text-gray-500"></span>
                         )}
                       </div>
+                      </>
+                      )}
                     </div>
                   ))}
                 </div>

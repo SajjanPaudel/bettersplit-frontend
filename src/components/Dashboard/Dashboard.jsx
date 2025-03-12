@@ -452,7 +452,7 @@ function Dashboard() {
     if (error) return <div className="p-4 text-red-600">{error}</div>;
 
     return (
-        <div className="max-w-7xl mx-auto py-4 px-1">
+        <div className="max-w-7xl mx-auto py-4 px-1 h-screen overflow-scroll no-scrollbar">
             <div className="flex justify-end items-end mb-6">
                 {/* <h1 className={`text-2xl font-light ${theme.text} mr-2`}>Dashboard</h1> */}
                 <button

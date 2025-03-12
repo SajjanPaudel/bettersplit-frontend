@@ -128,7 +128,7 @@ function SettlementHistory() {
                 </thead>
                 <tbody className={`divide-y ${theme.border}`}>
                   {table.getRowModel().rows.map(row => (
-                    <tr key={row.id} className={`${theme.cardHover} transition-colors`}>
+                    <tr key={row.id} className={`${theme.cardHover} transition-colors ${theme.border}`}>
                       {row.getVisibleCells().map(cell => (
                         <td 
                           key={cell.id} 

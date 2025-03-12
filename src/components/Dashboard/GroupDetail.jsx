@@ -404,7 +404,7 @@ function GroupDetail() {
                                     <>
                                         <tr
                                             key={row.id}
-                                            className={`${theme.cardHover} transition-colors cursor-pointer`}
+                                            className={`${theme.cardHover} transition-colors cursor-pointer ${theme.border}`}
                                             onClick={() => toggleRow(row.id)}
                                         >
                                             {row.getVisibleCells().map((cell, index) => (

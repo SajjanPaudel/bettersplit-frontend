@@ -262,7 +262,7 @@ function Activity() {
           </div>
         ) : (
           <div className="mt-6 flex-1 ">
-            <div className="md:h-[80vh] lg:h-[80vh] h-[70dvh] shadow-2xl overflow-y-auto rounded-2xl">
+            <div className="md:h-[80vh] lg:h-[80vh] h-[70dvh] shadow-2xl overflow-y-auto no-scrollbar rounded-2xl">
               {activities.length === 0 ? (
                 <div className={`${theme.input} p-8 sm:p-12 text-center min-h-[50vh] flex flex-col items-center justify-center`}>
                   <div className="w-24 h-24 rounded-full flex items-center justify-center mb-4">
@@ -295,12 +295,12 @@ function Activity() {
                         </tr>
                       ))}
                     </thead>
-                    <tbody className={`divide-y ${theme.border}`}>
+                    <tbody className={`divide-y `}>
                       {table.getRowModel().rows.map(row => (
                         <>
                           <tr
                             key={row.id}
-                            className={`${theme.cardHover} transition-colors cursor-pointer`}
+                            className={`${theme.cardHover} transition-colors ${theme.border} cursor-pointer`}
                             onClick={() => toggleRow(row.id)}
                           >
                             {row.getVisibleCells().map((cell, index) => (
@@ -323,7 +323,7 @@ function Activity() {
                             ))}
                           </tr>
                           {expandedRows.has(row.id) && (
-                            <tr>
+                            <tr className={`${theme.border}`}>
                               <td colSpan={columns.length} className="p-4">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 px-2">
                                   {Object.entries(row.original.splits).map(([person, amount], index) => {

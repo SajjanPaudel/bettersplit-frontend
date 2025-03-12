@@ -348,6 +348,27 @@ function Dashboard() {
         });
     };
 
+    const handleNotificationClick = async (notification) => {
+        if (notification.notification_type === 'settlement_request') {
+            const { from_user, to_user, amount } = notification.data;
+            const settlement = settlements.find(s => s.from === from_user && s.to === to_user && s.amount === amount);
+        
+            if (settlement) {
+                setSelectedSettlement(settlement);
+                setEditAmount(settlement.amount);
+                setShowSettleModal(true);
+                try {
+                    await fetchRecipientAccount(settlement.to);
+                } catch (error) {
+                    console.error("Error fetching account:", error);
+                    alert("Error fetching recipient account. Please try again later.");
+                }
+            } else {
+                console.error('Settlement not found for notification:', notification);
+            }
+        }
+    };
+
     const sendSettlementRequest = async () => {
         setIsSubmitting(true);
         try {
@@ -515,6 +536,7 @@ function Dashboard() {
                                         <div
                                             key={notification.id}
                                             className={`p-4 border-b ${theme.border} hover:bg-purple-500/10 cursor-pointer flex justify-between items-start`}
+                                            onClick={() => handleNotificationClick(notification)}
                                         >
                                             <div>
                                                 <p className={`${theme.text} text-sm`}>{notification.message}</p>

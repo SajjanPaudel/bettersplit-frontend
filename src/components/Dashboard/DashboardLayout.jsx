@@ -79,6 +79,17 @@ function DashboardLayout({ onLogout }) {
           </Link> */}
 
           <Link
+            to="activity_new"
+            className={`flex items-center space-x-4 px-6 py-5 rounded-2xl mb-2 transition-all ${currentPath === 'activity_new'
+              ? `bg-purple-800 text-white backdrop-blur-xl ${theme.text}`
+              : `hover:bg-purple-400/30 hover:text-white hover:backdrop-blur-xl hover:${theme.text}`
+              }`}
+          >
+            <FaHistory className="w-5 h-5" />
+            <span className="font-['Inter'] font-light">Transactions</span>
+          </Link>
+
+          <Link
             to="activity"
             className={`flex items-center space-x-4 px-6 py-5 rounded-2xl mb-2 transition-all ${currentPath === 'activity'
               ? `bg-purple-800 text-white backdrop-blur-xl ${theme.text}`

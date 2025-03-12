@@ -14,6 +14,7 @@ import Profile from './components/Dashboard/Profile';
 import ResetPasswordConfirm from './components/ResetPasswordConfirm';
 import { Toaster } from 'react-hot-toast';
 import Dashboard from './components/Dashboard/Dashboard';
+import ActivityPage from './components/Dashboard/ActivityPage';
 
 function App() {
   const [isAuth, setIsAuth] = useState(!!localStorage.getItem('access_token'));
@@ -82,6 +83,7 @@ function App() {
               <Route path="groups/:id" element={<GroupDetail />} />
               <Route path="profile" element={<Profile />} />
               <Route path="dashboard" element={<Dashboard />} />
+              <Route path="activity_new" element={<ActivityPage />} />
             </Route>
             <Route
               path="/signup"

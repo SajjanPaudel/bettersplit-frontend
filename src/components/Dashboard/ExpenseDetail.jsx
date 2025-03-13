@@ -32,8 +32,6 @@ function ExpenseDetail() {
 
         fetchActivityDetails();
     }, [activityId]);
-
-    if (loading) return <div className={`${theme.text} p-4`}>Loading...</div>;
     if (error) return <div className={`${theme.text} p-4`}>{error}</div>;
 
     const getRandomColor = () => {
@@ -59,6 +57,14 @@ function ExpenseDetail() {
 
     return (
         <div className={`p-4 min-h-screen flex w-full`}>
+            {isLoading ? (
+          <div className={`mb-4 flex-1 flex flex-col lg:h-[45vh] md:h-[45vh] h-[50vh] lg:p-4 md:p-4 rounded-2xl before:inset-0 before:bg-gradient-to-b before:from-white/[0.08] before:to-transparent shadow-md flex items-center justify-center`}>
+            <div className="flex flex-col items-center gap-4">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-400"></div>
+              {/* <p className={`text-sm ${theme.textSecondary}`}>Loading settlements...</p> */}
+            </div>
+          </div>
+        ) :(
             <div className="w-full">
                 {/* Back Button */}
                 <button 
@@ -67,6 +73,7 @@ function ExpenseDetail() {
                 >
                     <FaArrowLeft className="w-10 h-4" />
                 </button>
+                
 
                 {/* Combined Payer and Expense Details Card */}
                 <div className={`${theme.card} p-8 rounded-lg mb-6`}>
@@ -122,6 +129,7 @@ function ExpenseDetail() {
                     </div>
                 </div>
             </div>
+        )}
         </div>
     );
 }

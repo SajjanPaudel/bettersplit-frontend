@@ -351,11 +351,11 @@ function Dashboard() {
     const handleNotificationClick = async (notification) => {
         if (notification.notification_type === 'settlement_request') {
             const { from_user, to_user, amount } = notification.data;
-            const settlement = settlements.find(s => s.from === from_user && s.to === to_user && s.amount === amount);
+            const settlement = settlements.find(s => s.from === from_user && s.to === to_user);
         
             if (settlement) {
                 setSelectedSettlement(settlement);
-                setEditAmount(settlement.amount);
+                setEditAmount(amount);
                 setShowSettleModal(true);
                 try {
                     await fetchRecipientAccount(settlement.to);

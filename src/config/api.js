@@ -24,4 +24,5 @@ export const endpoints = {
   simple_accounts: `${API_URL}/split/expenses/simple_accounts/`,
   simple_settlements: `${API_URL}/split/expenses/simple_settlements/`,
   simpleActivity: `${API_URL}/split/expenses/simple_activities/`,
+  activityDetail: (id) => `${API_URL}/split/expenses/activity/${id}/`,
 };

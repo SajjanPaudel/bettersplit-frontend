@@ -11,7 +11,7 @@ function ActivityPage() {
   const { theme, isDark } = useTheme();
   const [activities, setActivities] = useState([]);
   const [dateRange, setDateRange] = useState([
-    new Date(new Date().setDate(new Date().getDate() - 7)), // Start date: 7 days ago
+    new Date(new Date().setDate(new Date().getDate() - 30)), // Start date: 7 days ago
     new Date() // End date: today
   ]);
   const [startDate, endDate] = dateRange;
@@ -24,7 +24,7 @@ function ActivityPage() {
       const params = {};
 
       // Use startDate and endDate from dateRange
-      const start = startDate || new Date(new Date().setDate(new Date().getDate() - 7));
+      const start = startDate || new Date(new Date().setDate(new Date().getDate() - 30));
       const end = endDate || new Date();
 
       // params.start_date = start.toISOString().split('T')[0];
@@ -77,7 +77,7 @@ function ActivityPage() {
   };
 
   const handleActivityClick = (activityId) => {
-    navigate(`/activity/${activityId}`);
+      navigate(`/expense/${activityId}`);
   };
 
   const calculateAmount = (activity) => {
@@ -145,7 +145,7 @@ function ActivityPage() {
             <div
               key={activity.id}
               className={`flex items-center mx-auto justify-between lg:w-[95%] lg:px-10 md:px-10  py-4 px-2 mb-2 rounded-lg shadow-md cursor-pointer transition-transform transform hover:scale-[1.01] ${theme.cardHover} ${isDark ? 'bg-gray-900/50 hover:border hover:border-gray-800 hover:shadow-white/10' : 'bg-white hover:border hover:shadow-purple-400/40'}`}
-              onClick={() => none }
+              onClick={() => handleActivityClick(activity.id)}
             >
               <div className="flex items-center">
                 <div className={`p-4 ${isDark ? 'text-gray-400 border-purple-500/30' : 'text-purple-500'} border rounded-xl mr-4`}>

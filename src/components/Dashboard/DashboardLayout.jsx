@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { FaChartPie, FaHistory, FaPlus, FaExchangeAlt, FaSignOutAlt } from 'react-icons/fa';
 import { useState } from 'react';
 import { useTheme } from '../../context/ThemeContext';
-import { FaSun, FaMoon } from 'react-icons/fa';
+import { FaSun, FaMoon, FaUserCircle } from 'react-icons/fa';
 
 function DashboardLayout({ onLogout }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -17,9 +17,9 @@ function DashboardLayout({ onLogout }) {
   };
 
   return (
-    <div className={`flex h-screen bg-gradient-to-br ${isDark
-      ? 'from-black via-gray-900 to-gray-800'
-      : 'from-white via-purple-100 to-purple-50'
+    <div className={`flex h-screen  ${isDark
+      ? 'bg-gray-800'
+      : 'bg-gray-100'
       } px-4`}>
       {/* Mobile Menu Button */}
       <button
@@ -36,7 +36,7 @@ function DashboardLayout({ onLogout }) {
       </button>
 
       {/* Sidebar */}
-      <div className={`${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:relative left-0 top-0 h-full w-64 ${theme.textSecondary} flex flex-col rounded-3xl mr-4 shadow-2xl border ${theme.border} transition-transform duration-300 ease-in-out z-40 before:bg-gradient-to-b before:from-white/[0.08] before:to-transparent backdrop-blur-md overflow-y-auto no-scrollbar`}>
+      <div className={`${isMobileMenuOpen ? 'translate-x-0 h-[100vh] w-64': '-translate-x-full h-[95vh] my-auto w-64'} lg:translate-x-0 fixed lg:relative left-0 top-0  ${theme.textSecondary} flex flex-col rounded-xl shadow-md border ${theme.border} transition-transform duration-300 ease-in-out z-40 before:bg-gradient-to-b before:from-white/[0.08] before:to-transparent backdrop-blur-md overflow-y-auto no-scrollbar ${isDark ? 'bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800' : 'bg-white'}`}>
         {/* Logo Section */}
         <div className="p-5">
           <div className="flex items-center justify-center space-x-2 lg:mb-12 md:mb-12 lg:mt-4 md:mt-4 mb-5 mt-10">
@@ -56,7 +56,7 @@ function DashboardLayout({ onLogout }) {
         {/* Navigation Links */}
         <nav className={`px-6 flex-1 ${theme.text}`}>
 
-        <Link
+          <Link
             to="dashboard"
             className={`flex items-center space-x-4 px-6 py-5 rounded-2xl mb-2 transition-all ${currentPath === 'dashboard'
               ? `bg-purple-800 text-white backdrop-blur-xl ${theme.text}`
@@ -165,15 +165,12 @@ function DashboardLayout({ onLogout }) {
           <div className="flex items-center justify-between">
             <Link
               to="/profile"
-              className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-colors ${
-                currentPath === 'profile' 
+              className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-colors ${currentPath === 'profile'
                   ? 'bg-purple-800 text-white backdrop-blur-xl'
                   : 'hover:bg-purple-400/30 hover:text-white hover:backdrop-blur-xl'
-              }`}
+                }`}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-              </svg>
+              <FaUserCircle className="w-4 h-4" />
               <span className="font-['Inter'] font-light">{JSON.parse(localStorage.getItem('user'))?.username || 'User'}</span>
             </Link>
             <button
@@ -187,7 +184,7 @@ function DashboardLayout({ onLogout }) {
       </div>
 
       {/* Main Content */}
-      <div className={`flex-1 overflow-hidden min-w-0 bg-gradient-to-br sm:p-2 md:p-4 lg:p-4`}>
+      <div className={`flex-1 overflow-hidden min-w-0 bg-gradient-to-br pl-4`}>
         <Outlet />
       </div>
 

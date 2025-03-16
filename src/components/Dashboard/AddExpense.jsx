@@ -396,14 +396,28 @@ function AddExpense() {
   // Update the JSX return
   return (
     // Update the outer container structure
-    <div className="max-w-6xl mx-auto h-screen overflow-hidden py-4">
-      <div className={` rounded-2xl border ${theme.border} w-full h-full shadow-2xl relative flex flex-col`}>
+    <div className="h-full flex items-center">
+      <div className={`${isDark ? ' bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800' : 'bg-white'} rounded-xl overflow-hidden h-[95vh] w-full p-2 shadow-md`}>
         {isLoading ? (
-          <div className="flex flex-col w-full items-center justify-center min-h-screen gap-4">
-            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-400"></div>
+          <div className={`h-full p-6 lg:p-8 flex flex-col gap-6`}>
+            {/* Group selector skeleton */}
+            <div className="flex items-center gap-4 w-48">
+              <div className={`h-10 ${isDark ? 'bg-black/15' : 'bg-gray-200'} rounded-md w-full animate-pulse`}></div>
+            </div>
+
+            {/* Expense form skeleton */}
+            <div className="space-y-4">
+              <div className={`rounded-2xl border ${theme.border} p-4 space-y-4`}>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className={`h-10 ${isDark ? 'bg-black/15' : 'bg-gray-200'} rounded-md w-full animate-pulse`}></div>
+                  <div className={`h-10 ${isDark ? 'bg-black/15' : 'bg-gray-200'} rounded-md w-full animate-pulse`}></div>
+                  <div className={`h-10 ${isDark ? 'bg-black/15' : 'bg-gray-200'} rounded-md w-full animate-pulse`}></div>
+                </div>
+              </div>
+            </div>
           </div>
         ) : groups.length === 0 ? (
-          <div className={` backdrop-blur-md h-full dark:bg-black/10 rounded-3xl p-4 text-center border ${theme.border} flex flex-col items-center space-y-6`}>
+          <div className={` backdrop-blur-md h-full dark:bg-black/10 rounded-xl p-4 text-center border ${theme.border} flex flex-col items-center space-y-6`}>
             <div className="w-24 h-24 rounded-full flex items-center justify-center mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" className={`h-12 w-12 ${theme.textSecondary}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -433,7 +447,7 @@ function AddExpense() {
 
             <form id="expense-form" onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden" noValidate>
               {/* Group selector with Save All button */}
-              <div className='flex-shrink-0 mb-4 flex items-center gap-4'>
+              <div className='flex-shrink-0 mb-4 flex items-center gap-4 '>
                 <div className="flex-grow w-fit">
                   <Select
                     value={groups.find(group => group.id === selectedGroup)}
@@ -527,7 +541,7 @@ function AddExpense() {
                 <div className={`grid lg:grid-cols-1 gap-2 gap-y-4 pt-2 rounded-2xl`}>
                   {expenses.map((exp, index) => (
 
-                    <div key={exp.id} className={`rounded-2xl shadow-lg p-2 space-y-6 relative border ${isDark ? "bg-gradient-to-bl from-black/20 to-gray-700/20 border-gray-200/10" : "border-gray-800/30 bg-gradient-to-br"}`}> {/* Added relative positioning */}
+                    <div key={exp.id} className={`rounded-2xl shadow-md p-2 space-y-6 relative border ${theme.border} ${isDark ? "bg-gradient-to-bl from-black/20 to-gray-700/20" : "bg-gradient-to-br"}`}> {/* Added relative positioning */}
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start relative"> {/* Added relative positioning */}
                         <div className='mt-0'>
                           <input
@@ -535,7 +549,7 @@ function AddExpense() {
                             placeholder="Expense name"
                             value={exp.name}
                             onChange={(e) => handleExpenseUpdate(index, 'name', e.target.value)}
-                            className={`flex-1 bg-transparent ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-lg placeholder-gray-500 w-full`}
+                            className={`flex-1 bg-transparent ${theme.text} px-6 py-3 rounded-xl border ${theme.border} ${theme.inputFocus} focus:outline-none text-lg placeholder-gray-500 w-full`}
                             required
                           />
                         </div>
@@ -547,7 +561,7 @@ function AddExpense() {
                               onChange={(date) => handleExpenseUpdate(index, 'date', date.toISOString().split('T')[0])}
                               maxDate={new Date()}
                               dateFormat="MMM d, yyyy"
-                              className={`w-full bg-transparent ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none cursor-pointer text-lg`}
+                              className={`w-full bg-transparent ${theme.text} px-6 py-3 rounded-xl border ${theme.border} ${theme.inputFocus} focus:outline-none cursor-pointer text-lg`}
                               placeholderText="Select date"
                               required
                               wrapperClassName="w-full  relative"
@@ -556,134 +570,137 @@ function AddExpense() {
                           </div>
                         </div>
 
-                        <div className="relative group">
-                          <input
-                            type="text"
-                            pattern="[0-9\+\-\*\/\(\)\.\s]*"
-                            placeholder="Amount"
-                            value={exp.amount}
-                            onChange={(e) => handleAmountChange(index, e.target.value)}
-                            className={`w-full bg-transparent ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-lg placeholder-gray-500`}
-                            required
-                          />
-                          <button
-                            type="button"
-                            onClick={index === 0 ? addNewExpense : () => removeBill(index)}
-                            className={`absolute right-3 top-1/2 transform -translate-y-1/2 p-2 w-10 h-10 rounded-full hidden md:block ${index === 0
-                              ? "text-white bg-purple-500/50 hover:bg-purple-500/80"
-                              : "text-white bg-red-500/50 hover:bg-red-500/80"
-                              } transition-colors`}
-                          >
-                            {index === 0 ? "+" : "−"}
-                          </button>
-                          <div className={`absolute -bottom-50 left-1/2 transform -translate-x-1/2  opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none`}>
-                            <div className={`w-3 h-3 ${theme.card} border ${theme.border} transform rotate-45 absolute -top-1.5 left-1/2 -translate-x-1/2`}></div>
-                            <div className={`${theme.card} backdrop-blur-xl p-3 rounded-xl border ${theme.border} shadow-lg w-48`}>
-                              <div className={`text-sm ${theme.text}`}>
-                                Quick Tip: You can do arithmetic calculations!
-                              </div>
-                              <div className={`text-xs ${theme.textSecondary} mt-1`}>
-                                Try: 100+200, 500/2, etc. just add a space to calculate
+                        <div className="relative group flex items-center gap-2">
+                          <div className="relative group flex-1">
+                            <input
+                              type="text"
+                              pattern="[0-9\+\-\*\/\(\)\.\s]*"
+                              placeholder="Amount"
+                              value={exp.amount}
+                              onChange={(e) => handleAmountChange(index, e.target.value)}
+                              className={`w-full bg-transparent ${theme.text} px-6 py-3 rounded-xl border ${theme.border} ${theme.inputFocus} focus:outline-none text-lg placeholder-gray-500`}
+                              required
+                            />
+                            <div className={`absolute -bottom-50 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10`}>
+                              <div className={`w-3 h-3 ${theme.card} border ${theme.border} transform rotate-45 absolute -top-1.5 left-1/2 -translate-x-1/2`}></div>
+                              <div className={`${theme.card} backdrop-blur-xl p-3 rounded-xl border ${theme.border} shadow-md w-48`}>
+                                <div className={`text-sm ${theme.text}`}>
+                                  Quick Tip: You can do arithmetic calculations!
+                                </div>
+                                <div className={`text-xs ${theme.textSecondary} mt-1`}>
+                                  Try: 100+200, 500/2, etc. just add a space to calculate
+                                </div>
                               </div>
                             </div>
                           </div>
+                          <button
+                            type="button"
+                            onClick={index === 0 ? addNewExpense : () => removeBill(index)}
+                            className={`p-2 w-10 h-10 rounded-full hidden md:block ${
+                              index === 0
+                                ? "text-white bg-green-500/50 hover:bg-green-500/80"
+                                : "text-white bg-red-500/50 hover:bg-red-500/80"
+                            } transition-colors`}
+                          >
+                            {index === 0 ? "+" : "−"}
+                          </button>
                         </div>
                       </div>
                       {selectedGroup && (
-                          <>    
-                      <div className="col-span-full animate-slide-down">
-                        {/* <div className="mb-2 text-sm text-gray-500">Who paid?</div> */}
-                        <div className="flex flex-wrap gap-2">
-                          <span className={`relative px-4 py-2 rounded-2xl text-sm border border-purple-500 ${theme.text}`}>
-                            Paid By <span className={`${theme.text}`}> → </span>
-                          </span>
-                          {selectedGroup ? (
-                            groupMembers.map(user => {
-                              const isPayer = exp.payers.some(p => p.user === user.id);
-                              const payer = exp.payers.find(p => p.user === user.id);
+                        <>
+                          <div className="col-span-full animate-slide-down">
+                            {/* <div className="mb-2 text-sm text-gray-500">Who paid?</div> */}
+                            <div className="flex flex-wrap gap-2">
+                              <span className={`relative px-4 py-2 rounded-2xl text-sm border border-purple-500 ${theme.text}`}>
+                                Paid By <span className={`${theme.text}`}> → </span>
+                              </span>
+                              {selectedGroup ? (
+                                groupMembers.map(user => {
+                                  const isPayer = exp.payers.some(p => p.user === user.id);
+                                  const payer = exp.payers.find(p => p.user === user.id);
 
-                              return (
-                                <div key={user.id} className="flex items-center">
-                                  <button
-                                    type="button"
-                                    onClick={() => handlePayerSelection(index, user.id)}
-                                    className={`px-4 py-2 rounded-l-2xl text-sm transition-all ${isPayer
-                                      ? `bg-purple-800 text-white`
-                                      : ` rounded-r-2xl ${theme.input} ${theme.textSecondary} ${theme.hoverBg}`
-                                      }`}
-                                  >
-                                    {user.first_name}
-                                  </button>
-                                  <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isPayer ? 'w-24 opacity-100 rounded-r-2xl' : 'w-0 opacity-0'
-                                    }`}>
-                                    <input
-                                      type="number"
-                                      value={payer?.amount || ''}
-                                      onChange={(e) => handlePayerAmountChange(index, user.id, e.target.value)}
-                                      className={`${theme.text} bg-purple-800/20 px-2 py-2  focus:outline-none text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
-                                    // placeholder="Amount"
-                                    />
-                                  </div>
-                                  <div className={`rounded-r-xl transition-all duration-300 ${isPayer ? 'w-1 bg-purple-800/50' : 'w-0'
-                                    }`}></div>
-                                </div>
-                              );
-                            })
-                          ) : (
-                            <span className="text-sm text-gray-500"></span>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <div className="flex flex-wrap gap-1 opacity-0 animate-slide-down-delay">
-                        <span className={`relative flex gap-2 px-4 py-2 rounded-2xl text-sm border border-green-500 ${theme.text}`}>
-                          Paid For <span className={`${theme.text}`}>
-                            <button
-                              type="button"
-                              onClick={() => toggleAllMembers(index)}
-                              className={`flex items-center justify-center w-4 h-4 p-2 rounded-md border-2 ${exp.selectedUsers.length === groupMembers.length
-                                ? 'bg-green-500 border-green-600'
-                                : 'bg-transparent border-green-500/50'
-                                } transition-colors`}
-                            >
-                            </button>
-                          </span>
-                        </span>
-                        {selectedGroup ? (
-                          groupMembers.map(user => {
-                            const isSelected = exp.selectedUsers.includes(user.id);
-                            const split = exp.splits.find(s => s.user === user.id);
+                                  return (
+                                    <div key={user.id} className="flex items-center">
+                                      <button
+                                        type="button"
+                                        onClick={() => handlePayerSelection(index, user.id)}
+                                        className={`px-4 py-2 rounded-l-2xl text-sm transition-all ${isPayer
+                                          ? `bg-purple-800 text-white`
+                                          : ` rounded-r-2xl ${theme.input} ${theme.textSecondary} ${theme.hoverBg}`
+                                          }`}
+                                      >
+                                        {user.first_name}
+                                      </button>
+                                      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isPayer ? 'w-24 opacity-100 rounded-r-2xl' : 'w-0 opacity-0'
+                                        }`}>
+                                        <input
+                                          type="number"
+                                          value={payer?.amount || ''}
+                                          onChange={(e) => handlePayerAmountChange(index, user.id, e.target.value)}
+                                          className={`${theme.text} bg-purple-800/20 px-2 py-2  focus:outline-none text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                        // placeholder="Amount"
+                                        />
+                                      </div>
+                                      <div className={`rounded-r-xl transition-all duration-300 ${isPayer ? 'w-1 bg-purple-800/50' : 'w-0'
+                                        }`}></div>
+                                    </div>
+                                  );
+                                })
+                              ) : (
+                                <span className="text-sm text-gray-500"></span>
+                              )}
+                            </div>
+                          </div>
 
-                            return (
-                              <div key={user.id} className="flex items-center">
+                          <div className="flex flex-wrap gap-1 opacity-0 animate-slide-down-delay">
+                            <span className={`relative flex gap-2 px-4 py-2 rounded-2xl text-sm border border-green-500 ${theme.text}`}>
+                              Paid For <span className={`${theme.text}`}>
                                 <button
                                   type="button"
-                                  onClick={() => handleUserSelection(index, user.id)}
-                                  className={`px-4 py-2 rounded-l-2xl text-sm transition-all ${isSelected
-                                    ? `bg-green-800 text-white`
-                                    : ` rounded-r-2xl ${theme.input} ${theme.textSecondary} ${theme.hoverBg}`
-                                    }`}
+                                  onClick={() => toggleAllMembers(index)}
+                                  className={`flex items-center justify-center w-4 h-4 p-2 rounded-md border-2 ${exp.selectedUsers.length === groupMembers.length
+                                    ? 'bg-green-500 border-green-600'
+                                    : 'bg-transparent border-green-500/50'
+                                    } transition-colors`}
                                 >
-                                  {user.first_name}
                                 </button>
-                                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isSelected ? ' rounded-r-2xl w-24 opacity-100' : 'w-0 opacity-0'}`}>
-                                  <input
-                                    type="number"
-                                    value={split?.amount || ''}
-                                    onChange={(e) => handleSplitAmountChange(index, exp.splits.findIndex(s => s.user === user.id), e.target.value)}
-                                    className={`w-24 ${theme.text} bg-green-700/10 px-2 py-2  rounded-r-2xl focus:outline-none text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
-                                  // placeholder="Amount"
-                                  />
-                                </div>
-                                <div className={`rounded-r-2xl transition-all duration-300 ${isSelected ? 'bg-green-800/50 ' : 'w-0'}`}></div>
-                              </div>
-                            );
-                          })
-                        ) : (
-                          <span className="text-sm text-gray-500"></span>
-                        )}
-                      </div>
-                      </>
+                              </span>
+                            </span>
+                            {selectedGroup ? (
+                              groupMembers.map(user => {
+                                const isSelected = exp.selectedUsers.includes(user.id);
+                                const split = exp.splits.find(s => s.user === user.id);
+
+                                return (
+                                  <div key={user.id} className="flex items-center">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleUserSelection(index, user.id)}
+                                      className={`px-4 py-2 rounded-l-2xl text-sm transition-all ${isSelected
+                                        ? `bg-green-800 text-white`
+                                        : ` rounded-r-2xl ${theme.input} ${theme.textSecondary} ${theme.hoverBg}`
+                                        }`}
+                                    >
+                                      {user.first_name}
+                                    </button>
+                                    <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isSelected ? ' rounded-r-2xl w-24 opacity-100' : 'w-0 opacity-0'}`}>
+                                      <input
+                                        type="number"
+                                        value={split?.amount || ''}
+                                        onChange={(e) => handleSplitAmountChange(index, exp.splits.findIndex(s => s.user === user.id), e.target.value)}
+                                        className={`w-24 ${theme.text} bg-green-700/10 px-2 py-2  rounded-r-2xl focus:outline-none text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                      // placeholder="Amount"
+                                      />
+                                    </div>
+                                    <div className={`rounded-r-2xl transition-all duration-300 ${isSelected ? 'bg-green-800/50 ' : 'w-0'}`}></div>
+                                  </div>
+                                );
+                              })
+                            ) : (
+                              <span className="text-sm text-gray-500"></span>
+                            )}
+                          </div>
+                        </>
                       )}
                     </div>
                   ))}
@@ -695,15 +712,15 @@ function AddExpense() {
       </div>
       <button
         onClick={() => setShowCalculator(!showCalculator)}
-        className="fixed bottom-10 right-12 p-4 rounded-full bg-purple-500/50 hover:bg-purple-500/60 text-white transition-all shadow-lg z-50"
+        className="fixed bottom-10 right-8 py-2 px-1 rounded-md bg-purple-500/50 hover:bg-purple-500/60 text-white transition-all shadow-md"
       >
-        <FaCalculator className="text-xl" />
+        <FaCalculator className="text-3xl rounded-sm" />
       </button>
 
       {/* Calculator Modal */}
       {showCalculator && (
         <div className="fixed bottom-24 right-6 z-5">
-          <div className={`${theme.card} backdrop-blur-xl p-4 rounded-2xl border ${theme.border} shadow-xl w-80`}>
+          <div className={`${theme.card} backdrop-blur-xl p-4 rounded-2xl border ${theme.border} shadow-md w-80`}>
             <div className="flex justify-between items-center mb-4">
               <div>
                 <h3 className={`text-lg font-medium ${theme.text}`}>Calculator</h3>

@@ -12,7 +12,7 @@ import { endpoints } from '../../config/api';
 import { Link } from 'react-router-dom';
 
 function SettlementHistory() {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const [settlements, setSettlements] = useState([]);
   const [error, setError] = useState('');
   const [globalFilter, setGlobalFilter] = useState('');
@@ -37,15 +37,15 @@ function SettlementHistory() {
 
   const columns = useMemo(
     () => [
-        {
-            header: 'Date',
-            accessorKey: 'settled_at',
-            cell: ({ row }) => new Date(row.original.settled_at).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric'
-            }),
-          },
+      {
+        header: 'Date',
+        accessorKey: 'settled_at',
+        cell: ({ row }) => new Date(row.original.settled_at).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        }),
+      },
       {
         header: 'From',
         accessorKey: 'from_user',
@@ -75,15 +75,11 @@ function SettlementHistory() {
   });
 
   return (
-    <div className="max-w-[1400px] mx-auto">
-      {isLoading ? (
-        <div className="flex flex-col w-full items-center justify-center min-h-screen gap-4">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-400"></div>
-        </div>
-      ) : (
-        <>
-          <div className="flex justify-between items-center mb-6">
-            <h1 className={`md:text-2xl lg:text-2xl text-lg font-light ${theme.text} pl-12 lg:pl-0 p-6 ` }>Settlements</h1>
+    <div className="flex items-center h-full">
+      <div className="flex flex-col flex-1">
+        <div className={`w-full p-4 rounded-xl shadow-md border ${theme.border} ${isDark ? ' bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 ' : 'bg-white'}`}>
+          <div className="flex justify-between items-center">
+            <h1 className={`text-2xl font-light ${theme.text}`}>Settlements</h1>
             <input
               type="text"
               value={globalFilter}
@@ -92,10 +88,46 @@ function SettlementHistory() {
               className={`px-4 py-2 ${theme.input} ${theme.text} rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none`}
             />
           </div>
+        </div>
+        {isLoading ? (
+          <div className={`h-[calc(100vh-8rem)] mt-2 shadow-md border ${theme.border} overflow-y-auto no-scrollbar rounded-xl `}>
+            <div className="relative">
+              <table className={`w-full ${isDark ? '' : 'bg-white'}`}>
+                <thead className={`sticky top-0 z-10 backdrop-blur-md border border-b font-semibold ${theme.border} ${isDark ? 'bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800' : 'bg-gray-100'}`}>
+                  <tr>
+                    <th className={`px-4 py-5 text-left text-sm font-semibold ${theme.textSecondary} tracking-wider first:pl-8`}>Date</th>
+                    <th className={`px-4 py-5 text-left text-sm font-semibold ${theme.textSecondary} tracking-wider`}>From</th>
+                    <th className={`px-4 py-5 text-left text-sm font-semibold ${theme.textSecondary} tracking-wider`}>To</th>
+                    <th className={`px-4 py-5 text-left text-sm font-semibold ${theme.textSecondary} tracking-wider last:pr-8`}>Amount</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {[...Array(13)].map((_, index) => (
+                    <tr key={index} className={`${theme.border}`}>
+                      <td className="px-4 py-4 first:pl-8">
+                        <div className={`h-6 ${isDark ? 'bg-gray-900/70' : 'bg-gray-200'} rounded-md w-full animate-pulse`}></div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className={`h-6 ${isDark ? 'bg-gray-900/70' : 'bg-gray-200'} rounded-md w-full animate-pulse`}></div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className={`h-6 ${isDark ? 'bg-gray-900/70' : 'bg-gray-200'} rounded-md w-full animate-pulse`}></div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className={`h-6 ${isDark ? 'bg-gray-900/70' : 'bg-gray-200'} rounded-md w-full animate-pulse`}></div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : (
+          <div className={`h-[calc(100vh-8rem)] mt-2 shadow-md border ${theme.border} overflow-y-auto no-scrollbar rounded-xl `}>
 
-          <div className={` backdrop-blur-xl rounded-2xl border ${theme.border} overflow-hidden h-[calc(100vh-180px)]`}>
-            <div className="overflow-y-auto h-full">
-            {settlements.length === 0 ? (
+            {/* <div className={`flex-1 backdrop-blur-xl rounded-xl border ${theme.border} overflow-y-auto no-scrollbar`}> */}
+            <div className="">
+              {settlements.length === 0 ? (
                 <div className={`${theme.input} backdrop-blur-md  h-full dark:bg-black/10 rounded-3xl p-12 text-center border ${theme.border} flex flex-col items-center justify-center space-y-6`}>
                   <div className="w-24 h-24 rounded-full flex items-center justify-center mb-4">
                     <svg xmlns="http://www.w3.org/2000/svg" className={`h-12 w-12 ${theme.textSecondary}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -111,43 +143,43 @@ function SettlementHistory() {
                   </Link>
                 </div>
               ) : (
-              <table className="w-full">
-                <thead className={`sticky top-0 ${theme.card} z-10`}>
-                  {table.getHeaderGroups().map(headerGroup => (
-                    <tr key={headerGroup.id}>
-                      {headerGroup.headers.map(header => (
-                        <th
-                          key={header.id}
-                          className={`px-6 py-5 text-left text-sm font-semibold ${theme.textSecondary} tracking-wider first:pl-8 last:pr-8`}
-                        >
-                          {flexRender(header.column.columnDef.header, header.getContext())}
-                        </th>
-                      ))}
-                    </tr>
-                  ))}
-                </thead>
-                <tbody className={`divide-y ${theme.border}`}>
-                  {table.getRowModel().rows.map(row => (
-                    <tr key={row.id} className={`${theme.cardHover} transition-colors ${theme.border}`}>
-                      {row.getVisibleCells().map(cell => (
-                        <td 
-                          key={cell.id} 
-                          className={`px-6 py-5 text-sm first:pl-8 last:pr-8 ${
-                            cell.column.id === 'amount' ? `font-medium ${theme.text}` : theme.textSecondary
-                          }`}
-                        >
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                <table className={`w-full ${isDark ? '' : 'bg-white'}`}>
+                  <thead className={`sticky top-0 z-10 backdrop-blur-md border border-b font-semibold ${theme.border} ${isDark ? 'bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800' : 'bg-gray-100'}`}>
+                    {table.getHeaderGroups().map(headerGroup => (
+                      <tr key={headerGroup.id}>
+                        {headerGroup.headers.map(header => (
+                          <th
+                            key={header.id}
+                            className={`px-6 py-5 text-left text-sm font-semibold ${theme.textSecondary} tracking-wider first:pl-8 last:pr-8`}
+                          >
+                            {flexRender(header.column.columnDef.header, header.getContext())}
+                          </th>
+                        ))}
+                      </tr>
+                    ))}
+                  </thead>
+                  <tbody className={`divide-y ${theme.border}`}>
+                    {table.getRowModel().rows.map(row => (
+                      <tr key={row.id} className={`${theme.cardHover} transition-colors ${theme.border}`}>
+                        {row.getVisibleCells().map(cell => (
+                          <td
+                            key={cell.id}
+                            className={`px-6 py-5 text-sm first:pl-8 last:pr-8 ${cell.column.id === 'amount' ? `font-medium ${theme.text}` : theme.textSecondary
+                              }`}
+                          >
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               )}
             </div>
+            {/* </div> */}
           </div>
-        </>
-      )}
+        )}
+      </div>
     </div>
   );
 }

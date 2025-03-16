@@ -125,26 +125,27 @@ function ActivityPage() {
   };
 
   return (
-    <div className="lg:px-4 md:px-4 py-4">
-      <div className="flex justify-end mb-4 lg:mr-7">
-        <h1 className={`text-2xl ${theme.text} hidden sm:block ml-10 mr-auto`}>Latest Transactions</h1>
+    <div className="h-full flex items-center">
+      <div className={`${isDark ? ' bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800' : 'bg-white'} shadow-md rounded-xl overflow-hidden h-[95vh] w-full p-2 shadow-md`}>
+        <div className="flex justify-end lg:mr-7 ">
+          <h1 className={`text-2xl ${theme.text} hidden sm:block ml-10 mr-auto mt-2 pb-2 `}>Latest Transactions</h1>
         <DatePicker
           selectsRange
           startDate={startDate}
           endDate={endDate}
           onChange={(update) => setDateRange(update)}
           placeholderText="Select Date Range"
-          className={`${theme.card} text-${theme.color} px-4 py-2 rounded-xl border ${theme.inputBorder} focus:outline-none w-[14rem]`} // Ensure width is controlled
+          className={`${theme.input} text-${theme.color} px-4 py-2 rounded-xl border ${theme.border} focus:outline-none w-[14rem]`} // Ensure width is controlled
           popperPlacement="bottom-start"
         />
       </div>
-      <div className="overflow-y-auto max-h-[90vh] no-scrollbar">
+      <div className="overflow-y-auto max-h-[90vh] no-scrollbar pb-5">
         {activities.map(activity => {
           const amount = calculateAmount(activity);
           return (
             <div
               key={activity.id}
-              className={`flex items-center mx-auto justify-between lg:w-[95%] lg:px-10 md:px-10  py-4 px-2 mb-2 rounded-lg shadow-md cursor-pointer transition-transform transform hover:scale-[1.01] ${theme.cardHover} ${isDark ? 'bg-gray-900/50 hover:border hover:border-gray-800 hover:shadow-white/10' : 'bg-white hover:border hover:shadow-purple-400/40'}`}
+              className={` border ${theme.border} flex items-center mx-auto justify-between lg:w-[95%] py-4 px-2 mb-2 rounded-lg shadow-md cursor-pointer transition-transform transform hover:scale-[1.002]  ${isDark ? 'bg-gray-900/50 hover:border-gray-800/50 hover:shadow-gray-600/5' : 'bg-white hover:shadow-gray-400/40'}`}
               onClick={() => handleActivityClick(activity.id)}
             >
               <div className="flex items-center">
@@ -178,6 +179,7 @@ function ActivityPage() {
           );
         })}
       </div>
+    </div>
     </div>
   );
 }

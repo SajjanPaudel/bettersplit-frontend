@@ -20,7 +20,7 @@ function DashboardLayout({ onLogout }) {
     <div className={`flex h-screen  ${isDark
       ? 'bg-gray-800'
       : 'bg-gray-100'
-      }lg:px-4 md:px-4`}>
+      } lg:px-4 md:px-4`}>
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

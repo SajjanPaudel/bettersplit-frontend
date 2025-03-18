@@ -145,14 +145,14 @@ function Activity() {
         <div className={`w-full p-4 rounded-xl shadow-md border ${theme.border} ${isDark ? ' bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 ' : 'bg-white'}`}>
           {/* Mobile view */}
           <div className="flex flex-col justify-end items-end gap-4 sm:hidden w-full">
-            <div className="flex flex-row items-center gap-2 w-full">
+            <div className="flex flex-row items-center gap-2 w-full pl-10">
 
               <input
                 type="text"
                 value={globalFilter}
                 onChange={e => setGlobalFilter(e.target.value)}
                 placeholder="Search activities..."
-                className={`py-2 ${theme.input} ${theme.text} rounded-md border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none`}
+                className={`p-2 ${theme.input} ${theme.text} rounded-md border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none`}
               />
               <div className="relative">
                 <input
@@ -291,7 +291,7 @@ function Activity() {
             </div>
           </div>
         ) : (
-          <div className={`h-[calc(100vh-9rem)] mt-3 shadow-md border ${theme.border} overflow-y-auto no-scrollbar rounded-xl `}>
+          <div className={`h-[calc(100vh-9rem)] w-[98vw] lg:w-[calc(100vw-19rem)] md:w-[100vw] mt-3 shadow-md border ${theme.border} overflow-scroll no-scrollbar rounded-xl `}>
             {activities.length === 0 ? (
               <div className={`${theme.input} p-8 sm:p-12 text-center min-h-[50vh] flex flex-col items-center justify-center`}>
                 <div className="w-24 h-24 rounded-full flex items-center justify-center mb-4">
@@ -353,8 +353,8 @@ function Activity() {
                         </tr>
                         {expandedRows.has(row.id) && (
                           <tr className={`${theme.border}`}>
-                            <td colSpan={columns.length} className="p-4">
-                              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 px-2">
+                            <td colSpan={4} className="p-4">
+                              <div className="grid grid-cols-2  sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:px-2 lg:px-2">
                                 {Object.entries(row.original.splits).map(([person, amount], index) => {
                                   const bgColors = [
                                     'bg-blue-500/10 border-blue-500/20',

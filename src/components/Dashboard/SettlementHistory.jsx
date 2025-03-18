@@ -77,9 +77,9 @@ function SettlementHistory() {
   return (
     <div className="flex items-center h-full">
       <div className="flex flex-col flex-1">
-        <div className={`w-full p-4 rounded-xl shadow-md border ${theme.border} ${isDark ? ' bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 ' : 'bg-white'}`}>
+        <div className={`lg:w-full md:w-full w-[98vw] p-4 rounded-xl shadow-md border ${theme.border} ${isDark ? ' bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 ' : 'bg-white'}`}>
           <div className="flex justify-between items-center">
-            <h1 className={`text-2xl font-light ${theme.text}`}>Settlements</h1>
+            <h1 className={`lg:text-2xl md:text-2xl hidden md:block lg:block font-light ${theme.text}`}>Settlements</h1>
             <input
               type="text"
               value={globalFilter}

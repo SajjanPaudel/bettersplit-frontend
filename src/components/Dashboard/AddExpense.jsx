@@ -399,7 +399,7 @@ function AddExpense() {
     <div className="h-full flex items-center">
       <div className={`${isDark ? ' bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800' : 'bg-white'} rounded-xl overflow-hidden h-[95vh] w-full p-2 shadow-md`}>
         {isLoading ? (
-          <div className={`h-full p-6 lg:p-8 flex flex-col gap-6`}>
+          <div className={`h-full p- lg:p-8 flex flex-col gap-6`}>
             {/* Group selector skeleton */}
             <div className="flex items-center gap-4 w-48">
               <div className={`h-10 ${isDark ? 'bg-black/15' : 'bg-gray-200'} rounded-md w-full animate-pulse`}></div>
@@ -432,7 +432,7 @@ function AddExpense() {
             </Link>
           </div>
         ) : (
-          <div className="p-6 lg:p-8 flex flex-col h-full">
+          <div className="px-2 py-4 lg:p-8 md:p-8 flex flex-col h-full">
             {/* Header buttons - removing this section */}
             <div className="flex justify-between items-center mb-3 flex-shrink-0">
               {/* Button will be moved next to the group selector */}

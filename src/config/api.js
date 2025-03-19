@@ -25,4 +25,5 @@ export const endpoints = {
   simple_settlements: `${API_URL}/split/expenses/simple_settlements/`,
   simpleActivity: `${API_URL}/split/expenses/simple_activities/`,
   activityDetail: (id) => `${API_URL}/split/expenses/activity/${id}/`,
+  storeOnesignalId: `${API_URL}/split/store-player-id/`,
 };

@@ -12,7 +12,6 @@ import "react-datepicker/dist/react-datepicker.css";
 import { IoNotificationsOutline } from "react-icons/io5";
 import { Link } from 'react-router-dom';
 import { CgSpinner } from 'react-icons/cg';
-
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -24,6 +23,8 @@ import {
     Filler,
     Legend
 } from 'chart.js';
+import OneSignal from 'react-onesignal';
+export const APP_ID = import.meta.env.VITE_ONESIGNAL_APPID;
 
 ChartJS.register(
     CategoryScale,
@@ -59,6 +60,96 @@ function Dashboard() {
     const [showNotifications, setShowNotifications] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [loadingNotifications, setLoadingNotifications] = useState({});
+
+
+    useEffect(() => {
+        async function initializeOneSignal() {
+            console.log('Initializing OneSignal with APP_ID:', APP_ID);
+    
+            try {
+                await OneSignal.init({
+                    appId: APP_ID,
+                    allowLocalhostAsSecureOrigin: true,
+                });
+                console.log('OneSignal init complete.');
+    
+                OneSignal.Slidedown.promptPush();
+                console.log('Push prompt requested.');
+    
+                console.log("OneSignal.User object:", OneSignal.User);
+    
+                let retries = 0;
+                const maxRetries = 30; // Increase max retries
+                const retryDelay = 2000; // Increase delay to 2 seconds
+    
+                async function getPlayerIdWithRetry() {
+                    const playerId = await OneSignal.User.onesignalId;
+                    if (playerId) {
+                        console.log('Player ID retrieved:', playerId);
+                        sendPlayerIdToBackend(playerId);
+                    } else if (retries < maxRetries) {
+                        console.log('Waiting for Player ID...', retries);
+                        retries++;
+                        setTimeout(getPlayerIdWithRetry, retryDelay);
+                    } else {
+                        console.log('Player ID not available after retries.');
+                    }
+                }
+    
+                getPlayerIdWithRetry();
+
+                OneSignal.Notifications.addEventListener('foregroundWillDisplay', (event) => {
+                    console.log('Notification permission:', Notification.permission);
+                    console.log('Foreground notification received:', event.notification);
+                    // Manually display a notification or handle the event
+                    showCustomNotification(event.notification);
+                });
+                
+    
+            } catch (error) {
+                console.error('OneSignal initialization failed:', error);
+            }
+        }
+    
+        initializeOneSignal();
+    }, []);
+
+    function showCustomNotification(notification) {
+        // Example of custom notification handling
+        if (Notification.permission === 'granted') {
+            console.log(notification)
+            title = "hello"
+            new Notification(notification.title, {
+                body: notification.body,
+                icon: notification.icon,
+                data: notification.data
+            });
+        } else {
+            console.error('Notification permission is not granted.');
+        }
+    }
+
+    const sendPlayerIdToBackend = async (playerId) => {
+        try {
+            const accessToken = localStorage.getItem('access_token');
+            const response = await axios.post(endpoints.storeOnesignalId, {
+                player_id: playerId
+            }, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.status == 200) {
+                console.log('Player ID sent to backend successfully');
+            } else {
+                console.error('Failed to send player ID to backend');
+            }
+        } catch (error) {
+            console.error('Error sending player ID:', error);
+        }
+    };
 
     const getBankName = (bankCode) => {
         const bank = bankData.list.find(bank => bank.swift_code === bankCode);

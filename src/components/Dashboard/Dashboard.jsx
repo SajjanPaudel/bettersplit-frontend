@@ -118,7 +118,6 @@ function Dashboard() {
         // Example of custom notification handling
         if (Notification.permission === 'granted') {
             console.log(notification)
-            title = "hello"
             new Notification(notification.title, {
                 body: notification.body,
                 icon: notification.icon,

@@ -120,8 +120,8 @@ function Dashboard() {
             console.log(notification)
             new Notification(notification.title, {
                 body: notification.body,
-                icon: notification.icon,
-                data: notification.data
+                // icon: notification.icon,
+                // data: notification.data
             });
         } else {
             console.error('Notification permission is not granted.');

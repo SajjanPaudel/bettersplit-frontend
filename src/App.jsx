@@ -19,6 +19,22 @@ import ExpenseDetail from './components/Dashboard/ExpenseDetail';
 
 function App() {
   const [isAuth, setIsAuth] = useState(!!localStorage.getItem('access_token'));
+  
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.data?.code === 'token_not_valid') {
+          handleAuthUpdate(false);
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      axios.interceptors.response.eject(interceptor);
+    };
+  }, []);
 
   const handleAuthUpdate = (status) => {
     setIsAuth(status);

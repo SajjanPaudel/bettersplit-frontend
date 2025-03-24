@@ -16,10 +16,11 @@ import { Toaster } from 'react-hot-toast';
 import Dashboard from './components/Dashboard/Dashboard';
 import ActivityPage from './components/Dashboard/ActivityPage';
 import ExpenseDetail from './components/Dashboard/ExpenseDetail';
+import axios from 'axios';
 
 function App() {
   const [isAuth, setIsAuth] = useState(!!localStorage.getItem('access_token'));
-  
+
   useEffect(() => {
     const interceptor = axios.interceptors.response.use(
       (response) => response,

@@ -112,16 +112,16 @@ function Landing() {
     const [isPaused, setIsPaused] = useState(false);
 
     // Autoplay functionality
-    useEffect(() => {
-        if (isPaused) return;
+    // useEffect(() => {
+    //     if (isPaused) return;
 
-        const timer = setInterval(() => {
-            setDirection(1);
-            setCurrentStep((prev) => (prev + 1) % steps.length);
-        }, 4000);
+    //     const timer = setInterval(() => {
+    //         setDirection(1);
+    //         setCurrentStep((prev) => (prev + 1) % steps.length);
+    //     }, 4000);
 
-        return () => clearInterval(timer);
-    }, [isPaused, steps.length]);
+    //     return () => clearInterval(timer);
+    // }, [isPaused, steps.length]);
 
     const nextStep = () => {
         setDirection(1);

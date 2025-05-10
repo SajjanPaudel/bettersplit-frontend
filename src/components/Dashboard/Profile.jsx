@@ -678,16 +678,16 @@ function Profile() {
                                         className={`flex-1 ${theme.input} ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-lg placeholder-gray-500 w-full`} />
                                 </>
                             )}
-                            <div className="mb-4 flex items-start">
+                            {/* <div className="mb-4 flex items-start">
                                 <label className={`${theme.text} `}>primary account
                                     <input
                                         type="checkbox"
                                         checked={isPrimary}
                                         onChange={(e) => setIsPrimary(e.target.checked)}
                                         className={`text-lg placeholder-gray-500 w-full`} />
-                                    {/* Set as Primary */}
+
                                 </label>
-                            </div>
+                            </div> */}
                             {/* Update the Add Account button in the modal */}
                             <div className="flex justify-end space-x-2">
                                 <button

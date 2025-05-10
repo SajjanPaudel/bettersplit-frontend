@@ -51,7 +51,7 @@ function Groups() {
   };
 
   const handleGroupClick = (groupId) => {
-    navigate(`/groups/${groupId}`);
+    navigate(`/dashboard/groups/${groupId}`);
   };
 
   return (

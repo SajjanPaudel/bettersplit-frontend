@@ -390,7 +390,7 @@ function Dashboard() {
             const accounts = allAccounts[username] || []; // Get accounts for the user, or empty array if not found
             console.log(accounts)
             const primaryAccount = accounts.find(acc => acc.is_primary);
-            const firstAccount = primaryAccount ? { ...primaryAccount.account_details } : (accounts.length > 0 ? { ...accounts[0].account_details } : {});
+            const firstAccount = accounts.length > 0 ? { ...accounts[0].account_details } : {};
             setRecipientAccount(firstAccount);
             console.log(firstAccount)
             // Pre-generate QR value

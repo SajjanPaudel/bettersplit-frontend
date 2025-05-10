@@ -75,7 +75,7 @@ function Landing() {
     const steps = [
         {
             step: 1,
-            title: "Create a Group",
+            title: "Create a Group or join an existing one",
             description: "Start by creating a group with your friends, roommates, or travel companions. Add members and set up your group preferences.",
             media: "/step1.png",
             type: "image",

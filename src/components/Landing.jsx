@@ -161,12 +161,6 @@ function Landing() {
                 </svg>
             </div>
 
-            {/* Progress Bar */}
-            <motion.div
-                className="fixed top-0 left-0 right-0 h-1 bg-purple-500 origin-left z-50"
-                style={{ scaleX: scrollYProgress }}
-            />
-
 
             {/* Hero Section */}
             <section id="hero" ref={el => sectionRefs.current[0] = el} className="min-h-screen flex items-center relative overflow-hidden snap-start">

@@ -123,6 +123,17 @@ function Landing() {
         return () => clearInterval(timer);
     }, [isPaused, steps.length]);
 
+    const nextStep = () => {
+        setDirection(1);
+        setCurrentStep((prev) => (prev + 1) % steps.length);
+        setIsPaused(true); // Pause autoplay when manually navigating
+    };
+
+    const prevStep = () => {
+        setDirection(-1);
+        setCurrentStep((prev) => (prev - 1 + steps.length) % steps.length);
+        setIsPaused(true); // Pause autoplay when manually navigating
+    };
 
     const goToStep = (index) => {
         setDirection(index > currentStep ? 1 : -1);
@@ -661,18 +672,42 @@ function Landing() {
                         </div>
 
                         {/* Navigation Dots */}
-                        <div className="flex justify-center gap-2 mt-8">
-                            {steps.map((_, index) => (
-                                <motion.button
-                                    key={index}
-                                    onClick={() => goToStep(index)}
-                                    className={`w-3 h-3 rounded-full transition-colors ${
-                                        currentStep === index ? 'bg-purple-500' : 'bg-gray-600 hover:bg-purple-500/50'
-                                    }`}
-                                    whileHover={{ scale: 1.2 }}
-                                    whileTap={{ scale: 0.9 }}
-                                />
-                            ))}
+                        <div className="flex items-center justify-center gap-4 mt-8">
+                            <motion.button
+                                onClick={prevStep}
+                                className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white hover:bg-purple-500/20 transition-colors"
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </motion.button>
+                            
+                            <div className="flex gap-2">
+                                {steps.map((_, index) => (
+                                    <motion.button
+                                        key={index}
+                                        onClick={() => goToStep(index)}
+                                        className={`w-3 h-3 rounded-full transition-colors ${
+                                            currentStep === index ? 'bg-purple-500' : 'bg-gray-600 hover:bg-purple-500/50'
+                                        }`}
+                                        whileHover={{ scale: 1.2 }}
+                                        whileTap={{ scale: 0.9 }}
+                                    />
+                                ))}
+                            </div>
+
+                            <motion.button
+                                onClick={nextStep}
+                                className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white hover:bg-purple-500/20 transition-colors"
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </motion.button>
                         </div>
                     </div>
                 </div>

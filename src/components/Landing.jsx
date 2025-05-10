@@ -60,14 +60,102 @@ document.head.appendChild(styleSheet);
 function Landing() {
     const { theme, isDark } = useTheme();
     const [activeSection, setActiveSection] = useState(0);
+    const [carouselStep, setCarouselStep] = useState(0);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const { scrollYProgress } = useScroll();
 
     const sections = [
         { id: 'hero', label: 'Home' },
         { id: 'features', label: 'Features' },
+        { id: 'how-it-works', label: 'How It Works' },
         { id: 'comparison', label: 'Comparison' },
         { id: 'reviews', label: 'Reviews' },
     ];
+
+    const steps = [
+        {
+            step: 1,
+            title: "Create a Group",
+            description: "Start by creating a group with your friends, roommates, or travel companions. Add members and set up your group preferences.",
+            media: "/step1.png",
+            type: "image",
+            features: ["Invite friends via email", "Multiple groups support"]
+        },
+        {
+            step: 2,
+            title: "Add Expenses",
+            description: "Add expenses to your group and specify who paid and who owes what. Split expenses equally or customize the split.",
+            media: "/step2.png",
+            type: "image",
+            features: ["Equal or custom splits", "Multiple Payees", "Multiple Payers"]
+        },
+        {
+            step: 3,
+            title: "Track Balances",
+            description: "View real-time balances and see who owes whom. Get detailed insights into your group's spending patterns.",
+            media: "/dark.png",
+            type: "image",
+            features: ["Real-time updates", "Detailed analytics"]
+        },
+        {
+            step: 4,
+            title: "Settle Up",
+            description: "Use QR code payments to settle debts instantly with friends. Multiple payment methods supported.",
+            media: "/step4.png",
+            type: "image",
+            features: ["QR code payments", "Multiple payment methods", "Partial payments"]
+        }
+    ];
+
+    const [currentStep, setCurrentStep] = useState(0);
+    const [direction, setDirection] = useState(0); // -1 for left, 1 for right
+    const [isPaused, setIsPaused] = useState(false);
+
+    // Autoplay functionality
+    useEffect(() => {
+        if (isPaused) return;
+
+        const timer = setInterval(() => {
+            setDirection(1);
+            setCurrentStep((prev) => (prev + 1) % steps.length);
+        }, 4000);
+
+        return () => clearInterval(timer);
+    }, [isPaused, steps.length]);
+
+
+    const goToStep = (index) => {
+        setDirection(index > currentStep ? 1 : -1);
+        setCurrentStep(index);
+        setIsPaused(true); // Pause autoplay when manually navigating
+    };
+
+    // Reset autoplay when section comes into view
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting && entry.target.id === 'how-it-works') {
+                        setIsPaused(false); // Resume autoplay when section is visible
+                    } else if (!entry.isIntersecting && entry.target.id === 'how-it-works') {
+                        setIsPaused(true); // Pause autoplay when section is not visible
+                    }
+                });
+            },
+            { threshold: 0.5 }
+        );
+
+        const element = document.getElementById('how-it-works');
+        if (element) {
+            observer.observe(element);
+        }
+
+        return () => {
+            if (element) {
+                observer.unobserve(element);
+            }
+        };
+    }, []);
 
     // Refs for each section
     const sectionRefs = useRef([]);
@@ -76,6 +164,15 @@ function Landing() {
         const element = document.getElementById(sectionId);
         if (element) {
             element.scrollIntoView({ behavior: 'smooth' });
+            // Update active section immediately for better UX
+            const idx = sections.findIndex(s => s.id === sectionId);
+            if (idx !== -1) {
+                setActiveSection(idx);
+                // Only reset carousel when explicitly navigating to how-it-works section
+                if (sectionId === 'how-it-works') {
+                    setCurrentStep(0);
+                }
+            }
         }
     };
 
@@ -90,21 +187,32 @@ function Landing() {
             entries.forEach((entry) => {
                 if (entry.isIntersecting) {
                     const idx = sections.findIndex(s => s.id === entry.target.id);
-                    if (idx !== -1) setActiveSection(idx);
+                    if (idx !== -1) {
+                        setActiveSection(idx);
+                    }
                 }
             });
         }, observerOptions);
-        sectionRefs.current.forEach((ref) => {
-            if (ref) observer.observe(ref);
+
+        // Observe all sections
+        sections.forEach((section, index) => {
+            const element = document.getElementById(section.id);
+            if (element) {
+                observer.observe(element);
+                sectionRefs.current[index] = element;
+            }
         });
+
         return () => {
-            if (observer && sectionRefs.current) {
-                sectionRefs.current.forEach((ref) => {
-                    if (ref) observer.unobserve(ref);
+            if (observer) {
+                sections.forEach((section, index) => {
+                    if (sectionRefs.current[index]) {
+                        observer.unobserve(sectionRefs.current[index]);
+                    }
                 });
             }
         };
-    }, []);
+    }, [sections]);
 
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -130,7 +238,7 @@ function Landing() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 snap-y snap-mandatory overflow-y-auto h-screen relative">
             {/* Floating Navbar */}
-            <nav className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 bg-white/10 backdrop-blur-md rounded-full shadow-lg px-8 py-3 flex gap-6 items-center border border-purple-900/20">
+            <nav className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 bg-white/10 backdrop-blur-md rounded-full shadow-lg px-12 py-3 flex gap-8 items-center border border-purple-900/20 min-w-[1000px] lg:flex hidden">
                 <span className="font-extrabold text-xl tracking-tight">
                     <span className="text-gray-200">BETTER</span><span className="text-purple-500">SPLIT</span>
                 </span>
@@ -138,7 +246,7 @@ function Landing() {
                     <button
                         key={section.id}
                         onClick={() => scrollToSection(section.id)}
-                        className={`text-base font-semibold px-3 py-1 rounded transition-colors duration-200 focus:outline-none ${
+                        className={`text-base font-semibold px-4 py-1 rounded transition-colors duration-200 focus:outline-none ${
                             activeSection === idx
                                 ? 'text-purple-400 font-bold'
                                 : 'text-gray-200 hover:text-purple-300'
@@ -148,6 +256,54 @@ function Landing() {
                     </button>
                 ))}
             </nav>
+
+            {/* Mobile Menu Button */}
+            <div className="fixed top-6 right-6 z-50 lg:hidden">
+                <motion.button
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white hover:bg-purple-500/20 transition-colors"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                >
+                    <div className="flex flex-col gap-1.5">
+                        <span className={`block w-6 h-0.5 bg-white transition-all duration-300 ${isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`} />
+                        <span className={`block w-6 h-0.5 bg-white transition-all duration-300 ${isMobileMenuOpen ? 'opacity-0' : ''}`} />
+                        <span className={`block w-6 h-0.5 bg-white transition-all duration-300 ${isMobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
+                    </div>
+                </motion.button>
+            </div>
+
+            {/* Mobile Menu */}
+            <AnimatePresence>
+                {isMobileMenuOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="fixed top-24 right-6 z-50 lg:hidden"
+                    >
+                        <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-lg border border-purple-900/20 overflow-hidden">
+                            {sections.map((section, idx) => (
+                                <motion.button
+                                    key={section.id}
+                                    onClick={() => {
+                                        scrollToSection(section.id);
+                                        setIsMobileMenuOpen(false);
+                                    }}
+                                    className={`w-full px-6 py-3 text-left text-base font-semibold transition-colors duration-200 ${
+                                        activeSection === idx
+                                            ? 'text-purple-400 bg-purple-500/10'
+                                            : 'text-gray-200 hover:bg-white/5'
+                                    }`}
+                                    whileHover={{ x: 5 }}
+                                >
+                                    {section.label}
+                                </motion.button>
+                            ))}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Subtle SVG Background Pattern */}
             <div className="absolute inset-0 pointer-events-none z-0 opacity-40">
@@ -371,6 +527,157 @@ function Landing() {
                 </div>
             </section>
 
+            {/* How It Works Section */}
+            <section id="how-it-works" ref={el => sectionRefs.current[2] = el} className="min-h-screen flex items-center bg-transparent relative overflow-hidden snap-start">
+                <div className="container mx-auto px-4 relative z-10">
+                    <motion.h2
+                        className="text-4xl md:text-5xl font-extrabold text-center text-white mb-16 drop-shadow-lg"
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                    >
+                        {/* How It <span className="text-purple-500">Works</span> */}
+                    </motion.h2>
+
+                    <div className="relative max-w-7xl mx-auto">
+                        {/* Navigation Buttons */}
+                        {/* <div className="relative top-0 mt-2  left-10 -translate-x-1/2 flex items-center gap-4 z-20">
+                            <button
+                                onClick={prevStep}
+                                className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white hover:bg-purple-500/20 transition-colors"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+                            <button
+                                onClick={nextStep}
+                                className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white hover:bg-purple-500/20 transition-colors"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        </div> */}
+
+                        {/* Carousel Content */}
+                        <div className="relative h-[70vh] mt-16">
+                            <AnimatePresence mode="wait" initial={false}>
+                                <motion.div
+                                    key={currentStep}
+                                    initial={{ 
+                                        opacity: 0,
+                                        x: direction > 0 ? 100 : -100
+                                    }}
+                                    animate={{ 
+                                        opacity: 1,
+                                        x: 0
+                                    }}
+                                    exit={{ 
+                                        opacity: 0,
+                                        x: direction > 0 ? -100 : 100
+                                    }}
+                                    transition={{ 
+                                        duration: 0.5,
+                                        ease: "easeInOut"
+                                    }}
+                                    className="absolute inset-0"
+                                    onMouseEnter={() => setIsPaused(true)}
+                                    onMouseLeave={() => setIsPaused(false)}
+                                >
+                                    <div className="bg-white/5 backdrop-blur-md rounded-2xl shadow-xs p-8 border border-purple-900/20 hover:shadow-purple-500 hover:shadow-sm hover:scale-[1.02] transition-all duration-300 group h-full flex flex-col lg:flex-row items-center gap-8">
+                                        {/* Media Container */}
+                                        <motion.div 
+                                            className="w-full lg:w-3/5 h-full relative"
+                                            initial={{ opacity: 0, scale: 0.95 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            transition={{ duration: 0.5, delay: 0.2 }}
+                                        >
+                                            <div className="h-full rounded-xl overflow-hidden shadow-2xl relative group">
+                                                <motion.img
+                                                    src={steps[currentStep].media}
+                                                    alt={steps[currentStep].title}
+                                                    className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
+                                                    initial={{ opacity: 0, scale: 0.9 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    transition={{ duration: 0.5, delay: 0.3 }}
+                                                />
+                                            </div>
+                                        </motion.div>
+                                        
+                                        {/* Content */}
+                                        <motion.div 
+                                            className="w-full lg:w-2/5 flex flex-col justify-center"
+                                            initial={{ opacity: 0, x: direction > 0 ? 20 : -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ duration: 0.5, delay: 0.4 }}
+                                        >
+                                            <motion.div 
+                                                className="inline-block px-4 py-2 bg-purple-500/20 rounded-full mb-4"
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ duration: 0.3, delay: 0.5 }}
+                                            >
+                                                <span className="text-purple-400 font-semibold">Step {steps[currentStep].step}</span>
+                                            </motion.div>
+                                            <motion.h3 
+                                                className="text-3xl font-bold text-white mb-4"
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ duration: 0.3, delay: 0.6 }}
+                                            >
+                                                {steps[currentStep].title}
+                                            </motion.h3>
+                                            <motion.p 
+                                                className="text-gray-300 text-lg leading-relaxed mb-6"
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ duration: 0.3, delay: 0.7 }}
+                                            >
+                                                {steps[currentStep].description}
+                                            </motion.p>
+                                            
+                                            {/* Feature List */}
+                                            <div className="space-y-3">
+                                                {steps[currentStep].features.map((feature, idx) => (
+                                                    <motion.div
+                                                        key={idx}
+                                                        className="flex items-center gap-3 text-gray-200"
+                                                        initial={{ opacity: 0, x: direction > 0 ? 20 : -20 }}
+                                                        animate={{ opacity: 1, x: 0 }}
+                                                        transition={{ duration: 0.3, delay: 0.8 + (idx * 0.1) }}
+                                                    >
+                                                        <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center">
+                                                            <FaCheck className="text-purple-400 text-sm" />
+                                                        </div>
+                                                        <span>{feature}</span>
+                                                    </motion.div>
+                                                ))}
+                                            </div>
+                                        </motion.div>
+                                    </div>
+                                </motion.div>
+                            </AnimatePresence>
+                        </div>
+
+                        {/* Navigation Dots */}
+                        <div className="flex justify-center gap-2 mt-8">
+                            {steps.map((_, index) => (
+                                <motion.button
+                                    key={index}
+                                    onClick={() => goToStep(index)}
+                                    className={`w-3 h-3 rounded-full transition-colors ${
+                                        currentStep === index ? 'bg-purple-500' : 'bg-gray-600 hover:bg-purple-500/50'
+                                    }`}
+                                    whileHover={{ scale: 1.2 }}
+                                    whileTap={{ scale: 0.9 }}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {/* Comparison Section */}
             <section id="comparison" ref={el => sectionRefs.current[2] = el} className="min-h-screen flex items-center relative overflow-hidden snap-start bg-transparent">
                 {/* Animated Gradient Background for Section */}
@@ -583,7 +890,7 @@ function Landing() {
                                 </h3>
                             </div>
                             <p className="text-gray-300 leading-relaxed max-w-xl mx-auto">
-                                Making expense sharing simple and efficient for everyone. Join thousands of users who trust BetterSplit for their expense management needs.
+                                Making expense sharing simple and efficient for everyone. Join BetterSplit for all your group expense management needs.
                             </p>
                             {/* <div className="flex justify-center space-x-4">
                                 {['twitter', 'facebook', 'instagram', 'linkedin'].map((social) => (

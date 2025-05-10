@@ -10,7 +10,7 @@ import { Line } from 'react-chartjs-2';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { IoNotificationsOutline } from "react-icons/io5";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { CgSpinner } from 'react-icons/cg';
 import {
     Chart as ChartJS,
@@ -60,6 +60,7 @@ function Dashboard() {
     const [showNotifications, setShowNotifications] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [loadingNotifications, setLoadingNotifications] = useState({});
+    const navigate = useNavigate();
 
 
     useEffect(() => {
@@ -216,6 +217,9 @@ function Dashboard() {
 
             setDailyExpenses(sortedDailyExpenses);
         } catch (err) {
+            if (err.response?.status === 401) {
+                navigate('/login');
+            }
             console.error('Failed to fetch activities:', err);
         }
     };
@@ -278,6 +282,9 @@ function Dashboard() {
                 const response = await axios.get(endpoints.simple_balances, { headers });
                 setBalances(response.data.data);
             } catch (err) {
+                if (err.response?.status === 401) {
+                    navigate('/login');
+                }
                 setError('Failed to fetch balances');
             } finally {
                 setBalancesLoading(false);
@@ -291,6 +298,9 @@ function Dashboard() {
                 const response = await axios.get(endpoints.simple_settlements, { headers });
                 setSettlements(response.data.data);
             } catch (err) {
+                if (err.response?.status === 401) {
+                    navigate('/login');
+                }
                 setError('Failed to fetch settlements');
             } finally {
                 setSettlementsLoading(false);
@@ -309,6 +319,9 @@ function Dashboard() {
                 });
                 setAllAccounts(response.data.data);
             } catch (err) {
+                if (err.response?.status === 401) {
+                    navigate('/login');
+                }
                 setError('Failed to fetch accounts');
             } finally {
                 setAccountsLoading(false);

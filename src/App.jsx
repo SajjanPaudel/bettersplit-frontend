@@ -116,7 +116,10 @@ function App() {
             <Route path="/" element={<Navigate to="/landing" replace />} />
 
             {/* Public Routes */}
-            <Route path="/landing" element={<Landing />} />
+            <Route
+              path="/landing"
+              element={isAuth ? <Navigate to="/dashboard" replace /> : <Landing />}
+            />
             <Route
               path="/login"
               element={isAuth ? <Navigate to="/dashboard" replace /> : <LoginWrapped onAuth={handleAuthUpdate} />}

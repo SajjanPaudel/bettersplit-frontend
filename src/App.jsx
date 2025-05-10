@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'; // Import Outlet
 import Login from './components/Login';
 import DashboardLayout from './components/Dashboard/DashboardLayout';
 import Balance from './components/Dashboard/Balance';
@@ -16,7 +16,45 @@ import { Toaster } from 'react-hot-toast';
 import Dashboard from './components/Dashboard/Dashboard';
 import ActivityPage from './components/Dashboard/ActivityPage';
 import ExpenseDetail from './components/Dashboard/ExpenseDetail';
+import Landing from './components/Landing';
 import axios from 'axios';
+
+// Optional Wrapper components to keep styling out of routes
+const LoginWrapped = ({ onAuth }) => (
+  <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 p-8 md:p-8">
+    <div className="rounded-2xl bg-gradient-to-br overflow-hidden shadow-2xl">
+      <Login onAuth={onAuth} />
+    </div>
+  </div>
+);
+
+const SignupWrapped = () => (
+  <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 p-8 md:p-8">
+    <div className="bg-gradient-to-br rounded-2xl overflow-hidden shadow-2xl">
+      <Signup />
+    </div>
+  </div>
+);
+
+const ResetPasswordConfirmWrapped = () => (
+  <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 p-8 md:p-8">
+    <div className="bg-gradient-to-br rounded-2xl overflow-hidden shadow-2xl">
+      <ResetPasswordConfirm />
+    </div>
+  </div>
+);
+
+
+// Component to handle protected routes logic
+const ProtectedRoute = ({ isAuth, redirectPath = '/login', children }) => {
+  if (!isAuth) {
+    return <Navigate to={redirectPath} replace />;
+  }
+
+  // Render the children (nested routes or element)
+  return children ? children : <Outlet />;
+};
+
 
 function App() {
   const [isAuth, setIsAuth] = useState(!!localStorage.getItem('access_token'));
@@ -25,7 +63,8 @@ function App() {
     const interceptor = axios.interceptors.response.use(
       (response) => response,
       (error) => {
-        if (error.response?.data?.code === 'token_not_valid') {
+        if (error.response?.data?.code === 'token_not_valid' || error.response?.status === 401) { // Also check status 401
+          console.log("Token invalid or 401, logging out"); // Debugging
           handleAuthUpdate(false);
         }
         return Promise.reject(error);
@@ -38,10 +77,13 @@ function App() {
   }, []);
 
   const handleAuthUpdate = (status) => {
+    console.log("Auth status updated to:", status); // Debugging
     setIsAuth(status);
     if (!status) {
       localStorage.removeItem('access_token');
       localStorage.removeItem('user');
+      // Consider navigating explicitly here if needed, e.g., navigate('/login')
+      // but the Route structure should handle redirects naturally.
     }
   };
 
@@ -70,66 +112,44 @@ function App() {
       <ThemeProvider>
         <BrowserRouter>
           <Routes>
-            <Route
-              path="/"
-              element={isAuth ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />}
-            />
+            {/* Root path redirect - must be first */}
+            <Route path="/" element={<Navigate to="/landing" replace />} />
+
+            {/* Public Routes */}
+            <Route path="/landing" element={<Landing />} />
             <Route
               path="/login"
-              element={
-                isAuth ? (
-                  <Navigate to="/dashboard" replace />
-                ) : (
-                  <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 p-8 md:p-8">
-                    <div className="rounded-2xl bg-gradient-to-br overflow-hidden shadow-2xl">
-                      <Login onAuth={handleAuthUpdate} />
-                    </div>
-                  </div>
-                )
-              }
+              element={isAuth ? <Navigate to="/dashboard" replace /> : <LoginWrapped onAuth={handleAuthUpdate} />}
             />
             <Route
-              path=""
-              element={isAuth ? <DashboardLayout onLogout={() => handleAuthUpdate(false)} /> : <Navigate to="/login" replace />}
+              path="/signup"
+              element={isAuth ? <Navigate to="/dashboard" replace /> : <SignupWrapped />}
+            />
+            <Route path="/password-reset-confirm/:uid/:token" element={<ResetPasswordConfirmWrapped />} />
+
+            {/* Protected Routes */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute isAuth={isAuth} redirectPath="/login">
+                  <DashboardLayout onLogout={() => handleAuthUpdate(false)} />
+                </ProtectedRoute>
+              }
             >
-              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route index element={<Dashboard />} />
               <Route path="balance" element={<Balance />} />
               <Route path="activity" element={<Activity />} />
+              <Route path="activity_new" element={<ActivityPage />} />
               <Route path="add-expense" element={<AddExpense />} />
               <Route path="settlements" element={<SettlementHistory />} />
               <Route path="groups" element={<Groups />} />
               <Route path="groups/:id" element={<GroupDetail />} />
               <Route path="profile" element={<Profile />} />
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="activity_new" element={<ActivityPage />} />
-              <Route path="/expense/:activityId" element={<ExpenseDetail />} />
+              <Route path="expense/:activityId" element={<ExpenseDetail />} />
             </Route>
-            <Route
-              path="/signup"
-              element={
-                isAuth ? (
-                  <Navigate to="/dashboard/activity" replace />
-                ) : (
-                  <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 p-8 md:p-8">
-                    <div className="bg-gradient-to-br rounded-2xl overflow-hidden shadow-2xl">
-                      {/* <div className="bg-gradient-to-br from-purple-900/20 via-purple-950/20 to-gray-950/20 backdrop-blur-xl rounded-2xl overflow-hidden shadow-2xl"> */}
-                      <Signup />
-                    </div>
-                  </div>
-                )
-              }
-            />
-            <Route path="/groups" element={<Groups />} />
-            <Route path="/password-reset-confirm/:uid/:token"
-              element={
-                <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 p-8 md:p-8">
-                  <div className="bg-gradient-to-br rounded-2xl overflow-hidden shadow-2xl">
-                    {/* <div className="bg-gradient-to-br from-purple-900/20 via-purple-950/20 to-gray-950/20 backdrop-blur-xl rounded-2xl overflow-hidden shadow-2xl"> */}
-                    <ResetPasswordConfirm />
-                  </div>
-                </div>
-              }
-            />
+
+            {/* Optional: Catch-all for 404 */}
+            {/* <Route path="*" element={<NotFoundPage />} /> */}
           </Routes>
         </BrowserRouter>
       </ThemeProvider>

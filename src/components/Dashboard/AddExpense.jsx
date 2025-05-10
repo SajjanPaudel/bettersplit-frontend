@@ -615,7 +615,7 @@ function AddExpense() {
                                 Paid By <span className={`${theme.text}`}> → </span>
                               </span>
                               {selectedGroup ? (
-                                groupMembers.map(user => {
+                                [...groupMembers].sort((a, b) => a.first_name.localeCompare(b.first_name)).map(user => {
                                   const isPayer = exp.payers.some(p => p.user === user.id);
                                   const payer = exp.payers.find(p => p.user === user.id);
 
@@ -667,7 +667,7 @@ function AddExpense() {
                               </span>
                             </span>
                             {selectedGroup ? (
-                              groupMembers.map(user => {
+                              [...groupMembers].sort((a, b) => a.first_name.localeCompare(b.first_name)).map(user => {
                                 const isSelected = exp.selectedUsers.includes(user.id);
                                 const split = exp.splits.find(s => s.user === user.id);
 

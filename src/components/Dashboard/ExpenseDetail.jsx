@@ -56,7 +56,7 @@ function ExpenseDetail() {
     };
 
     return (
-        <div className={`p-4 min-h-screen flex w-full`}>
+        <div className="h-full flex items-center">
             {loading ? (
           <div className={`mb-4 flex-1 flex flex-col lg:h-[45vh] md:h-[45vh] h-[50vh] lg:p-4 md:p-4 rounded-2xl before:inset-0 before:bg-gradient-to-b before:from-white/[0.08] before:to-transparent shadow-md flex items-center justify-center`}>
             <div className="flex flex-col items-center gap-4">
@@ -65,23 +65,28 @@ function ExpenseDetail() {
             </div>
           </div>
         ) :(
-            <div className="w-full">
-                {/* Back Button */}
+            <div className={`${isDark ? ' bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800' : 'bg-white'} shadow-md rounded-xl overflow-hidden h-[95vh] w-full p-4 shadow-md`}>
+                {/* Combined Payer and Expense Details Card */}
+                <div className={` ${isDark ? 'bg-[#ffffff08]': 'bg-gray-50 border' } rounded-lg mb-2 p-4`}>
                 <button 
                     onClick={() => navigate(-1)}
-                    className={`mb-4 p-2 rounded-full hover:bg-purple-200  transition-colors ${theme.text}`}
+                    className={` p-2 rounded-full hover:bg-purple-200  transition-colors ${theme.text}`}
                 >
                     <FaArrowLeft className="w-10 h-4" />
                 </button>
-                
-
-                {/* Combined Payer and Expense Details Card */}
-                <div className={`${theme.card} p-8 rounded-lg mb-6`}>
                     <div className="flex flex-col items-center space-y-6">
                     <h1 className={`text-xl font-bold mb-2 text-center ${theme.text}`}>{activity.name}</h1>
-                        <div className="text-center">
-                            <PayerIcon name={activity.paid_by} />
+                        {/* Redesigned Payer Section Start */}
+                        <div className="flex flex-col items-center gap-2 mb-4">
+                            <div className="relative">
+                                <div className="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-extrabold shadow-lg border-4 border-purple-300" style={{ backgroundColor: getRandomColor(), color: '#fff' }}>
+                                    {activity.paid_by.charAt(0).toUpperCase()}
+                                </div>
+                                <span className="absolute bottom-0 right-0 bg-purple-500 text-white text-xs px-2 py-1 rounded-full shadow">Payer</span>
+                            </div>
+                            <span className={`mt-2 text-lg font-semibold ${theme.text}`}>{activity.paid_by}</span>
                         </div>
+                        {/* Redesigned Payer Section End */}
                         <div className="w-full border-t border-gray-500/20 pt-6">
                             <div className="grid grid-cols-3 gap-6 mx-auto max-w-2xl">
                                 <div className="text-center">
@@ -104,8 +109,8 @@ function ExpenseDetail() {
                 </div>
 
                 {/* Splits Section */}
-                <div className={`${theme.card} pb-6 rounded-lg text-center max-h-[50vh] overflow-auto no-scrollbar relative`}>
-                    <div className={`text-xl font-bold mb-4 ${theme.text} sticky top-0 ${theme.card} backdrop-blur-md z-10 pt-4 pb-2 border-b border-gray-500/40`}>Individual expenses</div>
+                <div className={`${isDark ? 'bg-[#ffffff08]': 'bg-gray-50 border ' }  rounded-xl text-center max-h-[50vh] overflow-auto no-scrollbar relative`}>
+                    <div className={`text-xl font-bold mb-4 ${theme.text} ${isDark ? 'bg-[#111827]': 'bg-gray-200' } sticky top-0  backdrop-blur-md z-10 pt-4 pb-2 border-t border-gray-500/40 rounded-xl`}>Individual expenses</div>
                     <div className="space-y-3 pb-4">
                         {Object.entries(activity.splits).map(([user, amount]) => (
                             <div 

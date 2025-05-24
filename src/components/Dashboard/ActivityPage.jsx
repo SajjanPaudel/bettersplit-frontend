@@ -21,14 +21,8 @@ function ActivityPage() {
   const fetchActivities = async () => {
     try {
       const accessToken = localStorage.getItem('access_token');
-      const params = {};
-
-      // Use startDate and endDate from dateRange
       const start = startDate || new Date(new Date().setDate(new Date().getDate() - 30));
       const end = endDate || new Date();
-
-      // params.start_date = start.toISOString().split('T')[0];
-      // params.end_date = end.toISOString().split('T')[0];
 
       const response = await axios.get(endpoints.activity, {
         headers: { 'Authorization': `Bearer ${accessToken}` },
@@ -39,10 +33,16 @@ function ActivityPage() {
         }
       });
 
-      // Filter activities where the logged-in user is either the payer or a payee
-      const filteredActivities = response.data.data
-
+      const filteredActivities = response.data.data;
       setActivities(filteredActivities);
+
+      // If activities are empty, use last_expense_date to adjust dateRange
+      if (filteredActivities.length === 0 && response.data.last_expense_date) {
+        const lastExpense = new Date(response.data.last_expense_date);
+        const start = new Date(lastExpense);
+        start.setDate(lastExpense.getDate() - 30);
+        setDateRange([start, lastExpense]);
+      }
     } catch (err) {
       console.error('Failed to fetch activities', err);
     }
@@ -99,9 +99,10 @@ function ActivityPage() {
 
   const UserIcon = ({ user }) => {
     let randomColor;
-    do {
-      randomColor = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
-    } while (randomColor.toLowerCase() === '#000000'); // Ensure the color is not black
+    // do {
+    //   randomColor = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+    // } while (randomColor.toLowerCase() === '#000000'); // Ensure the color is not black
+    randomColor = '#671ea4'; // Fixed color for now, you can change this based on your design and user selectio
 
     const getContrastColor = (bgColor) => {
       const r = parseInt(bgColor.slice(1, 3), 16);

@@ -77,7 +77,7 @@ function ActivityPage() {
   };
 
   const handleActivityClick = (activityId) => {
-      navigate(`/expense/${activityId}`);
+      navigate(`/dashboard/expense/${activityId}`);
   };
 
   const calculateAmount = (activity) => {
@@ -154,14 +154,14 @@ function ActivityPage() {
                 </div>
                 <div>
                   <h2 className={`lg:text-lg md:text-lg text-base font-bold ${theme.text}`}>{activity.name}</h2>
-                  <p className={`md:text-sm lg:text-sm sm:text-xs ${theme.textSecondary} flex items-center`}>
+                  <div className={`md:text-sm lg:text-sm sm:text-xs ${theme.textSecondary} flex items-center`}>
                     {activity.group}
                     <div className="flex ml-2">
                       {activity.paid_for.map(user => (
                         <UserIcon key={user} user={user} />
                       ))}
                     </div>
-                  </p>
+                  </div>
                 </div>
               </div>
               <div>

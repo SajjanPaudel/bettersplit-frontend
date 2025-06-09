@@ -1029,6 +1029,7 @@ function Dashboard() {
                                 <div className="flex space-x-3 mt-6">
                                     <button
                                         onClick={() => setShowSettleModal(false)}
+                                        disabled={selectedSettlement && editAmount !== selectedSettlement.amount}
                                         className={`flex-1 px-4 py-2 border ${theme.border} rounded-xl font-['Inter'] ${theme.textSecondary} ${theme.cardHover} transition-colors`}
                                     >
                                         Cancel

@@ -1011,12 +1011,12 @@ function Dashboard() {
                                     <p className={`text-sm ${theme.textSecondary} font-['Inter'] mb-1`}>Amount</p>
 
                                     <input
-                                        type="number"
                                         value={editAmount}
-                                        onChange={(e) => setEditAmount(e.target.value)}
                                         className={`w-full ${theme.input} ${theme.text} px-4 py-2 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none`}
                                         min="0"
                                         step="0.01"
+                                        readOnly
+                                        disabled
                                     />
                                     {selectedSettlement && editAmount !== selectedSettlement.amount && (
                                         <p className="text-sm text-yellow-500 mt-1 flex items-center">

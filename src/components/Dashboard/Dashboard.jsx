@@ -642,7 +642,6 @@ function Dashboard() {
                                             <div
                                                 key={notification.id}
                                                 className={`p-4 border-b ${theme.border} hover:bg-purple-500/10 cursor-pointer flex justify-between items-start`}
-                                                onClick={() => handleNotificationClick(notification)}
                                             >
                                                 <div>
                                                     <p className={`${theme.text} text-sm`}>{notification.message}</p>

@@ -1036,7 +1036,7 @@ function Dashboard() {
                                     {selectedSettlement.to == loggedInUser.username ? (
                                         <button
                                             onClick={handleSettle}
-                                            disabled={selectedSettlement && editAmount !== selectedSettlement.amount}
+                                            disabled={isSubmitting || (selectedSettlement && editAmount !== selectedSettlement.amount)}
                                             className="flex-1 px-4 py-2 bg-yellow-400 text-black rounded-xl font-['Inter'] hover:bg-yellow-300 transition-colors"
                                         >
                                             {isSubmitting ? (

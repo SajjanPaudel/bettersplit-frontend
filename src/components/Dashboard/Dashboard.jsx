@@ -54,7 +54,7 @@ function Dashboard() {
     const [selectedAccountIndex, setSelectedAccountIndex] = useState(0);
     const [calculationType, setCalculationType] = useState('combined');
     const [allAccounts, setAllAccounts] = useState(null);
-    const [activeTab, setActiveTab] = useState('metrics');
+    const [activeTab, setActiveTab] = useState('settlements');
     const [dailyExpenses, setDailyExpenses] = useState([]);
     const [dateRange, setDateRange] = useState({ startDate: null, endDate: null });
     const [showNotifications, setShowNotifications] = useState(false);
@@ -66,23 +66,23 @@ function Dashboard() {
     useEffect(() => {
         async function initializeOneSignal() {
             console.log('Initializing OneSignal with APP_ID:', APP_ID);
-    
+
             try {
                 await OneSignal.init({
                     appId: APP_ID,
                     allowLocalhostAsSecureOrigin: true,
                 });
                 console.log('OneSignal init complete.');
-    
+
                 OneSignal.Slidedown.promptPush();
                 console.log('Push prompt requested.');
-    
+
                 console.log("OneSignal.User object:", OneSignal.User);
-    
+
                 let retries = 0;
                 const maxRetries = 30; // Increase max retries
                 const retryDelay = 2000; // Increase delay to 2 seconds
-    
+
                 async function getPlayerIdWithRetry() {
                     const playerId = await OneSignal.User.onesignalId;
                     if (playerId) {
@@ -96,7 +96,7 @@ function Dashboard() {
                         console.log('Player ID not available after retries.');
                     }
                 }
-    
+
                 getPlayerIdWithRetry();
 
                 OneSignal.Notifications.addEventListener('foregroundWillDisplay', (event) => {
@@ -105,13 +105,13 @@ function Dashboard() {
                     // Manually display a notification or handle the event
                     showCustomNotification(event.notification);
                 });
-                
-    
+
+
             } catch (error) {
                 console.error('OneSignal initialization failed:', error);
             }
         }
-    
+
         initializeOneSignal();
     }, []);
 
@@ -776,18 +776,9 @@ function Dashboard() {
                             className="absolute bottom-0 h-0.5 bg-purple-500 transition-all duration-300 ease-in-out"
                             style={{
                                 width: '100px',
-                                transform: `translateX(${activeTab === 'metrics' ? '0' : '100px'})`
+                                transform: `translateX(${activeTab === 'settlements' ? '0' : '100px'})`
                             }}
                         />
-                        <button
-                            onClick={() => setActiveTab('metrics')}
-                            className={`px-4 py-2 text-sm transition-all duration-300 ease-in-out w-[100px] ${activeTab === 'metrics'
-                                ? `${theme.text} font-medium`
-                                : `${theme.textSecondary} hover:text-purple-500`
-                                }`}
-                        >
-                            Metrics
-                        </button>
                         <button
                             onClick={() => setActiveTab('settlements')}
                             className={`px-4 py-2 text-sm transition-all duration-300 ease-in-out w-[100px] ${activeTab === 'settlements'
@@ -796,6 +787,15 @@ function Dashboard() {
                                 }`}
                         >
                             Settlements
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('metrics')}
+                            className={`px-4 py-2 text-sm transition-all duration-300 ease-in-out w-[100px] ${activeTab === 'metrics'
+                                ? `${theme.text} font-medium`
+                                : `${theme.textSecondary} hover:text-purple-500`
+                                }`}
+                        >
+                            Metrics
                         </button>
                     </div>
 

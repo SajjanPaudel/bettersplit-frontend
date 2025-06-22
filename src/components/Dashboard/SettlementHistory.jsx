@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import axios from 'axios';
 import { useTheme } from '../../context/ThemeContext';
 import {
@@ -16,26 +16,66 @@ function SettlementHistory() {
   const [settlements, setSettlements] = useState([]);
   const [error, setError] = useState('');
   const [globalFilter, setGlobalFilter] = useState('');
-  const [isLoading, setIsLoading] = useState(true); // Add loading state
+  const [isLoading, setIsLoading] = useState(true);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [offset, setOffset] = useState(0);
+  const [limit] = useState(13); // Default page size
+  const [total, setTotal] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const containerRef = useRef(null);
+
+  // Fetch settlements with pagination
+  const fetchSettlements = async (newOffset = 0, append = false) => {
+    try {
+      const accessToken = localStorage.getItem('access_token');
+      const params = { type: 'me', offset: newOffset, limit };
+      const response = await axios.get(endpoints.settlementHistory, {
+        headers: { 'Authorization': `Bearer ${accessToken}` },
+        params
+      });
+      const { data, total: apiTotal, limit: apiLimit, offset: apiOffset } = response.data;
+      setTotal(apiTotal);
+      setOffset(apiOffset + apiLimit);
+      setHasMore(apiOffset + apiLimit < apiTotal);
+      if (append) {
+        setSettlements(prev => [...prev, ...data]);
+      } else {
+        setSettlements(data);
+      }
+    } catch (err) {
+      setError('Failed to fetch settlement history');
+    }
+  };
 
   useEffect(() => {
-    const fetchSettlements = async () => {
-      try {
-        const accessToken = localStorage.getItem('access_token');
-        const params = { type: 'me' };
-        const response = await axios.get(endpoints.settlementHistory, {
-          headers: { 'Authorization': `Bearer ${accessToken}` },
-          params
-        });
-        setSettlements(response.data.data);
-      } catch (err) {
-        setError('Failed to fetch settlement history');
-      } finally {
-        setIsLoading(false); // Set loading to false when done
+    setIsLoading(true);
+    fetchSettlements(0, false).finally(() => setIsLoading(false));
+    // eslint-disable-next-line
+  }, []);
+
+  // Infinite scroll handler
+  useEffect(() => {
+    const handleScroll = () => {
+      const container = containerRef.current;
+      if (!container || isLoading || isFetchingMore || !hasMore) return;
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      if (scrollHeight - scrollTop - clientHeight < 100) {
+        // Near bottom
+        setIsFetchingMore(true);
+        fetchSettlements(offset, true).finally(() => setIsFetchingMore(false));
       }
     };
-    fetchSettlements();
-  }, []);
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+    }
+    return () => {
+      if (container) {
+        container.removeEventListener('scroll', handleScroll);
+      }
+    };
+    // eslint-disable-next-line
+  }, [offset, isLoading, isFetchingMore, hasMore]);
 
   const columns = useMemo(
     () => [
@@ -125,9 +165,7 @@ function SettlementHistory() {
             </div>
           </div>
         ) : (
-          <div className={`h-[calc(100vh-8rem)] mt-2 shadow-md border ${theme.border} overflow-y-auto no-scrollbar rounded-xl `}>
-
-            {/* <div className={`flex-1 backdrop-blur-xl rounded-xl border ${theme.border} overflow-y-auto no-scrollbar`}> */}
+          <div ref={containerRef} className={`h-[calc(100vh-8rem)] mt-2 shadow-md border ${theme.border} overflow-y-auto no-scrollbar rounded-xl `}>
             <div className="">
               {settlements.length === 0 ? (
                 <div className={`${theme.input} backdrop-blur-md  h-full dark:bg-black/10 rounded-3xl p-12 text-center border ${theme.border} flex flex-col items-center justify-center space-y-6`}>
@@ -145,40 +183,46 @@ function SettlementHistory() {
                   </Link>
                 </div>
               ) : (
-                <table className={`w-full ${isDark ? '' : 'bg-white'}`}>
-                  <thead className={`sticky top-0 z-10 backdrop-blur-md border border-b font-semibold ${theme.border} ${isDark ? 'bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800' : 'bg-gray-100'}`}>
-                    {table.getHeaderGroups().map(headerGroup => (
-                      <tr key={headerGroup.id}>
-                        {headerGroup.headers.map(header => (
-                          <th
-                            key={header.id}
-                            className={`px-6 py-5 text-left text-sm font-semibold ${theme.textSecondary} tracking-wider first:pl-8 last:pr-8`}
-                          >
-                            {flexRender(header.column.columnDef.header, header.getContext())}
-                          </th>
-                        ))}
-                      </tr>
-                    ))}
-                  </thead>
-                  <tbody className={`divide-y ${theme.border}`}>
-                    {table.getRowModel().rows.map(row => (
-                      <tr key={row.id} className={`${theme.cardHover} transition-colors ${theme.border}`}>
-                        {row.getVisibleCells().map(cell => (
-                          <td
-                            key={cell.id}
-                            className={`px-6 py-5 text-sm first:pl-8 last:pr-8 ${cell.column.id === 'amount' ? `font-medium ${theme.text}` : theme.textSecondary
-                              }`}
-                          >
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <>
+                  <table className={`w-full ${isDark ? '' : 'bg-white'}`}>
+                    <thead className={`sticky top-0 z-10 backdrop-blur-md border border-b font-semibold ${theme.border} ${isDark ? 'bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800' : 'bg-gray-100'}`}>
+                      {table.getHeaderGroups().map(headerGroup => (
+                        <tr key={headerGroup.id}>
+                          {headerGroup.headers.map(header => (
+                            <th
+                              key={header.id}
+                              className={`px-6 py-5 text-left text-sm font-semibold ${theme.textSecondary} tracking-wider first:pl-8 last:pr-8`}
+                            >
+                              {flexRender(header.column.columnDef.header, header.getContext())}
+                            </th>
+                          ))}
+                        </tr>
+                      ))}
+                    </thead>
+                    <tbody className={`divide-y ${theme.border}`}>
+                      {table.getRowModel().rows.map(row => (
+                        <tr key={row.id} className={`${theme.cardHover} transition-colors ${theme.border}`}>
+                          {row.getVisibleCells().map(cell => (
+                            <td
+                              key={cell.id}
+                              className={`px-6 py-5 text-sm first:pl-8 last:pr-8 ${cell.column.id === 'amount' ? `font-medium ${theme.text}` : theme.textSecondary}`}
+                            >
+                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {isFetchingMore && (
+                    <div className="py-4 text-center text-sm text-gray-500">Loading more...</div>
+                  )}
+                  {!hasMore && settlements.length > 0 && (
+                    <div className="py-4 text-center text-xs text-gray-400">No more settlements</div>
+                  )}
+                </>
               )}
             </div>
-            {/* </div> */}
           </div>
         )}
       </div>

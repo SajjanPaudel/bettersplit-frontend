@@ -220,17 +220,19 @@ function EditExpenseModal({ onClose, onSuccess, initialExpense, activityId }) {
               <div className={`${theme.input} backdrop-blur-xl rounded-2xl border ${theme.inputBorder} p-4 space-y-6`}>
               <div className="grid grid-cols-1 gap-4 items-start">
                     <div>
+                      <label className="block mb-1 font-medium text-gray-600 dark:text-gray-300">Group</label>
                       <input
                         type="text"
                         value={groups.find(group => group.id === expense.group)?.name || ''}
                         disabled
-                        className={`w-full ${theme.input} ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} bg-gray-100 cursor-not-allowed`}
+                        className={`w-full ${theme.input} ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} cursor-not-allowed`}
                         placeholder="Group"
                       />
                     </div>
                   </div>
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr,auto] gap-4 items-start">
                   <div>
+                    <label className="block mb-1 font-medium text-gray-600 dark:text-gray-300">Expense Name</label>
                     <input
                       type="text"
                       placeholder="What was this expense for?"
@@ -241,6 +243,7 @@ function EditExpenseModal({ onClose, onSuccess, initialExpense, activityId }) {
                     />
                   </div>
                   <div>
+                    <label className="block mb-1 font-medium text-gray-600 dark:text-gray-300">Date</label>
                     <DatePicker
                       selected={new Date(expense.date)}
                       onChange={(date) => setExpense(prev => ({ 
@@ -258,6 +261,7 @@ function EditExpenseModal({ onClose, onSuccess, initialExpense, activityId }) {
                 <div className="space-y-6">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
+                      <label className="block mb-1 font-medium text-gray-600 dark:text-gray-300">Who paid?</label>
                       <Select
                         value={users.find(user => user.username === expense.paid_by || user.id === expense.paid_by)}
                         onChange={(selected) => setExpense(prev => ({ ...prev, paid_by: selected.id }))}
@@ -330,15 +334,16 @@ function EditExpenseModal({ onClose, onSuccess, initialExpense, activityId }) {
                       />
                     </div>
                     <div>
-                        <input
-                          type="text"
-                          pattern="[0-9+\-*/.() ]*"
-                          placeholder="Amount"
-                          value={expense.amount}
-                          onChange={(e) => handleAmountChange(e.target.value)}
-                          className={`w-full ${theme.input} ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-lg placeholder-gray-500`}
-                          required
-                        />
+                      <label className="block mb-1 font-medium text-gray-600 dark:text-gray-300">Amount</label>
+                      <input
+                        type="text"
+                        pattern="[0-9+\-*/.() ]*"
+                        placeholder="Amount"
+                        value={expense.amount}
+                        onChange={(e) => handleAmountChange(e.target.value)}
+                        className={`w-full ${theme.input} ${theme.text} px-6 py-3 rounded-xl border ${theme.inputBorder} ${theme.inputFocus} focus:outline-none text-lg placeholder-gray-500`}
+                        required
+                      />
                     </div>
                   </div>
                   <div>
@@ -362,6 +367,7 @@ function EditExpenseModal({ onClose, onSuccess, initialExpense, activityId }) {
                 </div>
               </div>
             </div>
+            <h3 className={`${theme.text} px-2`}>Split Details</h3>
             {selectedUsers.length > 0 && (
             <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4`}>
                 {expense.splits.map((split, index) => (

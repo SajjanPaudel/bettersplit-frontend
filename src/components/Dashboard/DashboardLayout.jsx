@@ -89,7 +89,7 @@ function DashboardLayout({ onLogout }) {
             <FaHistory className="w-5 h-5" />
             <span className="font-['Inter'] font-light">Transactions</span>
           </Link>
-          {LoggedInUser?.username === 'sajjan' &&
+          {/* {LoggedInUser?.username === 'sajjan' &&
           (
           <Link
             to="activity"
@@ -102,7 +102,7 @@ function DashboardLayout({ onLogout }) {
             <span className="font-['Inter'] font-light">Activity</span>
           </Link>
           )
-          }
+          } */}
 
           {/* Apply same pattern to other links */}
           <Link

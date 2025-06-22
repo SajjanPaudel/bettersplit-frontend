@@ -1,56 +1,88 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import DatePicker from 'react-datepicker';
-import "react-datepicker/dist/react-datepicker.css";
 import { endpoints } from '../../config/api';
 import { useTheme } from '../../context/ThemeContext';
-import { FaTshirt, FaGift, FaPizzaSlice,FaCalendarAlt, FaHamburger, FaCoffee, FaIceCream, FaCheese } from 'react-icons/fa';
+import { FaTshirt, FaGift, FaPizzaSlice, FaCalendarAlt, FaHamburger, FaCoffee, FaIceCream, FaCheese } from 'react-icons/fa';
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
 
 function ActivityPage() {
   const { theme, isDark } = useTheme();
   const [activities, setActivities] = useState([]);
-  const [dateRange, setDateRange] = useState([
-    new Date(new Date().setDate(new Date().getDate() - 30)), // Start date: 7 days ago
-    new Date() // End date: today
-  ]);
+  const [search, setSearch] = useState("");
+  const [dateRange, setDateRange] = useState([null, null]);
   const [startDate, endDate] = dateRange;
   const navigate = useNavigate();
   const loggedInUser = JSON.parse(localStorage.getItem('user'))?.username; // Retrieve logged-in user
 
-  const fetchActivities = async () => {
+  // Pagination state
+  const [offset, setOffset] = useState(0);
+  const [limit] = useState(20); // Default page size
+  const [total, setTotal] = useState(0);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const containerRef = useRef(null);
+
+  // Fetch activities with pagination, search, and date filter
+  const fetchActivities = async (newOffset = 0, append = false) => {
     try {
       const accessToken = localStorage.getItem('access_token');
-      const start = startDate || new Date(new Date().setDate(new Date().getDate() - 30));
-      const end = endDate || new Date();
-
+      const params = {
+        type: 'me',
+        offset: newOffset,
+        limit,
+      };
+      if (search) params.search = search;
+      if (startDate && endDate) {
+        params.start_date = startDate.toISOString().split('T')[0];
+        params.end_date = endDate.toISOString().split('T')[0];
+      }
       const response = await axios.get(endpoints.activity, {
         headers: { 'Authorization': `Bearer ${accessToken}` },
-        params: {
-          type : 'me',
-          start_date: start.toISOString().split('T')[0],
-          end_date: end.toISOString().split('T')[0],
-        }
+        params
       });
-
-      const filteredActivities = response.data.data;
-      setActivities(filteredActivities);
-
-      // If activities are empty, use last_expense_date to adjust dateRange
-      if (filteredActivities.length === 0 && response.data.last_expense_date) {
-        const lastExpense = new Date(response.data.last_expense_date);
-        const start = new Date(lastExpense);
-        start.setDate(lastExpense.getDate() - 30);
-        setDateRange([start, lastExpense]);
+      const { data, total: apiTotal, limit: apiLimit, offset: apiOffset } = response.data;
+      setTotal(apiTotal);
+      setOffset(apiOffset + apiLimit);
+      if (append) {
+        setActivities(prev => [...prev, ...data]);
+      } else {
+        setActivities(data);
       }
     } catch (err) {
       console.error('Failed to fetch activities', err);
     }
   };
 
+  // Initial and filter fetch
   useEffect(() => {
-    fetchActivities();
-  }, [startDate, endDate]); // Ensure useEffect depends on startDate and endDate
+    setOffset(0);
+    fetchActivities(0, false);
+    // eslint-disable-next-line
+  }, [search, startDate, endDate]);
+
+  // Infinite scroll handler
+  useEffect(() => {
+    const handleScroll = () => {
+      const container = containerRef.current;
+      if (!container || isFetchingMore || activities.length >= total) return;
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      if (scrollHeight - scrollTop - clientHeight < 100) {
+        setIsFetchingMore(true);
+        fetchActivities(offset, true).finally(() => setIsFetchingMore(false));
+      }
+    };
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+    }
+    return () => {
+      if (container) {
+        container.removeEventListener('scroll', handleScroll);
+      }
+    };
+    // eslint-disable-next-line
+  }, [offset, isFetchingMore, activities.length, total]);
 
   const getActivityIcon = (category) => {
 
@@ -77,7 +109,7 @@ function ActivityPage() {
   };
 
   const handleActivityClick = (activityId) => {
-      navigate(`/dashboard/expense/${activityId}`);
+    navigate(`/dashboard/expense/${activityId}`);
   };
 
   const calculateAmount = (activity) => {
@@ -128,59 +160,67 @@ function ActivityPage() {
   return (
     <div className="h-full flex items-center">
       <div className={`${isDark ? ' bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800' : 'bg-white'} shadow-md rounded-xl overflow-hidden h-[95vh] w-full p-2 shadow-md`}>
-        <div className="flex justify-end lg:mr-7 ">
+        <div className="flex justify-end lg:mr-7 lg:flex-row md:flex-row sm:flex-row flex-col">
           <h1 className={`text-2xl ${theme.text} hidden sm:block ml-10 mr-auto mt-2 pb-2 `}>Latest Transactions</h1>
-        <DatePicker
-          selectsRange
-          startDate={startDate}
-          endDate={endDate}
-          onChange={(update) => setDateRange(update)}
-          placeholderText="Select Date Range"
-          className={`${theme.input} text-${theme.color} px-4 py-2 rounded-xl border ${theme.border} focus:outline-none w-[14rem]`} // Ensure width is controlled
-          popperPlacement="bottom-start"
-        />
-      </div>
-      <div className="overflow-y-auto max-h-[90vh] no-scrollbar pb-5">
-        {activities.map(activity => {
-          const amount = calculateAmount(activity);
-          return (
-            <div
-              key={activity.id}
-              className={` border ${theme.border} flex items-center mx-auto justify-between lg:w-[95%] py-4 px-2 mb-2 rounded-lg shadow-md cursor-pointer transition-transform transform hover:scale-[1.002]  ${isDark ? 'bg-gray-900/50 hover:border-gray-800/50 hover:shadow-gray-600/5' : 'bg-white hover:shadow-gray-400/40'}`}
-              onClick={() => handleActivityClick(activity.id)}
-            >
-              <div className="flex items-center">
-                <div className={`p-4 ${isDark ? 'text-gray-400 border-purple-500/30' : 'text-purple-500'} border rounded-xl mr-4`}>
-                  {getActivityIcon('Food')}
-                </div>
-                <div>
-                  <h2 className={`lg:text-lg md:text-lg text-base font-bold ${theme.text}`}>{activity.name}</h2>
-                  <div className={`md:text-sm lg:text-sm sm:text-xs ${theme.textSecondary} flex items-center`}>
-                    {activity.group}
-                    <div className="flex ml-2">
-                      {activity.paid_for.map(user => (
-                        <UserIcon key={user} user={user} />
-                      ))}
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search by name"
+            className={`${theme.input} text-${theme.color} px-4 py-1 rounded-xl border ml-auto ${theme.border} focus:outline-none w-[90%] mb-2 lg:w-[14rem] md:w-[14rem]`}
+          />
+          <DatePicker
+            selectsRange
+            startDate={startDate}
+            endDate={endDate}
+            onChange={update => setDateRange(update)}
+            placeholderText="Filter by date range"
+            className={`${theme.input} text-${theme.color} px-4 py-2 rounded-xl border ${theme.border} focus:outline-none w-full lg:w-[14rem] md:w-[14rem] lg:ml-2 md:ml-2`}
+            popperPlacement="bottom-start"
+            isClearable
+          />
+        </div>
+        <div className="overflow-y-auto max-h-[90vh] no-scrollbar pb-5" ref={containerRef}>
+          {activities.map(activity => {
+            const amount = calculateAmount(activity);
+            return (
+              <div
+                key={activity.id}
+                className={` border ${theme.border} flex items-center mx-auto justify-between lg:w-[95%] py-4 px-2 mb-2 rounded-lg shadow-md cursor-pointer transition-transform transform hover:scale-[1.002]  ${isDark ? 'bg-gray-900/50 hover:border-gray-800/50 hover:shadow-gray-600/5' : 'bg-white hover:shadow-gray-400/40'}`}
+                onClick={() => handleActivityClick(activity.id)}
+              >
+                <div className="flex items-center">
+                  <div className={`p-4 ${isDark ? 'text-gray-400 border-purple-500/30' : 'text-purple-500'} border rounded-xl mr-4`}>
+                    {getActivityIcon('Food')}
+                  </div>
+                  <div>
+                    <h2 className={`lg:text-lg md:text-lg text-base font-bold ${theme.text}`}>{activity.name}</h2>
+                    <div className={`md:text-sm lg:text-sm sm:text-xs ${theme.textSecondary} flex items-center`}>
+                      {activity.group}
+                      <div className="flex ml-2">
+                        {activity.paid_for.map(user => (
+                          <UserIcon key={user} user={user} />
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-              <div>
-                <p className={`lg:text-lg md:text-lg text-base font-bold ${amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {amount >= 0 ? '+' : ''}{Math.abs(amount).toFixed(2)} NPR
-                </p>
-                <div className="flex items-right justify-center">
-                  <FaCalendarAlt className={`${theme.textSecondary} text-md ml-auto mr-1 hidden sm:block`} />
-                  <p className={`${theme.textSecondary} text-sm `}>
-                  {new Date(activity.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                <div>
+                  <p className={`lg:text-lg md:text-lg text-base font-bold ${amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {amount >= 0 ? '+' : ''}{Math.abs(amount).toFixed(2)} NPR
                   </p>
+                  <div className="flex items-right justify-center">
+                    <FaCalendarAlt className={`${theme.textSecondary} text-md ml-auto mr-1 hidden sm:block`} />
+                    <p className={`${theme.textSecondary} text-sm `}>
+                      {new Date(activity.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
-    </div>
     </div>
   );
 }

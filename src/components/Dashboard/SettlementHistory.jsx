@@ -22,8 +22,10 @@ function SettlementHistory() {
     const fetchSettlements = async () => {
       try {
         const accessToken = localStorage.getItem('access_token');
+        const params = { type: 'me' };
         const response = await axios.get(endpoints.settlementHistory, {
-          headers: { 'Authorization': `Bearer ${accessToken}` }
+          headers: { 'Authorization': `Bearer ${accessToken}` },
+          params
         });
         setSettlements(response.data.data);
       } catch (err) {

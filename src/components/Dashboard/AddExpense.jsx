@@ -218,7 +218,7 @@ function AddExpense() {
       });
 
       await Promise.all(submissionPromises);
-      navigate('/dashboard');
+      navigate('/dashboard/activity_new');
 
     } catch (err) {
       console.error('Submission error:', err);

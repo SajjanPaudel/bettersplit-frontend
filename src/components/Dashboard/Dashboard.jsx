@@ -63,93 +63,93 @@ function Dashboard() {
     const navigate = useNavigate();
 
 
-    useEffect(() => {
-        async function initializeOneSignal() {
-            console.log('Initializing OneSignal with APP_ID:', APP_ID);
+    // useEffect(() => {
+    //     async function initializeOneSignal() {
+    //         console.log('Initializing OneSignal with APP_ID:', APP_ID);
 
-            try {
-                await OneSignal.init({
-                    appId: APP_ID,
-                    allowLocalhostAsSecureOrigin: true,
-                });
-                console.log('OneSignal init complete.');
+    //         try {
+    //             await OneSignal.init({
+    //                 appId: APP_ID,
+    //                 allowLocalhostAsSecureOrigin: true,
+    //             });
+    //             console.log('OneSignal init complete.');
 
-                OneSignal.Slidedown.promptPush();
-                console.log('Push prompt requested.');
+    //             OneSignal.Slidedown.promptPush();
+    //             console.log('Push prompt requested.');
 
-                console.log("OneSignal.User object:", OneSignal.User);
+    //             console.log("OneSignal.User object:", OneSignal.User);
 
-                let retries = 0;
-                const maxRetries = 30; // Increase max retries
-                const retryDelay = 2000; // Increase delay to 2 seconds
+    //             let retries = 0;
+    //             const maxRetries = 30; // Increase max retries
+    //             const retryDelay = 2000; // Increase delay to 2 seconds
 
-                async function getPlayerIdWithRetry() {
-                    const playerId = await OneSignal.User.onesignalId;
-                    if (playerId) {
-                        console.log('Player ID retrieved:', playerId);
-                        sendPlayerIdToBackend(playerId);
-                    } else if (retries < maxRetries) {
-                        console.log('Waiting for Player ID...', retries);
-                        retries++;
-                        setTimeout(getPlayerIdWithRetry, retryDelay);
-                    } else {
-                        console.log('Player ID not available after retries.');
-                    }
-                }
+    //             async function getPlayerIdWithRetry() {
+    //                 const playerId = await OneSignal.User.onesignalId;
+    //                 if (playerId) {
+    //                     console.log('Player ID retrieved:', playerId);
+    //                     sendPlayerIdToBackend(playerId);
+    //                 } else if (retries < maxRetries) {
+    //                     console.log('Waiting for Player ID...', retries);
+    //                     retries++;
+    //                     setTimeout(getPlayerIdWithRetry, retryDelay);
+    //                 } else {
+    //                     console.log('Player ID not available after retries.');
+    //                 }
+    //             }
 
-                getPlayerIdWithRetry();
+    //             getPlayerIdWithRetry();
 
-                OneSignal.Notifications.addEventListener('foregroundWillDisplay', (event) => {
-                    console.log('Notification permission:', Notification.permission);
-                    console.log('Foreground notification received:', event.notification);
-                    // Manually display a notification or handle the event
-                    showCustomNotification(event.notification);
-                });
+    //             OneSignal.Notifications.addEventListener('foregroundWillDisplay', (event) => {
+    //                 console.log('Notification permission:', Notification.permission);
+    //                 console.log('Foreground notification received:', event.notification);
+    //                 // Manually display a notification or handle the event
+    //                 showCustomNotification(event.notification);
+    //             });
 
 
-            } catch (error) {
-                console.error('OneSignal initialization failed:', error);
-            }
-        }
+    //         } catch (error) {
+    //             console.error('OneSignal initialization failed:', error);
+    //         }
+    //     }
 
-        initializeOneSignal();
-    }, []);
+    //     initializeOneSignal();
+    // }, []);
 
-    function showCustomNotification(notification) {
-        // Example of custom notification handling
-        if (Notification.permission === 'granted') {
-            console.log(notification)
-            new Notification(notification.title, {
-                body: notification.body,
-                // icon: notification.icon,
-                // data: notification.data
-            });
-        } else {
-            console.error('Notification permission is not granted.');
-        }
-    }
+    // function showCustomNotification(notification) {
+    //     // Example of custom notification handling
+    //     if (Notification.permission === 'granted') {
+    //         console.log(notification)
+    //         new Notification(notification.title, {
+    //             body: notification.body,
+    //             // icon: notification.icon,
+    //             // data: notification.data
+    //         });
+    //     } else {
+    //         console.error('Notification permission is not granted.');
+    //     }
+    // }
 
-    const sendPlayerIdToBackend = async (playerId) => {
-        try {
-            const accessToken = localStorage.getItem('access_token');
-            const response = await axios.post(endpoints.storeOnesignalId, {
-                player_id: playerId
-            }, {
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`,
-                    'Content-Type': 'application/json'
-                }
-            });
+    // const sendPlayerIdToBackend = async (playerId) => {
+    //     try {
+    //         const accessToken = localStorage.getItem('access_token');
+    //         const response = await axios.post(endpoints.storeOnesignalId, {
+    //             player_id: playerId
+    //         }, {
+    //             headers: {
+    //                 'Authorization': `Bearer ${accessToken}`,
+    //                 'Content-Type': 'application/json'
+    //             }
+    //         });
 
-            if (response.status == 200) {
-                console.log('Player ID sent to backend successfully');
-            } else {
-                console.error('Failed to send player ID to backend');
-            }
-        } catch (error) {
-            console.error('Error sending player ID:', error);
-        }
-    };
+    //         if (response.status == 200) {
+    //             console.log('Player ID sent to backend successfully');
+    //         } else {
+    //             console.error('Failed to send player ID to backend');
+    //         }
+    //     } catch (error) {
+    //         console.error('Error sending player ID:', error);
+    //     }
+    // };
 
     const getBankName = (bankCode) => {
         const bank = bankData.list.find(bank => bank.swift_code === bankCode);
@@ -587,18 +587,11 @@ function Dashboard() {
                         className={`p-3 rounded-full hover:bg-purple-500/10 transition-colors relative mr-2`}
                     >
                         <IoNotificationsOutline className={`w-6 h-6 ${theme.text}`} />
-                        {notifications.filter(n => !n.is_read).length > 0 && allAccounts && allAccounts[loggedInUser.username]?.length > 0 ? (
+                        {Array.isArray(notifications) && allAccounts && allAccounts[loggedInUser.username]?.length > 0 && notifications.filter(n => !n.is_read).length > 0 && (
                             <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full flex items-center justify-center text-xs text-white font-medium">
                                 {notifications.filter(n => !n.is_read).length}
                             </span>
-                        ) : notifications.filter(n => !n.is_read).length == 0 && allAccounts && allAccounts[loggedInUser.username]?.length > 0 ? (
-                            <></>
-                        ) : (
-                            <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full flex items-center justify-center text-xs text-white font-medium">
-                                {notifications.filter(n => !n.is_read).length + 1}
-                            </span>
-                        )
-                        }
+                        )}
                     </button>
                     <div className="space-x-4">
                         <div className="relative inline-flex items-center">

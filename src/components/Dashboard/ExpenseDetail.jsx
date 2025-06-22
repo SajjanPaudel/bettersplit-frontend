@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaArrowLeft } from 'react-icons/fa';
 import { FiMoreVertical } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
+import EditExpenseModal from './EditExpenseModal';
 
 function ExpenseDetail() {
     const { theme, isDark } = useTheme();
@@ -18,26 +19,29 @@ function ExpenseDetail() {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleting, setDeleting] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
     const loggedInUser = JSON.parse(localStorage.getItem('user'));; // Adjust if your user info is stored differently
 
-    useEffect(() => {
-        const fetchActivityDetails = async () => {
-            try {
-                const accessToken = localStorage.getItem('access_token');
-                const response = await axios.get(`${endpoints.expenses}${activityId}/`, {
-                    headers: { 'Authorization': `Bearer ${accessToken}` }
-                });
-                setActivity(response.data.data);
-                console.log(loggedInUser.username)
-                console.log(response.data.data)
-            } catch (err) {
-                setError('Failed to fetch activity details');
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        };
+    // Move fetchActivityDetails outside useEffect so it can be called after edit
+    const fetchActivityDetails = async () => {
+        try {
+            const accessToken = localStorage.getItem('access_token');
+            const response = await axios.get(`${endpoints.expenses}${activityId}/`, {
+                headers: { 'Authorization': `Bearer ${accessToken}` }
+            });
+            setActivity(response.data.data);
+            // console.log(loggedInUser.username)
+            // console.log(response.data.data)
+        } catch (err) {
+            setError('Failed to fetch activity details');
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    useEffect(() => {
+        setLoading(true);
         fetchActivityDetails();
     }, [activityId]);
     if (error) return <div className={`${theme.text} p-4`}>{error}</div>;
@@ -119,8 +123,8 @@ function ExpenseDetail() {
                         {menuOpen && (
                             <div className={`absolute right-0 mt-2 w-32 rounded-lg shadow-lg z-20 ${isDark ? 'bg-gray-900 border border-gray-700' : 'bg-white border border-gray-200'}`}>
                                 <button
-                                    disabled
-                                    className={`w-full text-left px-4 py-2 rounded-t-lg font-semibold cursor-not-allowed ${isDark ? 'text-gray-500 bg-gray-900' : 'text-gray-400 bg-white'}`}
+                                    onClick={() => { setShowEditModal(true); setMenuOpen(false); }}
+                                    className={`w-full text-left px-4 py-2 rounded-t-lg font-semibold transition-colors ${isDark ? 'text-blue-400 hover:bg-gray-800' : 'text-blue-700 hover:bg-blue-50'}`}
                                 >
                                     Edit
                                 </button>
@@ -224,6 +228,17 @@ function ExpenseDetail() {
               </div>
             </div>
           </div>
+        )}
+        {showEditModal && (
+          <EditExpenseModal
+            onClose={() => setShowEditModal(false)}
+            onSuccess={() => {
+              setShowEditModal(false);
+              fetchActivityDetails();
+            }}
+            initialExpense={activity}
+            activityId={activityId}
+          />
         )}
         </div>
     );

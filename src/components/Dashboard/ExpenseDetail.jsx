@@ -170,7 +170,7 @@ function ExpenseDetail() {
                                 </div>
                                 <div className="text-center">
                                     <p className={`${theme.textSecondary} mb-2`}>Group</p>
-                                    <p className={`text-xl font-bold ${theme.text}`}>{activity.group}</p>
+                                    <p className={`text-xl font-bold ${theme.text}`}>{activity.group_name}</p>
                                 </div>
                             </div>
                         </div>

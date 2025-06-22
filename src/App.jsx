@@ -141,7 +141,7 @@ function App() {
             >
               <Route index element={<Dashboard />} />
               <Route path="balance" element={<Balance />} />
-              <Route path="activity" element={<Activity />} />
+              {/* <Route path="activity" element={<Activity />} /> */}
               <Route path="activity_new" element={<ActivityPage />} />
               <Route path="add-expense" element={<AddExpense />} />
               <Route path="settlements" element={<SettlementHistory />} />

@@ -10,6 +10,7 @@ function DashboardLayout({ onLogout }) {
   const navigate = useNavigate();
   const currentPath = location.pathname.split('/').pop();
   const { isDark, toggleTheme, theme } = useTheme();
+  const LoggedInUser = JSON.parse(localStorage.getItem('user'));
 
   const handleLogout = () => {
     onLogout(false);
@@ -88,7 +89,8 @@ function DashboardLayout({ onLogout }) {
             <FaHistory className="w-5 h-5" />
             <span className="font-['Inter'] font-light">Transactions</span>
           </Link>
-
+          {LoggedInUser?.username === 'sajjan' &&
+          (
           <Link
             to="activity"
             className={`flex items-center space-x-4 px-6 py-5 rounded-2xl mb-2 transition-all ${currentPath === 'activity'
@@ -99,6 +101,8 @@ function DashboardLayout({ onLogout }) {
             <FaHistory className="w-5 h-5" />
             <span className="font-['Inter'] font-light">Activity</span>
           </Link>
+          )
+          }
 
           {/* Apply same pattern to other links */}
           <Link

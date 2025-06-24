@@ -504,7 +504,7 @@ function Dashboard() {
     const renderSettlementCard = (settlement) => {
         const settlementId = `${settlement.from}-${settlement.to}`;
         const isExpanded = expandedSettlements.has(settlementId);
-        const hasIndividualSettlements = settlement.individual_settlements && settlement.individual_settlements.length > 1;
+        const hasIndividualSettlements = settlement.individual_settlements && settlement.individual_settlements.length > 0;
 
         return (
             <div
@@ -555,7 +555,7 @@ function Dashboard() {
                         </button>
                     </div>
                 </div>
-                {isExpanded && settlement.individual_settlements.length > 0 && (
+                {/* {isExpanded && settlement.individual_settlements.length > 0 && (
                     <div className="mt-4 space-y-2">
                         {settlement.individual_settlements.map((indSettlement, index) => (
                             <div
@@ -567,6 +567,49 @@ function Dashboard() {
                                     {indSettlement.from} → {indSettlement.to}
                                 </span>
                                 <span className={theme.text}>Rs {indSettlement.amount.toFixed(2)}</span>
+                            </div>
+                        ))}
+                    </div>
+                )} */}
+                {isExpanded && settlement.individual_settlements.length > 0 && (
+                    <div className="mt-4 space-y-2">
+                        {settlement.individual_settlements.map((indSettlement, index) => (
+                            <div
+                                key={index}
+                                className={`${theme.input} font-semibold rounded-xl p-2 text-sm flex flex-col gap-2`}
+                                onClick={e => e.stopPropagation()}
+                            >
+                                <div className="flex justify-between items-center">
+                                    <span className={theme.textSecondary}>
+                                        {indSettlement.from} → {indSettlement.to}
+                                    </span>
+                                    <span className={`inline-block px-2 py-0.5 rounded-full ${isDark ? 'bg-purple-900 text-purple-200' : 'bg-purple-100 text-purple-700'} font-bold text-sm`}>Rs {indSettlement.amount.toFixed(2)}</span>
+                                </div>
+                                {/* Pending Expenses Table */}
+                                {indSettlement.pending_expenses && indSettlement.pending_expenses.length > 0 && (
+                                    <div className="mt-2">
+                                        <div className="font-normal text-xs mb-1 text-gray-500 dark:text-gray-400">Pending Expenses:</div>
+                                        <div className="flex flex-col gap-2">
+                                            {indSettlement.pending_expenses.map(exp => (
+                                                <div key={exp.expense_id} className={`flex items-center justify-between gap-4 rounded-md border ${isDark ? 'border-gray-700 bg-gradient-to-r from-gray-900 via-gray-900 to-gray-800' : 'border-gray-200 bg-white'} shadow-sm px-4 py-3 hover:shadow-md transition-shadow relative before:content-[''] before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:rounded-sm before:bg-purple-500`}>
+                                                    <div className="flex flex-col items-end min-w-[80px]">
+                                                        <span className={`inline-block px-2 py-0.5 rounded-full ${isDark ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600'} text-xs`}>
+                                                            {exp.date}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <span className={`block font-semibold text-base truncate ${theme.text}`}>{exp.expense_name}</span>
+                                                    </div>
+                                                    <div className="flex flex-col items-end min-w-[90px]">
+                                                        <span className={` ${theme.text} font-bold text-sm`}>
+                                                            Rs {exp.amount_pending.toFixed(2)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>

@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useTheme } from '../../context/ThemeContext';
 import { endpoints } from '../../config/api';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { QRCodeSVG } from 'qrcode.react';
+import ReactDOM from 'react-dom';
 
 function Groups() {
   const { theme, isDark } = useTheme();
@@ -19,6 +20,8 @@ function Groups() {
   const [allAccounts, setAllAccounts] = useState({});
   const [accountsLoading, setAccountsLoading] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState({});
+  const [tooltipPos, setTooltipPos] = useState({ top: 0, left: 0, visible: false, width: 0 });
+  const usernameRefs = useRef({});
 
   useEffect(() => {
     fetchGroups();
@@ -122,12 +125,12 @@ function Groups() {
                   <p className={`text-sm ${theme.textSecondary}`}>Please Create a group before adding expenses</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(500px,1fr))] gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(500px,1fr))] gap-4 relative z-0 overflow-visible">
                   {groups.map(group => (
                     <div
                       key={group.id}
                       onClick={() => handleGroupClick(group.id)}
-                      className={`${theme.input} backdrop-blur-xl rounded-xl border ${theme.inputBorder} p-4 cursor-pointer hover:bg-white/5 transition-all flex flex-col`}
+                      className={`${theme.input} rounded-xl border ${theme.inputBorder} p-4 cursor-pointer hover:bg-white/5 transition-all flex flex-col overflow-visible z-[100]`}
                     >
                       <div className="mb-4">
                         <h3 className={`${theme.text} font-bold text-xl font-medium border-b ${theme.border}`}>{group.name}</h3>
@@ -143,78 +146,99 @@ function Groups() {
                               <div
                                 key={member.id}
                                 className="relative inline-flex flex-col items-center"
-                                onMouseEnter={() => {
+                                onMouseEnter={e => {
                                   setHoveredMember({ groupId: group.id, memberId: member.id });
                                   setQrValue(primary ? JSON.stringify(primary.account_details) : '');
+                                  // Position tooltip
+                                  const rect = usernameRefs.current[`${group.id}-${member.id}`]?.getBoundingClientRect();
+                                  if (rect) {
+                                    setTooltipPos({
+                                      top: rect.bottom + window.scrollY + 6, // 6px margin
+                                      left: rect.left + rect.width / 2 + window.scrollX,
+                                      width: rect.width,
+                                      visible: true
+                                    });
+                                  }
                                 }}
                                 onMouseLeave={() => {
                                   setHoveredMember(null);
                                   setQrValue('');
+                                  setTooltipPos(pos => ({ ...pos, visible: false }));
                                 }}
                               >
                                 <span
+                                  ref={el => { usernameRefs.current[`${group.id}-${member.id}`] = el; }}
                                   className={`px-3 py-1.5 rounded-xl text-sm bg-green-500 text-white ${theme.textSecondary}`}
                                 >
                                   {member.username}
                                 </span>
-                                {/* QR Tooltip */}
-                                {hoveredMember && hoveredMember.groupId === group.id && hoveredMember.memberId === member.id && primary && (
-                                  <div className={`z-50 mt-1 p-3 rounded-xl shadow-lg flex flex-col items-center min-w-[220px] border w-max
-                                  ${isDark ? 'bg-gray-900 border-gray-700 text-gray-200' : 'bg-white border-gray-300 text-gray-900'} absolute top-7  left-1/2 -translate-x-1/2`}
-                                  >
-                                    {userAccounts.length > 1 && (
-                                      <select
-                                        className={`mb-2 px-2 py-1 rounded border text-xs focus:outline-none
-                                        ${isDark ? 'bg-gray-800 text-gray-100 border-gray-700' : 'bg-gray-100 text-gray-900 border-gray-300'}`}
-                                        value={selectedId}
-                                        onClick={e => e.stopPropagation()}
-                                        onChange={e => {
-                                          setSelectedAccount(prev => ({ ...prev, [member.id]: Number(e.target.value) }));
-                                          const acc = userAccounts.find(acc => acc.id === Number(e.target.value));
-                                          setQrValue(acc ? JSON.stringify(acc.account_details) : '');
-                                        }}
-                                      >
-                                        {userAccounts.map(acc => (
-                                          <option key={acc.id} value={acc.id}>
-                                            {acc.account_type?.toUpperCase()} {acc.account_details?.bankCode || acc.account_details?.eSewa_id || acc.account_details?.Khalti_ID || ''}
-                                          </option>
-                                        ))}
-                                      </select>
-                                    )}
-                                    <QRCodeSVG
-                                      value={qrValue}
-                                      size={200}
-                                      level="H"
-                                      bgColor="transparent"
-                                      fgColor={theme.color}
-                                      includeMargin={true}
-                                      className="mb-2"
-                                    />
-                                    <span className={`text-xs mb-1 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>Scan to pay</span>
-                                    <div className={`text-xs text-center mt-1 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
-                                      <div className="font-semibold mb-1">{primary.account_type?.toUpperCase()}</div>
-                                      {primary.account_type === 'bank' && (
-                                        <>
-                                          <div>Bank Code: {primary.account_details?.bankCode}</div>
-                                          <div>Account No: {primary.account_details?.accountNumber}</div>
-                                          <div>Name: {primary.account_details?.accountName}</div>
-                                        </>
+                                {/* QR Tooltip via Portal */}
+                                {hoveredMember && hoveredMember.groupId === group.id && hoveredMember.memberId === member.id && primary && tooltipPos.visible &&
+                                  ReactDOM.createPortal(
+                                    <div
+                                      className={`z-[99999] p-3 rounded-xl shadow-lg flex flex-col items-center min-w-[220px] w-max border transition-opacity duration-100
+              ${isDark ? 'bg-gray-900 border-gray-700 text-gray-200' : 'bg-white border border-gray-400 text-gray-900'}`}
+                                      style={{
+                                        position: 'absolute',
+                                        top: tooltipPos.top-5,
+                                        left: tooltipPos.left,
+                                        transform: 'translate(-50%, 0)',
+                                      }}
+                                    >
+                                      {userAccounts.length > 1 && (
+                                        <select
+                                          className={`mb-2 px-2 py-1 rounded border text-xs focus:outline-none
+                  ${isDark ? 'bg-gray-800 text-gray-100 border-gray-700' : 'bg-gray-100 text-gray-900 border-gray-300'}`}
+                                          value={selectedId}
+                                          onClick={e => e.stopPropagation()}
+                                          onChange={e => {
+                                            setSelectedAccount(prev => ({ ...prev, [member.id]: Number(e.target.value) }));
+                                            const acc = userAccounts.find(acc => acc.id === Number(e.target.value));
+                                            setQrValue(acc ? JSON.stringify(acc.account_details) : '');
+                                          }}
+                                        >
+                                          {userAccounts.map(acc => (
+                                            <option key={acc.id} value={acc.id}>
+                                              {acc.account_type?.toUpperCase()} {acc.account_details?.bankCode || acc.account_details?.eSewa_id || acc.account_details?.Khalti_ID || ''}
+                                            </option>
+                                          ))}
+                                        </select>
                                       )}
-                                      {primary.account_type === 'esewa' && (
-                                        <>
-                                          <div>Name: {primary.account_details?.name}</div>
-                                          <div>eSewa ID: {primary.account_details?.eSewa_id}</div>
-                                        </>
-                                      )}
-                                      {primary.account_type === 'khalti' && (
-                                        <>
-                                          <div>Name: {primary.account_details?.name}</div>
-                                          <div>Khalti ID: {primary.account_details?.Khalti_ID}</div>
-                                        </>
-                                      )}
-                                    </div>
-                                  </div>
-                                )}
+                                      <QRCodeSVG
+                                        value={qrValue}
+                                        size={200}
+                                        level="H"
+                                        bgColor="transparent"
+                                        fgColor={theme.color}
+                                        includeMargin={true}
+                                        className="mb-2"
+                                      />
+                                      <span className={`text-xs mb-1 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>Scan to pay</span>
+                                      <div className={`text-xs text-center mt-1 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
+                                        <div className="font-semibold mb-1">{primary.account_type?.toUpperCase()}</div>
+                                        {primary.account_type === 'bank' && (
+                                          <>
+                                            <div>Bank Code: {primary.account_details?.bankCode}</div>
+                                            <div>Account No: {primary.account_details?.accountNumber}</div>
+                                            <div>Name: {primary.account_details?.accountName}</div>
+                                          </>
+                                        )}
+                                        {primary.account_type === 'esewa' && (
+                                          <>
+                                            <div>Name: {primary.account_details?.name}</div>
+                                            <div>eSewa ID: {primary.account_details?.eSewa_id}</div>
+                                          </>
+                                        )}
+                                        {primary.account_type === 'khalti' && (
+                                          <>
+                                            <div>Name: {primary.account_details?.name}</div>
+                                            <div>Khalti ID: {primary.account_details?.Khalti_ID}</div>
+                                          </>
+                                        )}
+                                      </div>
+                                    </div>,
+                                    document.body
+                                  )}
                               </div>
                             );
                           })}

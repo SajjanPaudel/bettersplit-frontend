@@ -588,7 +588,7 @@ function Dashboard() {
                                 {/* Pending Expenses Table */}
                                 {indSettlement.pending_expenses && indSettlement.pending_expenses.length > 0 && (
                                     <div className="mt-2">
-                                        <div className="font-normal text-xs mb-1 text-gray-500 dark:text-gray-400">Pending Expenses:</div>
+                                        {/* <div className="font-normal text-xs mb-1 text-gray-500 dark:text-gray-400">Pending Expenses:</div> */}
                                         <div className="flex flex-col gap-2">
                                             {indSettlement.pending_expenses.map(exp => (
                                                 <div key={exp.expense_id} className={`flex items-center justify-between gap-4 rounded-md border ${isDark ? 'border-gray-700 bg-gradient-to-r from-gray-900 via-gray-900 to-gray-800' : 'border-gray-200 bg-white'} shadow-sm px-4 py-3 hover:shadow-md transition-shadow relative before:content-[''] before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:rounded-sm before:bg-purple-500`}>

@@ -295,7 +295,7 @@ function Dashboard() {
         const fetchSettlements = async () => {
             try {
                 setSettlementsLoading(true);
-                const response = await axios.get(endpoints.simple_settlements, { headers });
+                const response = await axios.get(endpoints.simple_settlements, { headers, params:{type:'me'} });
                 setSettlements(response.data.data);
             } catch (err) {
                 if (err.response?.status === 401) {
@@ -653,7 +653,7 @@ function Dashboard() {
                             </span>
                         )}
                     </button>
-                    <div className="space-x-4">
+                    {/* <div className="space-x-4">
                         <div className="relative inline-flex items-center">
                             <input
                                 id="show-mine-toggle"
@@ -676,7 +676,7 @@ function Dashboard() {
                                 <FaUsers className={`absolute right-2 text-xs ${!showOnlyMine ? 'text-gray-500' : 'text-white'}`} />
                             </label>
                         </div>
-                    </div>
+                    </div> */}
                 </div>
 
                 {showNotifications && (

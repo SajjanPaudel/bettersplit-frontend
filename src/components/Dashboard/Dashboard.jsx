@@ -582,6 +582,23 @@ function Dashboard() {
             <div className={`w-full p-4 h-[calc(100vh-3rem)] rounded-xl shadow-md ${isDark ? ' bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800' : 'bg-white'}`}>
                 <div className="flex justify-end items-end mb-6">
                     {/* <h1 className={`text-2xl font-light ${theme.text} mr-2`}>Dashboard</h1> */}
+                    {allAccounts && loggedInUser && (!allAccounts[loggedInUser.username] || allAccounts[loggedInUser.username].length <= 0) ? (
+                        <div className={`flex items-center w-full py-3 rounded-lg border-l-4 border-yellow-400 bg-yellow-50 ${isDark ? 'bg-yellow-900/20 border-yellow-600' : ''}`}>
+                            <FaExclamationTriangle className="text-yellow-500 mr-3 pl-3 w-6 h-6 hidden sm:block" />
+                            <span className={`${theme.text} flex-1 text-sm font-semibold hidden sm:block`}>
+                                Looks like you haven't added a payment method yet. Let's get that sorted so you can fully enjoy everything{' '}
+                                <Link to="/dashboard/profile" className="text-purple-600 hover:text-purple-800 font-semibold">
+                                    Click here to add one.
+                                </Link>
+                            </span>
+                            <span className="block sm:hidden flex text-sm">
+                                <FaExclamationTriangle className="text-yellow-500 mr-3 pl-3 w-6 h-6" />
+                                <Link to="/dashboard/profile" className="text-purple-600 hover:text-purple-800">
+                                    Click here to add account
+                                </Link>
+                            </span>
+                        </div>
+                    ) : (<></>)}
                     <button
                         onClick={() => setShowNotifications(!showNotifications)}
                         className={`p-3 rounded-full hover:bg-purple-500/10 transition-colors relative mr-2`}

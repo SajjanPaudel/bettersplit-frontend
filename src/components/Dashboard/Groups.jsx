@@ -122,7 +122,7 @@ function Groups() {
                   <p className={`text-sm ${theme.textSecondary}`}>Please Create a group before adding expenses</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(500px,1fr))] gap-4">
                   {groups.map(group => (
                     <div
                       key={group.id}
@@ -144,7 +144,7 @@ function Groups() {
                                 key={member.id}
                                 className="relative inline-flex flex-col items-center"
                                 onMouseEnter={() => {
-                                  setHoveredMember(member.id);
+                                  setHoveredMember({ groupId: group.id, memberId: member.id });
                                   setQrValue(primary ? JSON.stringify(primary.account_details) : '');
                                 }}
                                 onMouseLeave={() => {
@@ -158,7 +158,7 @@ function Groups() {
                                   {member.username}
                                 </span>
                                 {/* QR Tooltip */}
-                                {hoveredMember === member.id && primary && (
+                                {hoveredMember && hoveredMember.groupId === group.id && hoveredMember.memberId === member.id && primary && (
                                   <div className={`z-50 mt-1 p-3 rounded-xl shadow-lg flex flex-col items-center min-w-[220px] border w-max
                                   ${isDark ? 'bg-gray-900 border-gray-700 text-gray-200' : 'bg-white border-gray-300 text-gray-900'} absolute top-7  left-1/2 -translate-x-1/2`}
                                   >

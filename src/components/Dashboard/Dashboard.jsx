@@ -295,7 +295,7 @@ function Dashboard() {
         const fetchSettlements = async () => {
             try {
                 setSettlementsLoading(true);
-                const response = await axios.get(endpoints.simple_settlements, { headers, params:{type:'me'} });
+                const response = await axios.get(endpoints.simple_settlements, { headers });
                 setSettlements(response.data.data);
             } catch (err) {
                 if (err.response?.status === 401) {

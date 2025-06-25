@@ -853,7 +853,7 @@ function Dashboard() {
                     </div>
 
                     {activeTab === 'settlements' ? (
-                        <div className={`h-[calc(100vh-24.5rem)] p-4 rounded-xl ${isDark ? `backdrop-blur-md` : 'bg-white'} border ${theme.border} shadow-md overflow-scroll`}>
+                        <div className={`h-[calc(100vh-24.5rem)] p-4 rounded-xl ${isDark ? `backdrop-blur-md` : 'bg-white'} border ${theme.border} shadow-md overflow-auto`}>
                             {settlementsLoading ? (
                                 Array(3).fill(0).map((_, index) => (
                                     <div key={index} className={`${theme.card} rounded-xl border ${theme.border} px-2 py-4 animate-pulse`}>

@@ -566,7 +566,7 @@ function Dashboard() {
                 {settlement.individual_settlements.length > 0 && (
                     <div
                         className={`mt-2 space-y-2 transition-all duration-500 overflow-hidden
-                        ${isExpanded ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'}
+                        ${isExpanded ? 'max-h-auto opacity-100' : 'max-h-0 opacity-0'}
                         `}
                         style={{ willChange: 'max-height, opacity' }}
                     >

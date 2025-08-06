@@ -87,7 +87,7 @@ function EditExpenseModal({ onClose, onSuccess, initialExpense, activityId }) {
     setIsSubmitting(true);
     // Validate splits sum
     const totalSplits = expense.splits.reduce((sum, split) => sum + parseFloat(split.amount || 0), 0);
-    if (parseFloat(expense.amount) !== totalSplits) {
+    if (Math.abs(parseFloat(expense.amount) - totalSplits) > 1) {
       setError('The sum of splits must equal the total amount.');
       setIsSubmitting(false);
       return;

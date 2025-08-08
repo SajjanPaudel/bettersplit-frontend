@@ -253,7 +253,6 @@ function Dashboard() {
 
     useEffect(() => {
         fetchDashboardData();
-        fetchActivities();
         fetchNotifications();
     }, []);
 
@@ -763,7 +762,7 @@ function Dashboard() {
                     <div className="flex space-x-4 min-w-max ">
                         {balancesLoading ? (
                             Array(3).fill(0).map((_, index) => (
-                                <div key={index} className={`backdrop-blur-md bg-purple-900/5 rounded-xl border ${theme.border} p-4 relative animate-pulse w-[300px]`}>
+                                <div key={index} className={`backdrop-blur-md bg-purple-900/5 rounded-xl border ${theme.border} p-4 relative animate-pulse w-[270px]`}>
                                     <div className="flex items-center justify-between mb-3">
                                         <div className={`h-6 w-24 ${isDark ? 'bg-gray-600' : 'bg-gray-300'} rounded-md`}></div>
                                     </div>
@@ -779,7 +778,7 @@ function Dashboard() {
                             <>
                                 {showOnlyMine && balances[loggedInUser.username] && (
                                     <>
-                                        <div className={`w-[300px] rounded-xl`}>
+                                        <div className={`w-[270px] rounded-xl`}>
                                             <div className={`rounded-xl ${isDark ? `backdrop-blur-md bg-purple-900/5 border ${theme.border}` : `bg-white shadow-md border border-gray-100`} p-4 relative`}>
                                                 <div className="flex items-center justify-between mb-3">
                                                     <div className="px-2.5 py-1 rounded-md text-xs font-semibold bg-red-800 text-white">
@@ -798,7 +797,7 @@ function Dashboard() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="w-[300px]">
+                                        <div className="w-[270px]">
                                             <div className={`rounded-xl ${isDark ? `backdrop-blur-md bg-purple-900/5 border ${theme.border}` : 'bg-white shadow-md border border-gray-100'} p-4 relative`}>
                                                 <div className="flex items-center justify-between mb-3">
                                                     <div className="px-2.5 py-1 rounded-md text-xs bg-green-800 text-white font-semibold">
@@ -824,10 +823,29 @@ function Dashboard() {
                                         (!showOnlyMine || username === loggedInUser.username) &&
                                         (Math.abs(data.net) > 1)
                                     ).map(([username, data]) => (
-                                        <div key={username} className="w-[300px]">
+                                        <div key={username} className="w-[270px]">
                                             {renderBalanceCard(username, data)}
                                         </div>
                                     ))}
+                                        <div className="w-[270px]">
+                                            <div className={`rounded-xl ${isDark ? `backdrop-blur-md bg-purple-900/5 border ${theme.border}` : 'bg-white shadow-md border border-gray-100'} p-4 relative`}>
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <div className="px-2.5 py-1 rounded-md text-xs bg-purple-800 text-white font-semibold">
+                                                        Current Month
+                                                    </div>
+                                                </div>
+                                                <div className={`${isDark ? `${theme.input}` : 'bg-gray-100'} p-4 rounded-md`}>
+                                                    <div className="flex justify-between items-center">
+                                                        <div className="flex flex-col">
+                                                            <span className={`text-sm ${theme.textSecondary}`}>Total expenses this month</span>
+                                                            <span className="text-xl font-semibold text-purple-600">
+                                                                Rs {balances[loggedInUser.username].current_month_expenses.toFixed(2)}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                             </>
                         )}
                     </div>

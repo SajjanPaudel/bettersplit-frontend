@@ -54,7 +54,7 @@ function Dashboard() {
     const [selectedAccountIndex, setSelectedAccountIndex] = useState(0);
     const [calculationType, setCalculationType] = useState('combined');
     const [allAccounts, setAllAccounts] = useState(null);
-    const [activeTab, setActiveTab] = useState('settlements');
+    const [activeTab, setActiveTab] = useState('metrics');
     const [dailyExpenses, setDailyExpenses] = useState([]);
     const [dateRange, setDateRange] = useState({ startDate: null, endDate: null });
     const [showNotifications, setShowNotifications] = useState(false);
@@ -839,18 +839,9 @@ function Dashboard() {
                             className="absolute bottom-0 h-0.5 bg-purple-500 transition-all duration-300 ease-in-out"
                             style={{
                                 width: '100px',
-                                transform: `translateX(${activeTab === 'settlements' ? '0' : '100px'})`
+                                transform: `translateX(${activeTab === 'metrics' ? '0' : '100px'})`
                             }}
                         />
-                        <button
-                            onClick={() => setActiveTab('settlements')}
-                            className={`px-4 py-2 text-sm transition-all duration-300 ease-in-out w-[100px] ${activeTab === 'settlements'
-                                ? `${theme.text} font-medium`
-                                : `${theme.textSecondary} hover:text-purple-500`
-                                }`}
-                        >
-                            Settlements
-                        </button>
                         <button
                             onClick={() => setActiveTab('metrics')}
                             className={`px-4 py-2 text-sm transition-all duration-300 ease-in-out w-[100px] ${activeTab === 'metrics'
@@ -859,6 +850,15 @@ function Dashboard() {
                                 }`}
                         >
                             Metrics
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('settlements')}
+                            className={`px-4 py-2 text-sm transition-all duration-300 ease-in-out w-[100px] ${activeTab === 'settlements'
+                                ? `${theme.text} font-medium`
+                                : `${theme.textSecondary} hover:text-purple-500`
+                                }`}
+                        >
+                            Settlements
                         </button>
                     </div>
 
